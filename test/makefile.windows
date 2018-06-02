@@ -1,0 +1,19 @@
+CXXFLAGS=/EHsc /bigobj /std:c++17 /D_HAS_AUTO_PTR_ETC=1 $(CXXFLAGS)
+EXECUTABLE=run_me.exe
+INCLUDE=..\..\;$(INCLUDE)
+OBJECTS=$(SOURCES:.cpp=.obj)
+SOURCES=main.cpp second_translation_unit.cpp
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) /Fe:$(EXECUTABLE) $(OBJECTS) $(LIBS)
+
+.cpp.obj:
+	$(CXX) -c $(CXXFLAGS) $<
+
+test: all
+	$(EXECUTABLE)
+
+clean:
+	del *.obj *.exp *.lib $(EXECUTABLE)
