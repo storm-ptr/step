@@ -25,28 +25,33 @@ auto split(const std::string& str)
     return result;
 }
 
-int main(int argc, char* argv[])
-{
+class output_iterator {
+    size_t row_ = 0;
+
+public:
+    using iterator_category = std::output_iterator_tag;
     using option_t = std::optional<std::string_view>;
-    auto file1 = read_file(argv[1]);
-    auto file2 = read_file(argv[2]);
-    auto rng1 = split(file1);
-    auto rng2 = split(file2);
-    std::vector<std::pair<option_t, option_t>> pairs;
-
-    step::edit_distance::align(rng1, rng2, std::back_inserter(pairs));
-
-    size_t row = 0;
-    for (const auto& pair : pairs) {
+    output_iterator& operator*() { return *this; }
+    output_iterator& operator++() { return *this; }
+    output_iterator& operator=(const std::pair<option_t, option_t>& pair)
+    {
         if (pair.second)
-            ++row;
+            ++row_;
         if (pair.first != pair.second) {
             if (pair.first)
-                std::cout << "--- " << row + (pair.second ? 0 : 1) << " ---\n"
+                std::cout << "--- " << row_ + (pair.second ? 0 : 1) << " ---\n"
                           << pair.first.value() << "\n";
             if (pair.second)
-                std::cout << "+++ " << row << " +++\n"
+                std::cout << "+++ " << row_ << " +++\n"
                           << pair.second.value() << "\n";
         }
+        return *this;
     }
+};
+
+int main(int argc, char* argv[])
+{
+    auto file1 = read_file(argv[1]);
+    auto file2 = read_file(argv[2]);
+    step::edit_distance::align(split(file1), split(file2), output_iterator{});
 }
