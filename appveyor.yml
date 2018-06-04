@@ -7,7 +7,7 @@ configuration: Release
 clone_depth: 1
 
 install:
-  - ps: Invoke-WebRequest -Uri https://raw.githubusercontent.com/catchorg/Catch2/v2.0.1/single_include/catch.hpp -OutFile %APPVEYOR_BUILD_FOLDER%\..\catch.hpp
+  - ps: Invoke-WebRequest -Uri https://raw.githubusercontent.com/catchorg/Catch2/v2.0.1/single_include/catch.hpp -OutFile $env:APPVEYOR_BUILD_FOLDER\..\catch.hpp
   - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 
 build_script:
