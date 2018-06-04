@@ -1,0 +1,21 @@
+language: cpp
+sudo: true
+dist: trusty
+git:
+  depth: 1
+matrix:
+  include:
+  - os: linux
+    env: COMPILER=g++-7
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-7
+script:
+- wget -P $TRAVIS_BUILD_DIR/.. https://raw.githubusercontent.com/catchorg/Catch2/v2.0.1/single_include/catch.hpp
+- cd $TRAVIS_BUILD_DIR/test
+- make -f ./makefile.ubuntu test CXX=$COMPILER
+- cd $TRAVIS_BUILD_DIR/example/diff
+- make -f ./makefile.ubuntu CXX=$COMPILER

@@ -1,6 +1,6 @@
 CXXFLAGS=/EHsc /bigobj /std:c++17 /D_HAS_AUTO_PTR_ETC=1 $(CXXFLAGS)
 EXECUTABLE=diff.exe
-INCLUDE=..\..\;$(INCLUDE)
+INCLUDE=..\..\..;$(INCLUDE)
 OBJECTS=$(SOURCES:.cpp=.obj)
 SOURCES=main.cpp
 

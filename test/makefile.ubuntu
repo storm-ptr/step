@@ -1,0 +1,20 @@
+CXXFLAGS+=-Wall -std=c++17
+EXECUTABLE=run_me
+INCLUDEPATH=../..
+INCFLAGS=$(foreach x, $(INCLUDEPATH), -I$x)
+OBJECTS=$(SOURCES:.cpp=.o)
+SOURCES=main.cpp second_translation_unit.cpp
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) $(OBJECTS) -o $@
+
+.cpp.o:
+	$(CXX) -c $(CXXFLAGS) $(INCFLAGS) $< -o $@
+
+test: all
+	./$(EXECUTABLE)
+
+clean:
+	rm -rf *.o $(EXECUTABLE)
