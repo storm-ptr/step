@@ -48,14 +48,13 @@ TEST_CASE("longest_increasing_subsequence")
     REQUIRE(std::string_view(s.c_str(), std::distance(s.begin(), end_of_s)) ==
             "BDE");
 
-    std::array a{10, 22, 9, 33, 21, 50, 41, 60};
-    auto end_of_a = partition(a);
-    REQUIRE(std::vector(a.begin(), end_of_a) ==
+    int a[] = {10, 22, 9, 33, 21, 50, 41, 60};
+    REQUIRE(std::vector<int>(std::begin(a), partition(a)) ==
             std::vector{10, 22, 33, 41, 60});
 
     std::vector perm{1, 1, 2, 2, 3, 3, 4, 4};
     do {
-        std::vector lis{perm};
+        std::vector lis(perm);
         auto end_of_lis = partition(lis);
         REQUIRE(std::is_permutation(lis.begin(), lis.end(), perm.begin()));
         REQUIRE(std::is_sorted(lis.begin(), end_of_lis));

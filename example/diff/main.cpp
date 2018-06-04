@@ -1,6 +1,7 @@
 // Andrew Naplavkov
 
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <step/edit_distance.hpp>
 #include <string>
@@ -9,7 +10,8 @@
 auto read_file(const char* file_name)
 {
     using iterator_t = std::istreambuf_iterator<char>;
-    return std::string{(iterator_t(std::ifstream{file_name})), iterator_t()};
+    std::ifstream stream{file_name};
+    return std::string{(iterator_t(stream)), iterator_t()};
 }
 
 auto split(const std::string& str)
@@ -39,10 +41,11 @@ public:
             ++row_;
         if (pair.first != pair.second) {
             if (pair.first)
-                std::cout << "--- " << row_ + (pair.second ? 0 : 1) << " ---\n"
+                std::cout << std::setw(4) << std::right
+                          << row_ + (pair.second ? 0 : 1) << " << "
                           << pair.first.value() << "\n";
             if (pair.second)
-                std::cout << "+++ " << row_ << " +++\n"
+                std::cout << std::setw(4) << std::right << row_ << " >> "
                           << pair.second.value() << "\n";
         }
         return *this;

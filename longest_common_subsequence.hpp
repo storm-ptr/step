@@ -19,8 +19,8 @@ struct dynamic_programming {
                        RandomIt2 first2,
                        RandomIt2 last2) const
     {
-        auto size1 = std::distance(first1, last1);
-        auto size2 = std::distance(first2, last2);
+        size_t size1 = std::distance(first1, last1);
+        size_t size2 = std::distance(first2, last2);
         ring_table<size_t, 2> tbl(size2 + 1);
         for (size_t l = 1; l <= size1; ++l)
             for (size_t r = 1; r <= size2; ++r)
