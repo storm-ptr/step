@@ -43,7 +43,7 @@ template <typename RandomIt1,
           typename RandomIt2,
           typename OutputIt,
           typename DynamicProg>
-OutputIt align(RandomIt1 first1,
+OutputIt trace(RandomIt1 first1,
                RandomIt1 last1,
                RandomIt2 first2,
                RandomIt2 last2,
@@ -53,7 +53,7 @@ OutputIt align(RandomIt1 first1,
     auto size1 = std::distance(first1, last1);
     auto size2 = std::distance(first2, last2);
     if (size1 < 2 || size2 < 2)
-        return dp.trivial_align(first1, last1, first2, last2, result);
+        return dp.trivial_trace(first1, last1, first2, last2, result);
 
     auto[split1, split2] =
         size2 < size1
@@ -62,8 +62,8 @@ OutputIt align(RandomIt1 first1,
             : detail::partition_point(
                   first2, last2, first1, last1, dp, make_reverse_pair{});
 
-    result = hirschberg::align(first1, split1, first2, split2, result, dp);
-    result = hirschberg::align(split1, last1, split2, last2, result, dp);
+    result = hirschberg::trace(first1, split1, first2, split2, result, dp);
+    result = hirschberg::trace(split1, last1, split2, last2, result, dp);
     return result;
 }
 

@@ -4,31 +4,17 @@
 #define STEP_EDIT_DISTANCE_HPP
 
 #include <algorithm>
-#include <optional>
 #include <step/detail/common.hpp>
 #include <step/detail/hirschberg.hpp>
-#include <utility>
 
 namespace step {
 namespace edit_distance {
 namespace detail {
 
-template <typename ForwardIt, typename T, typename OutputIt, typename BinaryOp>
-auto align(ForwardIt first,
-           ForwardIt last,
-           const T& val,
-           OutputIt result,
-           BinaryOp op)
-{
-    auto it = std::find(first, last, val);
-    if (it == last)
-        it = first;
-    return std::transform(first, last, result, [&](const auto& item) {
-        return op(item, item == *it ? std::optional{val} : std::nullopt);
-    });
-}
-
+template <typename Equal>
 struct dynamic_programming {
+    Equal equal;
+
     /// @see https://en.wikipedia.org/wiki/Wagner–Fischer_algorithm
     template <typename RandomIt1, typename RandomIt2>
     auto make_last_row(RandomIt1 first1,
@@ -45,7 +31,7 @@ struct dynamic_programming {
                     tbl[l][r] = r;
                 else if (r == 0)
                     tbl[l][r] = l;
-                else if (first1[l - 1] == first2[r - 1])
+                else if (equal(first1[l - 1], first2[r - 1]))
                     tbl[l][r] = tbl[l - 1][r - 1];
                 else
                     tbl[l][r] = 1 + std::min({tbl[l][r - 1],        // insert
@@ -58,7 +44,7 @@ struct dynamic_programming {
     bool operator()(size_t lhs, size_t rhs) const { return lhs < rhs; }
 
     template <typename RandomIt1, typename RandomIt2, typename OutputIt>
-    OutputIt trivial_align(RandomIt1 first1,
+    OutputIt trivial_trace(RandomIt1 first1,
                            RandomIt1 last1,
                            RandomIt2 first2,
                            RandomIt2 last2,
@@ -73,9 +59,11 @@ struct dynamic_programming {
                 return std::make_pair(item, std::nullopt);
             });
         else if (std::next(first1) == last1)
-            return align(first2, last2, *first1, result, make_reverse_pair{});
+            return associate_with_equal_or_tail(
+                first2, last2, *first1, result, equal, make_reverse_pair{});
         else  // std::next(first2) == last2
-            return align(first1, last1, *first2, result, make_pair{});
+            return associate_with_equal_or_tail(
+                first1, last1, *first2, result, equal, make_pair{});
     }
 };
 
@@ -90,25 +78,63 @@ struct dynamic_programming {
  * Time complexity: O(N*M), space complexity O(min(N,M)), where:
  * N = std::distance(first1, last1), M = std::distance(first2, last2).
  */
-template <typename RandomIt1, typename RandomIt2, typename OutputIt>
-OutputIt align(RandomIt1 first1,
-               RandomIt1 last1,
-               RandomIt2 first2,
-               RandomIt2 last2,
-               OutputIt result)
+template <typename RandomIt1,
+          typename RandomIt2,
+          typename OutputIt,
+          typename Equal>
+OutputIt associate(RandomIt1 first1,
+                   RandomIt1 last1,
+                   RandomIt2 first2,
+                   RandomIt2 last2,
+                   OutputIt result,
+                   Equal equal)
 {
-    return hirschberg::align(
-        first1, last1, first2, last2, result, detail::dynamic_programming{});
+    return hirschberg::trace(first1,
+                             last1,
+                             first2,
+                             last2,
+                             result,
+                             detail::dynamic_programming<Equal>{equal});
+}
+
+template <typename RandomIt1, typename RandomIt2, typename OutputIt>
+OutputIt associate(RandomIt1 first1,
+                   RandomIt1 last1,
+                   RandomIt2 first2,
+                   RandomIt2 last2,
+                   OutputIt result)
+{
+    return edit_distance::associate(
+        first1, last1, first2, last2, result, std::equal_to{});
+}
+
+template <typename RandomRng1,
+          typename RandomRng2,
+          typename OutputIt,
+          typename Equal>
+OutputIt associate(const RandomRng1& rng1,
+                   const RandomRng2& rng2,
+                   OutputIt result,
+                   Equal equal)
+{
+    return edit_distance::associate(std::begin(rng1),
+                                    std::end(rng1),
+                                    std::begin(rng2),
+                                    std::end(rng2),
+                                    result,
+                                    equal);
 }
 
 template <typename RandomRng1, typename RandomRng2, typename OutputIt>
-OutputIt align(const RandomRng1& rng1, const RandomRng2& rng2, OutputIt result)
+OutputIt associate(const RandomRng1& rng1,
+                   const RandomRng2& rng2,
+                   OutputIt result)
 {
-    return edit_distance::align(std::begin(rng1),
-                                std::end(rng1),
-                                std::begin(rng2),
-                                std::end(rng2),
-                                result);
+    return edit_distance::associate(std::begin(rng1),
+                                    std::end(rng1),
+                                    std::begin(rng2),
+                                    std::end(rng2),
+                                    result);
 }
 
 }  // namespace edit_distance

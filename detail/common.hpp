@@ -4,6 +4,8 @@
 #define STEP_COMMON_HPP
 
 #include <array>
+#include <iterator>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -38,6 +40,33 @@ public:
 
     auto& operator[](size_t row) { return rows_[row % N]; }
 };
+
+template <typename ForwardIt,
+          typename T,
+          typename OutputIt,
+          typename Equal,
+          typename BinaryOp>
+auto associate_with_equal_or_tail(ForwardIt first,
+                                  ForwardIt last,
+                                  const T& val,
+                                  OutputIt result,
+                                  Equal equal,
+                                  BinaryOp op)
+{
+    bool done = false;
+    while (first != last) {
+        auto next = std::next(first);
+        if (!done && (equal(*first, val) || next == last)) {
+            done = true;
+            *result = op(*first, val);
+        }
+        else
+            *result = op(*first, std::nullopt);
+        ++result;
+        first = next;
+    }
+    return result;
+}
 
 }  // namespace step
 

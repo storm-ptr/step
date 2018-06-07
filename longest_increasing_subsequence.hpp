@@ -18,13 +18,13 @@ namespace detail {
  * @see
  * https://www.geeksforgeeks.org/longest-monotonically-increasing-subsequence-size-n-log-n/
  */
-class subsequences {
+class increasing_subsequences {
     std::vector<size_t> tails_;
     std::unordered_map<size_t, std::optional<size_t>> prevs_;
 
 public:
     template <typename RandomIt, typename Compare>
-    subsequences(RandomIt first, RandomIt last, Compare cmp)
+    increasing_subsequences(RandomIt first, RandomIt last, Compare cmp)
     {
         size_t size = std::distance(first, last);
         for (size_t i = 0; i < size; ++i) {
@@ -76,7 +76,7 @@ auto partition(RandomIt first, RandomIt last, Compare cmp)
 {
     using std::swap;
     auto it = first;
-    for (auto i : detail::subsequences{first, last, cmp}.longest()) {
+    for (auto i : detail::increasing_subsequences{first, last, cmp}.longest()) {
         swap(first[i], *it);
         ++it;
     }
