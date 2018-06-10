@@ -99,7 +99,8 @@ auto partition(RandomRng& rng, Compare cmp)
 template <typename RandomRng>
 auto partition(RandomRng& rng)
 {
-    return longest_increasing_subsequence::partition(rng, std::less{});
+    return longest_increasing_subsequence::partition(std::begin(rng),
+                                                     std::end(rng));
 }
 
 }  // namespace longest_increasing_subsequence

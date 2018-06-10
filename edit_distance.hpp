@@ -75,7 +75,7 @@ struct dynamic_programming {
  * insertions, replacements, deletions, and null actions needed to change one
  * string into the other.
  *
- * Time complexity: O(N*M), space complexity O(min(N,M)), where:
+ * Time complexity O(N*M), space complexity O(min(N,M)), where:
  * N = std::distance(first1, last1), M = std::distance(first2, last2).
  */
 template <typename RandomIt1,

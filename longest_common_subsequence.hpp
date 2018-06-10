@@ -58,7 +58,7 @@ struct dynamic_programming {
  * sequence that appears in the same relative order, but not necessarily
  * contiguous.
  *
- * Time complexity: O(N*M), space complexity O(min(N,M)), where:
+ * Time complexity O(N*M), space complexity O(min(N,M)), where:
  * N = std::distance(first1, last1), M = std::distance(first2, last2).
  */
 template <typename RandomIt1,
