@@ -8,15 +8,11 @@
 
 #include <fstream>
 #include <iostream>
-#include <step/edit_distance.hpp>
 #include <step/longest_common_subsequence.hpp>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 
-using option_t = std::optional<std::string_view>;
-using pairs_t = std::vector<std::pair<option_t, option_t>>;
-using pair_iterator_t = pairs_t::const_iterator;
 using stream_iterator_t = std::istreambuf_iterator<char>;
 using views_t = std::vector<std::string_view>;
 using view_iterator_t = views_t::const_iterator;
@@ -40,36 +36,23 @@ auto split(const std::string& str)
     return result;
 }
 
-auto find_change_hunk(pair_iterator_t first, pair_iterator_t last)
+void print(view_iterator_t first1,
+           view_iterator_t last1,
+           view_iterator_t first2,
+           view_iterator_t last2,
+           size_t& offset1,
+           size_t& offset2)
 {
-    auto result_first = std::find_if(first, last, [](const auto& pair) {
-        return pair.first != pair.second;
-    });
-    auto result_last = std::find_if(result_first, last, [](const auto& pair) {
-        return pair.first == pair.second;
-    });
-    return std::make_pair(result_first, result_last);
-}
-
-void print_change_hunk(pair_iterator_t first,
-                       pair_iterator_t last,
-                       size_t& offset1,
-                       size_t& offset2)
-{
-    size_t count1 = std::count_if(
-        first, last, [](const auto& pair) { return !!pair.first; });
-    size_t count2 = std::count_if(
-        first, last, [](const auto& pair) { return !!pair.second; });
+    size_t count1 = std::distance(first1, last1);
+    size_t count2 = std::distance(first2, last2);
+    if (!count1 && !count2)
+        return;
     std::cout << "@@ -" << offset1 + 1 << "," << count1 << " +" << offset2 + 1
               << "," << count2 << " @@\n";
-    std::for_each(first, last, [](const auto& pair) {
-        if (pair.first)
-            std::cout << "-" << pair.first.value() << "\n";
-    });
-    std::for_each(first, last, [](const auto& pair) {
-        if (pair.second)
-            std::cout << "+" << pair.second.value() << "\n";
-    });
+    std::for_each(
+        first1, last1, [](auto view) { std::cout << "-" << view << "\n"; });
+    std::for_each(
+        first2, last2, [](auto view) { std::cout << "+" << view << "\n"; });
     offset1 += count1;
     offset2 += count2;
 }
@@ -81,17 +64,19 @@ void diff(view_iterator_t first1,
           size_t& offset1,
           size_t& offset2)
 {
-    pairs_t pairs;
-    step::edit_distance::associate(
-        first1, last1, first2, last2, std::back_inserter(pairs));
-    for (auto it = pairs.cbegin(); it != pairs.cend();) {
-        auto[first, last] = find_change_hunk(it, pairs.cend());
-        offset1 += std::distance(it, first);
-        offset2 += std::distance(it, first);
-        if (first != last)
-            print_change_hunk(first, last, offset1, offset2);
-        it = last;
+    views_t matches;
+    step::longest_common_subsequence::intersection(
+        first1, last1, first2, last2, std::back_inserter(matches));
+    for (auto match : matches) {
+        auto match1 = std::find(first1, last1, match);
+        auto match2 = std::find(first2, last2, match);
+        print(first1, match1, first2, match2, offset1, offset2);
+        first1 = std::next(match1);
+        first2 = std::next(match2);
+        ++offset1;
+        ++offset2;
     }
+    print(first1, last1, first2, last2, offset1, offset2);
 }
 
 views_t markers(view_iterator_t first, view_iterator_t last)
