@@ -50,9 +50,9 @@ void print(view_iterator_t first1,
     std::cout << "@@ -" << offset1 + 1 << "," << count1 << " +" << offset2 + 1
               << "," << count2 << " @@\n";
     std::for_each(
-        first1, last1, [](auto view) { std::cout << "-" << view << "\n"; });
+        first1, last1, [](auto item) { std::cout << "-" << item << "\n"; });
     std::for_each(
-        first2, last2, [](auto view) { std::cout << "+" << view << "\n"; });
+        first2, last2, [](auto item) { std::cout << "+" << item << "\n"; });
     offset1 += count1;
     offset2 += count2;
 }
