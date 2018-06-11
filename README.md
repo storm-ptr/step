@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/storm-ptr/step.svg?branch=master)](https://travis-ci.org/storm-ptr/step)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/storm-ptr/step?svg=true&branch=master)](https://ci.appveyor.com/project/storm-ptr/step/branch/master)
 
-STL-like algorithms collection:
+STL-like algorithms:
 - edit distance
 - longest common subsequence
 - longest increasing subsequence
