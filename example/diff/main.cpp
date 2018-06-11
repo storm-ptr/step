@@ -90,18 +90,6 @@ views_t markers(view_iterator_t first, view_iterator_t last)
     return result;
 }
 
-views_t markers(view_iterator_t first1,
-                view_iterator_t last1,
-                view_iterator_t first2,
-                view_iterator_t last2)
-{
-    views_t result;
-    step::longest_common_subsequence::intersection(markers(first1, last1),
-                                                   markers(first2, last2),
-                                                   std::back_inserter(result));
-    return result;
-}
-
 void patience_diff(view_iterator_t first1,
                    view_iterator_t last1,
                    view_iterator_t first2,
@@ -109,7 +97,11 @@ void patience_diff(view_iterator_t first1,
                    size_t& offset1,
                    size_t& offset2)
 {
-    for (auto mark : markers(first1, last1, first2, last2)) {
+    views_t marks;
+    step::longest_common_subsequence::intersection(markers(first1, last1),
+                                                   markers(first2, last2),
+                                                   std::back_inserter(marks));
+    for (auto mark : marks) {
         auto mark1 = std::find(first1, last1, mark);
         auto mark2 = std::find(first2, last2, mark);
         diff(first1, mark1, first2, mark2, offset1, offset2);
