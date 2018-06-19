@@ -1,7 +1,5 @@
 // Andrew Naplavkov
 
-/// @see https://en.wikipedia.org/wiki/Diff#Unified_format
-
 #include <fstream>
 #include <iostream>
 #include <step/longest_common_subsequence.hpp>
@@ -9,17 +7,16 @@
 #include <string_view>
 #include <unordered_map>
 
-using stream_iterator_t = std::istreambuf_iterator<char>;
 using lines_t = std::vector<std::string_view>;
-using line_iterator_t = lines_t::const_iterator;
 
-auto read_file(const char* file_name)
+std::string read_file(const char* file_name)
 {
+    using iterator_t = std::istreambuf_iterator<char>;
     std::ifstream stream{file_name};
-    return std::string{(stream_iterator_t(stream)), stream_iterator_t()};
+    return {(iterator_t(stream)), iterator_t()};
 }
 
-auto split(const std::string& str)
+lines_t split(const std::string& str)
 {
     lines_t result;
     auto first = str.c_str();
@@ -32,12 +29,13 @@ auto split(const std::string& str)
     return result;
 }
 
-void print(line_iterator_t origin1,
-           line_iterator_t first1,
-           line_iterator_t last1,
-           line_iterator_t origin2,
-           line_iterator_t first2,
-           line_iterator_t last2)
+/// @see https://en.wikipedia.org/wiki/Diff#Unified_format
+void print(lines_t::iterator origin1,
+           lines_t::iterator first1,
+           lines_t::iterator last1,
+           lines_t::iterator origin2,
+           lines_t::iterator first2,
+           lines_t::iterator last2)
 {
     size_t count1 = std::distance(first1, last1);
     size_t count2 = std::distance(first2, last2);
@@ -52,12 +50,12 @@ void print(line_iterator_t origin1,
     }
 }
 
-void diff(line_iterator_t origin1,
-          line_iterator_t first1,
-          line_iterator_t last1,
-          line_iterator_t origin2,
-          line_iterator_t first2,
-          line_iterator_t last2)
+void diff(lines_t::iterator origin1,
+          lines_t::iterator first1,
+          lines_t::iterator last1,
+          lines_t::iterator origin2,
+          lines_t::iterator first2,
+          lines_t::iterator last2)
 {
     lines_t matches;
     step::longest_common_subsequence::intersection(
@@ -72,7 +70,7 @@ void diff(line_iterator_t origin1,
     print(origin1, first1, last1, origin2, first2, last2);
 }
 
-lines_t markers(line_iterator_t first, line_iterator_t last)
+lines_t markers(lines_t::iterator first, lines_t::iterator last)
 {
     lines_t result;
     std::unordered_map<std::string_view, size_t> counter;
@@ -83,12 +81,12 @@ lines_t markers(line_iterator_t first, line_iterator_t last)
     return result;
 }
 
-void patience_diff(line_iterator_t origin1,
-                   line_iterator_t first1,
-                   line_iterator_t last1,
-                   line_iterator_t origin2,
-                   line_iterator_t first2,
-                   line_iterator_t last2)
+void patience_diff(lines_t::iterator origin1,
+                   lines_t::iterator first1,
+                   lines_t::iterator last1,
+                   lines_t::iterator origin2,
+                   lines_t::iterator first2,
+                   lines_t::iterator last2)
 {
     lines_t matches;
     step::longest_common_subsequence::intersection(markers(first1, last1),
@@ -111,10 +109,10 @@ int main(int argc, char* argv[])
     auto file2 = read_file(argv[2]);
     auto lines1 = split(file1);
     auto lines2 = split(file2);
-    patience_diff(lines1.cbegin(),
-                  lines1.cbegin(),
-                  lines1.cend(),
-                  lines2.cbegin(),
-                  lines2.cbegin(),
-                  lines2.cend());
+    patience_diff(lines1.begin(),
+                  lines1.begin(),
+                  lines1.end(),
+                  lines2.begin(),
+                  lines2.begin(),
+                  lines2.end());
 }
