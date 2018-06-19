@@ -4,7 +4,8 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/storm-ptr/step?svg=true&branch=master)](https://ci.appveyor.com/project/storm-ptr/step/branch/master)
 
 STL-like algorithms:
-- edit distance
-- longest common subsequence
-- longest increasing subsequence
+- [edit distance](https://en.wikipedia.org/wiki/Edit_distance)
+- [longest common subsequence](https://en.wikipedia.org/wiki/Longest_common_subsequence_problem)
+- [longest increasing subsequence](https://en.wikipedia.org/wiki/Longest_increasing_subsequence)
+- [maximum subarray](https://en.wikipedia.org/wiki/Maximum_subarray_problem)
 - to be continued
