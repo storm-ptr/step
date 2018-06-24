@@ -3,8 +3,8 @@
 #ifndef STEP_TEST_EDIT_DISTANCE_HPP
 #define STEP_TEST_EDIT_DISTANCE_HPP
 
+#include <cctype>
 #include <step/edit_distance.hpp>
-#include <step/test/common.hpp>
 #include <string_view>
 
 TEST_CASE("edit_distance")
@@ -45,10 +45,11 @@ TEST_CASE("edit_distance")
                                {'C', 'C'}}}};
     for (const auto& test : Tests) {
         pairs_t pairs;
-        associate(std::get<0>(test),
-                  std::get<1>(test),
-                  std::back_inserter(pairs),
-                  iequals);
+        associate(
+            std::get<0>(test),
+            std::get<1>(test),
+            std::back_inserter(pairs),
+            [](char lhs, char rhs) { return tolower(lhs) == tolower(rhs); });
         CHECK(pairs == std::get<2>(test));
     }
 }

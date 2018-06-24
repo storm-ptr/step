@@ -4,8 +4,8 @@
 #define STEP_TEST_MAXIMUM_SUBARRAY_HPP
 
 #include <array>
+#include <step/kahan.hpp>
 #include <step/maximum_subarray.hpp>
-#include <step/test/common.hpp>
 #include <vector>
 
 TEST_CASE("maximum_subarray")
@@ -25,7 +25,7 @@ TEST_CASE("maximum_subarray")
     std::vector<float> v{1.};
     v.insert(v.end(), 10000000, 0.0000001);
     auto sub_v = find(v);
-    auto kahan_sub_v = find(v, kahan_plus<float>{}, std::less{});
+    auto kahan_sub_v = find(v, step::kahan::plus{}, std::less{});
     CHECK(std::distance(sub_v.first, sub_v.second) < v.size());
     CHECK(std::distance(kahan_sub_v.first, kahan_sub_v.second) == v.size());
 }

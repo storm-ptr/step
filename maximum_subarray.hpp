@@ -10,17 +10,17 @@ namespace step {
 namespace maximum_subarray {
 namespace detail {
 
-template <typename ForwardIt>
+template <typename T, typename ForwardIt>
 struct weighted_range {
-    typename std::iterator_traits<ForwardIt>::value_type weight;
+    T weight;
     ForwardIt first;
     ForwardIt last;
 };
 
-template <typename ForwardIt>
+template <typename T, typename ForwardIt>
 auto make_weighted_range(ForwardIt it)
 {
-    return weighted_range<ForwardIt>{*it, it, std::next(it)};
+    return weighted_range<T, ForwardIt>{*it, it, std::next(it)};
 }
 
 }  // namespace detail
@@ -37,16 +37,17 @@ std::pair<ForwardIt, ForwardIt> find(ForwardIt first,
                                      BinaryOp op,
                                      Compare cmp)
 {
+    using weight_t = decltype(op(*first, *first));
     if (first == last)
         return {first, last};
-    auto rng = detail::make_weighted_range(first);
+    auto rng = detail::make_weighted_range<weight_t>(first);
     auto result = rng;
     while (rng.last != last) {
         rng.weight = op(std::move(rng.weight), *rng.last);
         if (cmp(*rng.last, rng.weight))
             ++rng.last;
         else
-            rng = detail::make_weighted_range(rng.last);
+            rng = detail::make_weighted_range<weight_t>(rng.last);
         if (cmp(result.weight, rng.weight))
             result = rng;
     }

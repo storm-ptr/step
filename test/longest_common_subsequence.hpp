@@ -3,10 +3,10 @@
 #ifndef STEP_TEST_LONGEST_COMMON_SUBSEQUENCE_HPP
 #define STEP_TEST_LONGEST_COMMON_SUBSEQUENCE_HPP
 
+#include <cctype>
 #include <cstring>
 #include <sstream>
 #include <step/longest_common_subsequence.hpp>
-#include <step/test/common.hpp>
 #include <string>
 #include <string_view>
 
@@ -23,7 +23,10 @@ TEST_CASE("longest_common_subsequence")
     CHECK(s == "GTAB");
 
     std::vector<char> v;
-    intersection("ABCDGH", "aedfhr", std::back_inserter(v), iequals);
+    intersection(
+        "ABCDGH", "aedfhr", std::back_inserter(v), [](char lhs, char rhs) {
+            return tolower(lhs) == tolower(rhs);
+        });
     CHECK(strcmp(v.data(), "ADH") == 0);
 }
 
