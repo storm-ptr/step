@@ -4,12 +4,40 @@
 #define STEP_EDIT_DISTANCE_HPP
 
 #include <algorithm>
-#include <step/detail/common.hpp>
+#include <optional>
+#include <step/common.hpp>
 #include <step/detail/hirschberg.hpp>
 
 namespace step {
 namespace edit_distance {
 namespace detail {
+
+template <typename ForwardIt,
+          typename T,
+          typename OutputIt,
+          typename Equal,
+          typename BinaryOp>
+auto associate_with_equal_or_tail(ForwardIt first,
+                                  ForwardIt last,
+                                  const T& val,
+                                  OutputIt result,
+                                  Equal equal,
+                                  BinaryOp op)
+{
+    bool done = false;
+    while (first != last) {
+        auto next = std::next(first);
+        if (!done && (equal(*first, val) || next == last)) {
+            done = true;
+            *result = op(*first, val);
+        }
+        else
+            *result = op(*first, std::nullopt);
+        ++result;
+        first = next;
+    }
+    return result;
+}
 
 template <typename Equal>
 struct dynamic_programming {

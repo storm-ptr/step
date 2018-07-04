@@ -8,3 +8,4 @@
 #include <step/test/longest_common_subsequence.hpp>
 #include <step/test/longest_increasing_subsequence.hpp>
 #include <step/test/maximum_subarray.hpp>
+#include <step/test/sparse_table.hpp>

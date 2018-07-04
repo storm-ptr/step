@@ -3,13 +3,37 @@
 #ifndef STEP_COMMON_HPP
 #define STEP_COMMON_HPP
 
+#include <algorithm>
 #include <array>
 #include <iterator>
-#include <optional>
 #include <utility>
 #include <vector>
 
 namespace step {
+
+struct min {
+    template <typename T>
+    const T& operator()(const T& lhs, const T& rhs) const
+    {
+        return std::min(lhs, rhs);
+    }
+};
+
+struct max {
+    template <typename T>
+    const T& operator()(const T& lhs, const T& rhs) const
+    {
+        return std::max(lhs, rhs);
+    }
+};
+
+struct gcd {
+    template <typename Lhs, typename Rhs>
+    auto operator()(Lhs lhs, Rhs rhs) const
+    {
+        return std::gcd(lhs, rhs);
+    }
+};
 
 struct make_pair {
     template <typename Lhs, typename Rhs>
@@ -40,33 +64,6 @@ public:
 
     auto& operator[](size_t row) { return rows_[row % N]; }
 };
-
-template <typename ForwardIt,
-          typename T,
-          typename OutputIt,
-          typename Equal,
-          typename BinaryOp>
-auto associate_with_equal_or_tail(ForwardIt first,
-                                  ForwardIt last,
-                                  const T& val,
-                                  OutputIt result,
-                                  Equal equal,
-                                  BinaryOp op)
-{
-    bool done = false;
-    while (first != last) {
-        auto next = std::next(first);
-        if (!done && (equal(*first, val) || next == last)) {
-            done = true;
-            *result = op(*first, val);
-        }
-        else
-            *result = op(*first, std::nullopt);
-        ++result;
-        first = next;
-    }
-    return result;
-}
 
 }  // namespace step
 
