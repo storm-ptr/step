@@ -3,7 +3,6 @@
 #ifndef STEP_TEST_SPARSE_TABLE_HPP
 #define STEP_TEST_SPARSE_TABLE_HPP
 
-#include <numeric>
 #include <step/sparse_table.hpp>
 
 template <typename Range, typename SparseTable>
