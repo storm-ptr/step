@@ -3,8 +3,8 @@
 #ifndef STEP_KAHAN_HPP
 #define STEP_KAHAN_HPP
 
+#include <tuple>
 #include <type_traits>
-#include <utility>
 
 namespace step {
 namespace kahan {
