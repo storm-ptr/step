@@ -4,7 +4,6 @@
 #define STEP_KAHAN_HPP
 
 #include <tuple>
-#include <type_traits>
 
 namespace step {
 namespace kahan {
@@ -13,19 +12,9 @@ namespace kahan {
  * Reduces the numerical error in the total obtained by adding a sequence of
  * floating point numbers. (What about complex numbers?)
  * @see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
- *
- * Supplied operations:
- * - less_than_comparable
- * - equality_comparable
- * - addable
- * - subtractable
- * @see
- * https://www.boost.org/doc/libs/1_67_0/libs/utility/operators.htm#arithmetic
  */
 template <typename T>
 class floating_point {
-    static_assert(std::is_floating_point_v<T>);
-
     T value_{};
     T error_{};
 
@@ -36,28 +25,18 @@ public:
 
     constexpr T value() const { return value_; }
 
-    friend constexpr floating_point operator+(const floating_point& that)
+    friend constexpr floating_point operator+(const floating_point& lhs,
+                                              const floating_point& rhs)
     {
-        return that;
+        auto term = rhs.value_ - (lhs.error_ + rhs.error_);
+        floating_point result(lhs.value_ + term);
+        result.error_ = (result.value_ - lhs.value_) - term;
+        return result;
     }
 
     friend constexpr floating_point operator-(const floating_point& that)
     {
         return {-that.value_, -that.error_};
-    }
-
-    constexpr floating_point& operator+=(const floating_point& that)
-    {
-        auto term = that.value_ - (this->error_ + that.error_);
-        auto sum = this->value_ + term;
-        this->error_ = (sum - this->value_) - term;
-        this->value_ = sum;
-        return *this;
-    }
-
-    constexpr floating_point& operator-=(const floating_point& that)
-    {
-        return *this += (-that);
     }
 
     friend constexpr bool operator==(const floating_point& lhs,
@@ -77,15 +56,7 @@ struct plus {
     template <typename Lhs, typename Rhs>
     constexpr auto operator()(const Lhs& lhs, const Rhs& rhs) const
     {
-        return floating_point(lhs) += floating_point(rhs);
-    }
-};
-
-struct minus {
-    template <typename Lhs, typename Rhs>
-    constexpr auto operator()(const Lhs& lhs, const Rhs& rhs) const
-    {
-        return floating_point(lhs) -= floating_point(rhs);
+        return floating_point(lhs) + floating_point(rhs);
     }
 };
 
