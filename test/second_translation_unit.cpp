@@ -6,4 +6,4 @@
 #include <step/longest_common_subsequence.hpp>
 #include <step/longest_increasing_subsequence.hpp>
 #include <step/maximum_subarray.hpp>
-#include <step/sparse_table.hpp>
+#include <step/suffix_tree.hpp>

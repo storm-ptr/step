@@ -6,35 +6,10 @@
 #include <algorithm>
 #include <array>
 #include <iterator>
-#include <numeric>
 #include <utility>
 #include <vector>
 
 namespace step {
-
-struct min {
-    template <typename T>
-    const T& operator()(const T& lhs, const T& rhs) const
-    {
-        return std::min(lhs, rhs);
-    }
-};
-
-struct max {
-    template <typename T>
-    const T& operator()(const T& lhs, const T& rhs) const
-    {
-        return std::max(lhs, rhs);
-    }
-};
-
-struct gcd {
-    template <typename Lhs, typename Rhs>
-    auto operator()(Lhs lhs, Rhs rhs) const
-    {
-        return std::gcd(lhs, rhs);
-    }
-};
 
 struct make_pair {
     template <typename Lhs, typename Rhs>

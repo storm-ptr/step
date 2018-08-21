@@ -19,7 +19,7 @@ template <typename ForwardIt,
           typename BinaryOp>
 auto associate_with_equal_or_tail(ForwardIt first,
                                   ForwardIt last,
-                                  const T& val,
+                                  const T& value,
                                   OutputIt result,
                                   Equal equal,
                                   BinaryOp op)
@@ -27,9 +27,9 @@ auto associate_with_equal_or_tail(ForwardIt first,
     bool done = false;
     while (first != last) {
         auto next = std::next(first);
-        if (!done && (equal(*first, val) || next == last)) {
+        if (!done && (equal(*first, value) || next == last)) {
             done = true;
-            *result = op(*first, val);
+            *result = op(*first, value);
         }
         else
             *result = op(*first, std::nullopt);
