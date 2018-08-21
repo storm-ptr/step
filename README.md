@@ -8,4 +8,8 @@ STL-like algorithms:
 - [longest common subsequence](https://en.wikipedia.org/wiki/Longest_common_subsequence_problem)
 - [longest increasing subsequence](https://en.wikipedia.org/wiki/Longest_increasing_subsequence)
 - [maximum subarray](https://en.wikipedia.org/wiki/Maximum_subarray_problem)
-- to be continued
+
+and data structures:
+- [suffix tree](https://en.wikipedia.org/wiki/Suffix_tree)
+
+to be continued
