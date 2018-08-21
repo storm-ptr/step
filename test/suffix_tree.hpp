@@ -36,8 +36,8 @@ inline auto make_suffix_tree(std::string_view str)
     return result;
 }
 
-template <typename... T>
-std::string to_string(const step::suffix_tree<T...>& tree)
+template <typename SuffixTree>
+std::string to_string(const SuffixTree& tree)
 {
     std::ostringstream os;
     tree.visit([&](size_t prefix_sz, size_t pos, size_t sz) {
