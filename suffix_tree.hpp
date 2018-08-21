@@ -81,7 +81,7 @@ public:
 
     /**
      * Find the first occurrence of the pattern as substring in O(M) time,
-     * where M = is length of the pattern.
+     * where M is length of the pattern.
      */
     template <typename InputIt>
     size_t find(InputIt first, InputIt last) const
