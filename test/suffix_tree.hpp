@@ -11,6 +11,7 @@
 #include <step/suffix_tree.hpp>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 
 inline std::string random_string(size_t size)
 {
@@ -148,7 +149,7 @@ TEST_CASE("suffix_tree_complexity")
     using namespace std::chrono;
     for (size_t size = (1 << 16); size <= (1 << 20); size *= 2) {
         auto str = random_string(size);
-        step::suffix_tree tree{};
+        step::suffix_tree<char, std::unordered_map> tree{};
         tree.reserve(str.size());
         auto start = high_resolution_clock::now();
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
