@@ -1,11 +1,9 @@
 // Andrew Naplavkov
 
-#ifndef STEP_COMMON_HPP
-#define STEP_COMMON_HPP
+#ifndef STEP_UTILITY_HPP
+#define STEP_UTILITY_HPP
 
-#include <algorithm>
 #include <array>
-#include <iterator>
 #include <utility>
 #include <vector>
 
@@ -43,4 +41,4 @@ public:
 
 }  // namespace step
 
-#endif  // STEP_COMMON_HPP
+#endif  // STEP_UTILITY_HPPs

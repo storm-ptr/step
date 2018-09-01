@@ -5,8 +5,8 @@
 
 #include <algorithm>
 #include <optional>
-#include <step/common.hpp>
 #include <step/detail/hirschberg.hpp>
+#include <step/utility.hpp>
 
 namespace step {
 namespace edit_distance {

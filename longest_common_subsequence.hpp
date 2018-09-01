@@ -4,8 +4,8 @@
 #define STEP_LONGEST_COMMON_SUBSEQUENCE_HPP
 
 #include <algorithm>
-#include <step/common.hpp>
 #include <step/detail/hirschberg.hpp>
+#include <step/utility.hpp>
 
 namespace step {
 namespace longest_common_subsequence {

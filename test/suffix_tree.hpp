@@ -5,6 +5,8 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <iterator>
 #include <random>
@@ -13,7 +15,7 @@
 #include <string_view>
 #include <unordered_map>
 
-inline std::string random_string(size_t size)
+inline std::string random_string(size_t len)
 {
     static const char Alphanum[] =
         "0123456789"
@@ -23,16 +25,16 @@ inline std::string random_string(size_t size)
     static std::uniform_int_distribution<size_t> distribution{
         0, sizeof(Alphanum) - 2};
     std::string result;
-    result.reserve(size);
-    for (size_t i = 0; i < size; ++i)
+    result.reserve(len);
+    for (size_t i = 0; i < len; ++i)
         result.push_back(Alphanum[distribution(generator)]);
-    result.push_back('$');
+    result.back() = '$';
     return result;
 }
 
 inline auto make_suffix_tree(std::string_view str)
 {
-    step::suffix_tree result{};
+    step::suffix_tree<char> result{};
     std::copy(str.begin(), str.end(), std::back_inserter(result));
     return result;
 }
@@ -41,11 +43,11 @@ template <typename SuffixTree>
 std::string to_string(const SuffixTree& tree)
 {
     std::ostringstream os;
-    tree.visit([&](size_t prefix_sz, size_t pos, size_t sz) {
-        os << std::setw(prefix_sz + sz) << std::setfill(' ')
-           << std::string_view{tree.data() + pos, sz};
-        if (pos + sz == tree.size())  // suffix
-            os << " [" << pos - prefix_sz << "]";
+    tree.visit([&](auto prefix_sz, const auto& str) {
+        os << std::setw(prefix_sz + str.len) << std::setfill(' ')
+           << std::string_view{tree.begin(str), str.len};
+        if (str.pos + str.len == tree.size())  // suffix
+            os << " [" << str.pos - prefix_sz << "]";
         os << "\n";
     });
     return os.str();
@@ -55,7 +57,7 @@ TEST_CASE("suffix_tree_topology")
 {
     struct {
         std::string_view str;
-        std::string_view tree;
+        std::string_view expected;
     } CASES[] = {
 
         {"abcabxabcd$", R"(
@@ -104,8 +106,8 @@ m$ [7]
 uVVVOm$ [2]
 )"}};
 
-    for (auto & [ str, tree ] : CASES)
-        CHECK(to_string(make_suffix_tree(str)) == tree);
+    for (auto & [ str, expected ] : CASES)
+        CHECK(to_string(make_suffix_tree(str)) == expected);
 }
 
 TEST_CASE("suffix_tree_find")
@@ -143,13 +145,23 @@ TEST_CASE("suffix_tree_find_all")
             offsets.begin(), offsets.end(), expected.begin(), expected.end()));
     }
 }
+/*
+#include <boost/container/flat_map.hpp>
+#include <boost/container/small_vector.hpp>
 
+template <typename Key, typename T>
+using map_t = boost::container::flat_map<
+    Key,
+    T,
+    std::less<Key>,
+    boost::container::small_vector<std::pair<Key, T>, 8>>;
+*/
 TEST_CASE("suffix_tree_complexity")
 {
     using namespace std::chrono;
-    for (size_t size = (1 << 16); size <= (1 << 20); size *= 2) {
-        auto str = random_string(size);
-        step::suffix_tree<char, std::unordered_map> tree{};
+    for (size_t i = 18; i < 22; ++i) {
+        auto str = random_string(pow(2, i));
+        step::suffix_tree<char, std::unordered_map, uint32_t> tree{};
         tree.reserve(str.size());
         auto start = high_resolution_clock::now();
         std::copy(str.begin(), str.end(), std::back_inserter(tree));

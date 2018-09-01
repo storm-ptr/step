@@ -3,6 +3,7 @@
 #ifndef STEP_SUFFIX_TREE_HPP
 #define STEP_SUFFIX_TREE_HPP
 
+#include <limits>
 #include <map>
 #include <stack>
 #include <stdexcept>
@@ -14,64 +15,67 @@ namespace step {
  * Ukkonen's online algorithm for constructing suffix tree.
  * Time complexity O(N*log(N)), space complexity O(N),
  * where N is length of stirng.
- *
- * Template parameters:
- * T - type of the stored elements;
- * Map - type of associative container to store the edges,
- *   its key_type shall be T (boost::container::flat_map e.g.).
- *
+ * @param T - type of the stored elements;
+ * @param Map - type of associative container to store the edges,
+ * its key_type shall be T (boost::container::flat_map e.g.).
+ * @param Len - type is used to specify the maximum number of elements.
  * @see https://en.wikipedia.org/wiki/Suffix_tree
  */
-template <class T = char, template <class...> class Map = std::map>
+template <class T, template <class...> class Map = std::map, class Len = size_t>
 class suffix_tree {
 public:
     using value_type = T;
-    static constexpr size_t npos = -1;
+    using size_type = Len;
+    static constexpr auto npos = std::numeric_limits<size_type>::max();
+
+    struct substring {
+        size_type pos = 0;
+        size_type len = 0;
+    };
+
     auto data() const { return str_.data(); }
-    auto size() const { return str_.size(); }
+    size_type size() const { return str_.size(); }
+    auto begin(const substring& str) const { return data() + str.pos; }
+    auto end(const substring& str) const { return begin(str) + str.len; }
 
     void clear() noexcept
     {
         str_.clear();
         nodes_.clear();
-        active_ = 0;
-        remainder_ = {0, npos};
+        pos_ = 0;
+        link_ = 0;
     }
 
-    void reserve(size_t sz)
+    void reserve(size_type len)
     {
-        str_.reserve(sz);
-        nodes_.reserve(2 * sz);
+        str_.reserve(len);
+        nodes_.reserve(len);
     }
 
-    /**
-     * Basic exception guarantee.
-     */
+    /// Basic exception guarantee.
     void push_back(T val) try {
         str_.push_back(std::move(val));
         if (nodes_.empty())
-            nodes_.emplace_back(substr{0, 0});  // root
+            nodes_.emplace_back();  // root
         auto set_link_to = make_linker();
-        while (size(remainder_)) {
-            if (auto n = nodes_[active_].edges[*begin(remainder_)]; n) {
-                if (walk_down(n))
+        while (reminder(pos_)) {
+            if (auto& edge = nodes_[link_].edges[str_[pos_]]; edge) {
+                if (walk_down(edge))
                     continue;
-                if (*(begin(nodes_[n]) + size(remainder_) - 1) == str_.back()) {
-                    set_link_to(active_);
+                if (str_[pos(edge) + reminder(pos_) - 1] == str_.back()) {
+                    set_link_to(link_);
                     break;
                 }
-                split(n);
-                set_link_to(n);
+                set_link_to(split(edge));
             }
             else {
-                nodes_.emplace_back(remainder_);
-                add_edge_from(active_);
-                set_link_to(active_);
+                edge = inverse(pos_);
+                set_link_to(link_);
             }
-            if (active_)
-                active_ = nodes_[active_].link;
+            if (link_)
+                link_ = nodes_[link_].link;
             else
-                remainder_.remove_prefix(1);
+                ++pos_;
         }
     }
     catch (...) {
@@ -84,10 +88,10 @@ public:
      * where M is length of the pattern.
      */
     template <typename InputIt>
-    size_t find(InputIt first, InputIt last) const
+    auto find(InputIt first, InputIt last) const
     {
-        auto[prefix_sz, n] = find_node(first, last);
-        return n == npos ? npos : nodes_[n].pos - prefix_sz;
+        auto[prefix_sz, edge] = find_edge(first, last);
+        return edge == npos ? npos : pos(edge) - prefix_sz;
     }
 
     /**
@@ -97,139 +101,134 @@ public:
     template <typename InputIt>
     auto find_all(InputIt first, InputIt last) const
     {
-        if (size(remainder_))
+        if (reminder(pos_))
             throw std::logic_error{"implicit suffix_tree"};
-        std::vector<size_t> result;
-        dfs(find_node(first, last),
-            [&](size_t prefix_sz, size_t pos, size_t sz) {
-                if (pos + sz == size())  // suffix
-                    result.push_back(pos - prefix_sz);
-            });
+        std::vector<size_type> result;
+        dfs(find_edge(first, last), [&](auto prefix_sz, auto& str) {
+            if (str.pos + str.len == size())  // suffix
+                result.push_back(str.pos - prefix_sz);
+        });
         return result;
     }
 
     /**
      * Depth-first traversal of the nodes.
-     * Signature of the function object @param op:
-     * (size_t prefix_sz, size_t pos, size_t sz),
-     * where:
+     * Signature of @param vis is (size_type prefix_sz, const substring& str):
      * @param prefix_sz - length of all substrings
-     *   found on the path from the root to the node;
-     * @param pos, @param sz - position and length of the node substring.
+     * found on the path from the root to the node;
+     * @param str - position and length of the node substring.
      */
-    template <typename Operation>
-    void visit(const Operation& op) const
+    template <typename Visitor>
+    void visit(const Visitor& vis) const
     {
-        dfs(prefix_and_node{0, nodes_.empty() ? npos : 0}, op);
+        dfs({0, nodes_.empty() ? npos : 0}, vis);
     }
 
 private:
-    struct substr {
-        size_t pos;
-        size_t count;
-
-        void remove_prefix(size_t sz)
-        {
-            pos += sz;
-            if (count != npos)
-                count -= sz;
-        }
+    struct node {
+        substring str;
+        Map<T, size_type> edges;
+        size_type link = 0;
     };
 
-    struct node : substr {
-        Map<T, size_t> edges;
-        size_t link = 0;
-
-        node(const substr& s) : substr{s} {}
-    };
-
-    using prefix_and_node = std::pair<size_t, size_t>;
+    using prefix_and_edge = std::pair<size_type, size_type>;
 
     std::vector<T> str_;
-    std::vector<node> nodes_;
-    size_t active_ = 0;
-    substr remainder_ = {0, npos};
+    std::vector<node> nodes_;  // inner only
+    size_type pos_;
+    size_type link_;
 
-    auto size(const substr& s) const
+    static size_type inverse(size_type idx) { return npos - idx - 1; }
+    size_type reminder(size_type pos) const { return size() - pos; }
+    size_type pos(size_type edge) const { return substr(edge).pos; }
+
+    substring substr(size_type edge) const
     {
-        return s.count == npos ? size() - s.pos : s.count;
+        if (edge < nodes_.size())
+            return nodes_[edge].str;
+        auto pos = inverse(edge);
+        return {pos, reminder(pos)};
     }
-
-    auto begin(const substr& s) const { return data() + s.pos; }
-    auto end(const substr& s) const { return begin(s) + size(s); }
 
     auto make_linker()
     {
-        return [ prev = npos, this ](size_t n) mutable
+        return [ prev = npos, this ](size_type link) mutable
         {
             if (prev != npos)
-                nodes_[prev].link = n;
-            prev = n;
+                nodes_[prev].link = link;
+            prev = link;
         };
     }
 
-    void add_edge_from(size_t n)
+    bool walk_down(size_type edge)
     {
-        nodes_[n].edges[*begin(nodes_.back())] = nodes_.size() - 1;
-    }
-
-    bool walk_down(size_t n)
-    {
-        auto sz = size(nodes_[n]);
-        if (size(remainder_) <= sz)
+        auto len = substr(edge).len;
+        if (reminder(pos_) <= len)
             return false;
-        active_ = n;
-        remainder_.remove_prefix(sz);
+        pos_ += len;
+        link_ = edge;
         return true;
     }
 
-    void split(size_t n)
+    size_type split(size_type& edge)
     {
-        nodes_.emplace_back(substr{nodes_[n].pos, size(remainder_) - 1});
-        nodes_[n].remove_prefix(size(nodes_.back()));
-        std::swap(nodes_[n], nodes_.back());
-        add_edge_from(n);
-        nodes_.emplace_back(substr{size() - 1, npos});
-        add_edge_from(n);
+        auto[pos, len] = substring{this->pos(edge), reminder(pos_) - 1};
+        size_type link = nodes_.size();
+        if (edge >= nodes_.size())
+            edge = link;
+        auto result = edge;
+        nodes_.push_back({{pos, len}, {{str_.back(), inverse(size() - 1)}}});
+        if (result == link)
+            nodes_[result].edges.emplace(str_[pos + len], inverse(pos + len));
+        else {
+            nodes_[result].str.pos += len;
+            nodes_[result].str.len -= len;
+            std::swap(nodes_[result], nodes_.back());
+            nodes_[result].edges.emplace(str_[pos + len], link);
+        }
+        return result;
     }
 
     template <typename InputIt>
-    prefix_and_node find_node(InputIt first, InputIt last) const
+    prefix_and_edge find_edge(InputIt first, InputIt last) const
     {
         if (nodes_.empty())
             return {0, npos};
-        auto[prefix_sz, n] = prefix_and_node{0, 0};
+        auto[prefix_sz, edge] = prefix_and_edge{0, 0};
         while (true) {
-            auto diff =
-                std::mismatch(first, last, begin(nodes_[n]), end(nodes_[n]));
+            auto str = substr(edge);
+            auto diff = std::mismatch(first, last, begin(str), end(str));
             if (diff.first == last)
-                return {prefix_sz, n};
-            if (diff.second != end(nodes_[n]))
+                return {prefix_sz, edge};
+            if (diff.second != end(str) || edge >= nodes_.size())
                 return {0, npos};
-            auto it = nodes_[n].edges.find(*diff.first);
-            if (it == nodes_[n].edges.end())
+            auto it = nodes_[edge].edges.find(*diff.first);
+            if (it == nodes_[edge].edges.end())
                 return {0, npos};
             first = diff.first;
-            prefix_sz += size(nodes_[n]);
-            n = it->second;
+            prefix_sz += str.len;
+            edge = it->second;
         }
     }
 
-    template <typename Operation>
-    void dfs(const prefix_and_node& start, const Operation& op) const
+    template <typename Visitor>
+    void dfs(const prefix_and_edge& start, const Visitor& vis) const
     {
-        std::stack<prefix_and_node> stack;
+        std::stack<prefix_and_edge> stack;
         if (start.second != npos)
             stack.push(start);
         while (!stack.empty()) {
-            auto[prefix_sz, n] = stack.top();
+            auto[prefix_sz, edge] = stack.top();
             stack.pop();
-            op(prefix_sz, nodes_[n].pos, size(nodes_[n]));
-            decltype(stack) reversed;
-            for (auto & [ key, edge ] : nodes_[n].edges)
-                reversed.push({prefix_sz + size(nodes_[n]), edge});
-            for (; !reversed.empty(); reversed.pop())
-                stack.push(reversed.top());
+            auto str = substr(edge);
+            vis(prefix_sz, str);
+            if (edge < nodes_.size()) {
+                decltype(stack) reversed;
+                for (auto & [ key, edge ] : nodes_[edge].edges)
+                    reversed.push({prefix_sz + str.len, edge});
+                for (; !reversed.empty(); reversed.pop())
+                    stack.push(reversed.top());
+            }
         }
     }
 };
