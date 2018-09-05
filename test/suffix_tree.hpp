@@ -43,11 +43,11 @@ template <typename SuffixTree>
 std::string to_string(const SuffixTree& tree)
 {
     std::ostringstream os;
-    tree.visit([&](auto prefix_sz, const auto& str) {
-        os << std::setw(prefix_sz + str.len) << std::setfill(' ')
-           << std::string_view{tree.begin(str), str.len};
-        if (str.pos + str.len == tree.size())  // suffix
-            os << " [" << str.pos - prefix_sz << "]";
+    tree.visit([&](auto first, auto nodal, auto last) {
+        os << std::setw(last - first) << std::setfill(' ')
+           << std::string_view{tree.data() + nodal, last - nodal};
+        if (last == tree.size())  // suffix
+            os << " [" << first << "]";
         os << "\n";
     });
     return os.str();
