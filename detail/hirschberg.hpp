@@ -55,7 +55,7 @@ OutputIt trace(RandomIt1 first1,
     if (size1 < 2 || size2 < 2)
         return dp.trivial_trace(first1, last1, first2, last2, result);
 
-    auto[split1, split2] =
+    auto [split1, split2] =
         size2 < size1
             ? detail::partition_point(
                   first1, last1, first2, last2, dp, make_pair{})

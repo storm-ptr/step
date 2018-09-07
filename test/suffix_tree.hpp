@@ -43,11 +43,11 @@ template <typename SuffixTree>
 std::string to_string(const SuffixTree& tree)
 {
     std::ostringstream os;
-    tree.visit([&](auto first, auto nodal, auto last) {
-        os << std::setw(last - first) << std::setfill(' ')
-           << std::string_view{tree.data() + nodal, last - nodal};
-        if (last == tree.size())  // suffix
-            os << " [" << first << "]";
+    tree.visit([&](auto first_pos, auto nodal_pos, auto last_pos) {
+        os << std::setw(last_pos - first_pos) << std::setfill(' ')
+           << std::string_view{tree.data() + nodal_pos, last_pos - nodal_pos};
+        if (last_pos == tree.size())  // suffix
+            os << " [" << first_pos << "]";
         os << "\n";
     });
     return os.str();
@@ -106,7 +106,7 @@ m$ [7]
 uVVVOm$ [2]
 )"}};
 
-    for (auto & [ str, expected ] : CASES)
+    for (auto& [str, expected] : CASES)
         CHECK(to_string(make_suffix_tree(str)) == expected);
 }
 
@@ -138,7 +138,7 @@ TEST_CASE("suffix_tree_find_all")
         {"AAAAAAAAA$", "A", {0, 1, 2, 3, 4, 5, 6, 7, 8}},
         {"AAAAAAAAA$", "AB", {}},
     };
-    for (auto & [ str, pattern, expected ] : CASES) {
+    for (auto& [str, pattern, expected] : CASES) {
         auto tree = make_suffix_tree(str);
         auto offsets = tree.find_all(pattern.begin(), pattern.end());
         CHECK(std::is_permutation(

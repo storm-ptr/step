@@ -30,6 +30,9 @@ public:
     auto data() const { return str_.data(); }
     size_type size() const { return str_.size(); }
 
+    /// Padded with a terminal symbol not seen in the string.
+    bool explicit_() const { return !reminder(pos_); }
+
     void clear() noexcept
     {
         str_.clear();
@@ -57,7 +60,7 @@ public:
                 if (auto link = split(edge); link != npos)
                     set_link_to(link);
                 else
-                    return set_link_to(link_);
+                    return set_link_to(link_);  // rule 3
             }
             else {
                 edge = inverse(pos_);
@@ -81,23 +84,20 @@ public:
     template <typename InputIt>
     size_type find(InputIt first, InputIt last) const
     {
-        auto[prefix_len, edge] = find_edge(first, last);
+        auto [prefix_len, edge] = find_edge(first, last);
         return edge == npos ? npos : substr(edge).first - prefix_len;
     }
 
-    /**
-     * Find all occurrences of the pattern for explicit suffix tree
-     * (padded with a terminal symbol not seen in the string).
-     */
+    /// Find all occurrences of the pattern for explicit suffix tree.
     template <typename InputIt>
     auto find_all(InputIt first, InputIt last) const
     {
-        if (reminder(pos_))
-            throw std::logic_error{"implicit suffix_tree"};
+        if (!explicit_())
+            throw std::logic_error{"terminal symbol is required"};
         std::vector<size_type> result;
-        dfs(find_edge(first, last), [&](auto first, auto nodal, auto last) {
-            if (last == size())  // suffix
-                result.push_back(first);
+        dfs(find_edge(first, last), [&](auto first_pos, auto, auto last_pos) {
+            if (last_pos == size())  // suffix
+                result.push_back(first_pos);
         });
         return result;
     }
@@ -105,10 +105,10 @@ public:
     /**
      * Depth-first traversal of the nodes.
      * @param vis gets the concatenation of all substrings found on the
-     * path from the root to the node given as:
-     * @param first - start offset of the substring;
-     * @param nodal - offset of the nodal part (end of the prefix);
-     * @param last - past-the-last.
+     * path from the root to the node:
+     * @param first_pos - start offset of the substring;
+     * @param nodal_pos - offset of the nodal part (end of the prefix);
+     * @param last_pos - past-the-last.
      */
     template <typename Visitor>
     void visit(const Visitor& vis) const
@@ -121,8 +121,8 @@ private:
     using prefix_len_and_edge = std::pair<size_type, size_type>;
 
     struct node {
-        substring str;
         Map<T, size_type> edges;
+        substring str;
         size_type link;
     };
 
@@ -145,8 +145,7 @@ private:
 
     auto make_linker()
     {
-        return [ prev = npos, this ](size_type link) mutable
-        {
+        return [prev = npos, this](size_type link) mutable {
             if (prev != npos)
                 nodes_[prev].link = link;
             prev = link;
@@ -173,7 +172,7 @@ private:
         if (leaf(edge))
             edge = nodes_.size();
         auto result = edge;
-        nodes_.push_back({head, {{str_.back(), inverse(size() - 1)}}});
+        nodes_.push_back({{{str_.back(), inverse(size() - 1)}}, head});
         if (result == nodes_.size() - 1)
             nodes_[result].edges[str_[tail.first]] = inverse(tail.first);
         else {
@@ -189,7 +188,7 @@ private:
     {
         if (nodes_.empty())
             return {0, npos};
-        auto[prefix_len, edge] = prefix_len_and_edge{0, 0};
+        auto [prefix_len, edge] = prefix_len_and_edge{0, 0};
         while (true) {
             auto str = substr(edge);
             auto diff = std::mismatch(first, last, begin(str), end(str));
@@ -214,12 +213,12 @@ private:
         if (origin.second != npos)
             stack.push(origin);
         while (!stack.empty()) {
-            auto[prefix_len, edge] = stack.top();
+            auto [prefix_len, edge] = stack.top();
             stack.pop();
             auto str = substr(edge);
             vis(str.first - prefix_len, str.first, str.second);
             if (!leaf(edge)) {
-                for (auto & [ key, edge ] : nodes_[edge].edges)
+                for (auto& [key, edge] : nodes_[edge].edges)
                     reversed.push({prefix_len + size(str), edge});
                 for (; !reversed.empty(); reversed.pop())
                     stack.push(reversed.top());
