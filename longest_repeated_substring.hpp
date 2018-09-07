@@ -15,8 +15,8 @@ namespace detail {
 template <template <class...> class Map, class Len, class RandomIt>
 auto find(RandomIt first, RandomIt last)
 {
-    using value_type = typename std::iterator_traits<RandomIt>::value_type;
     std::pair<RandomIt, RandomIt> result{last, last};
+    using value_type = typename std::iterator_traits<RandomIt>::value_type;
     step::suffix_tree<value_type, Map, Len> tree{};
     tree.reserve(last - first);
     std::copy(first, last, std::back_inserter(tree));
@@ -24,7 +24,7 @@ auto find(RandomIt first, RandomIt last)
         throw std::logic_error{"terminal symbol is required"};
     tree.visit([&](auto first_pos, auto, auto last_pos) {
         if (last_pos != tree.size() /* internal */ &&
-            last_pos - first_pos > result.second - result.first)
+            last_pos - first_pos > Len(result.second - result.first))
             result = std::make_pair(first + first_pos, first + last_pos);
     });
     return result;
