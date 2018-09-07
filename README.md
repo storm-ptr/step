@@ -10,7 +10,10 @@ STL-like algorithms:
 - [longest repeated substring](https://en.wikipedia.org/wiki/Longest_repeated_substring_problem)
 - [maximum subarray](https://en.wikipedia.org/wiki/Maximum_subarray_problem)
 
-and data structures:
+Data structures:
 - [suffix tree](https://en.wikipedia.org/wiki/Suffix_tree)
+
+Examples of utilities:
+- [diff](https://en.wikipedia.org/wiki/Diff)
 
 to be continued
