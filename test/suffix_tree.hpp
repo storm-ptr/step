@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <iostream>
 #include <iterator>
+#include <map>
 #include <random>
 #include <step/suffix_tree.hpp>
 #include <string>
@@ -34,7 +35,7 @@ inline std::string random_string(size_t len)
 
 inline auto make_suffix_tree(std::string_view str)
 {
-    step::suffix_tree<char> result{};
+    step::suffix_tree<char, std::map> result{};
     std::copy(str.begin(), str.end(), std::back_inserter(result));
     return result;
 }
@@ -43,13 +44,15 @@ template <typename SuffixTree>
 std::string to_string(const SuffixTree& tree)
 {
     std::ostringstream os;
-    tree.visit([&](auto first_pos, auto nodal_pos, auto last_pos) {
-        os << std::setw(last_pos - first_pos) << std::setfill(' ')
-           << std::string_view{tree.data() + nodal_pos, last_pos - nodal_pos};
-        if (last_pos == tree.size())  // suffix
-            os << " [" << first_pos << "]";
-        os << "\n";
-    });
+    tree.visit(
+        [&](const auto& str, const auto&, auto len) {
+            os << std::setw(len) << std::setfill(' ')
+               << std::string_view{tree.begin(str), tree.size(str)};
+            if (tree.suffix(str))
+                os << " [" << str.second - len << "]";
+            os << "\n";
+        },
+        [](auto&&...) {});
     return os.str();
 }
 
@@ -145,7 +148,7 @@ TEST_CASE("suffix_tree_find_all")
             offsets.begin(), offsets.end(), expected.begin(), expected.end()));
     }
 }
-/*
+
 #include <boost/container/flat_map.hpp>
 #include <boost/container/small_vector.hpp>
 
@@ -153,15 +156,15 @@ template <typename Key, typename T>
 using map_t = boost::container::flat_map<
     Key,
     T,
-    std::less<Key>,
+    std::less<>,
     boost::container::small_vector<std::pair<Key, T>, 8>>;
-*/
+
 TEST_CASE("suffix_tree_complexity")
 {
     using namespace std::chrono;
-    for (size_t i = 18; i < 22; ++i) {
+    for (size_t i = 18; i < 25; ++i) {
         auto str = random_string(pow(2, i));
-        step::suffix_tree<char, std::unordered_map, uint32_t> tree{};
+        step::suffix_tree<char, map_t, std::equal_to<>, uint32_t> tree{};
         tree.reserve(str.size());
         auto start = high_resolution_clock::now();
         std::copy(str.begin(), str.end(), std::back_inserter(tree));

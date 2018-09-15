@@ -1,4 +1,4 @@
-CXXFLAGS=/EHsc /bigobj /std:c++17 /O2 /D_HAS_AUTO_PTR_ETC=1 $(CXXFLAGS)
+CXXFLAGS=/EHsc /bigobj /std:c++17 /Ox /D_HAS_AUTO_PTR_ETC=1 $(CXXFLAGS)
 EXECUTABLE=run_me.exe
 INCLUDE=..\..\;$(INCLUDE)
 OBJECTS=$(SOURCES:.cpp=.obj)

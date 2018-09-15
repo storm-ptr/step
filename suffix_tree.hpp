@@ -3,10 +3,10 @@
 #ifndef STEP_SUFFIX_TREE_HPP
 #define STEP_SUFFIX_TREE_HPP
 
+#include <functional>
 #include <limits>
-#include <map>
 #include <stack>
-#include <stdexcept>
+#include <unordered_map>
 #include <vector>
 
 namespace step {
@@ -15,23 +15,31 @@ namespace step {
  * Ukkonen's online algorithm for constructing suffix tree.
  * Time complexity O(N*log(N)), space complexity O(N),
  * where N is length of stirng.
- * @param T - type of the stored characters;
- * @param Map - type of associative container to store the edges,
+ * @param T - type of the characters;
+ * @param Map - an associative container that is used to to store the edges,
  * its key_type shall be T (boost::container::flat_map e.g.);
- * @param Len - type is used to specify the maximum number of characters.
+ * @param Equal - to determine whether two characters are equivalent;
+ * @param Size - to specify the maximum number of characters.
  * @see https://en.wikipedia.org/wiki/Suffix_tree
  */
-template <class T, template <class...> class Map = std::map, class Len = size_t>
+template <class T,
+          template <class...> class Map = std::unordered_map,
+          class Equal = std::equal_to<>,
+          class Size = size_t>
 class suffix_tree {
 public:
     using value_type = T;
-    using size_type = Len;
-    static constexpr auto npos = std::numeric_limits<size_type>::max();
-    auto data() const { return str_.data(); }
-    size_type size() const { return str_.size(); }
+    using substring = std::pair<Size, Size>;  // position range
+    static constexpr auto npos = std::numeric_limits<Size>::max();
 
-    /// Padded with a terminal symbol not seen in the string.
-    bool explicit_() const { return !reminder(pos_); }
+    explicit suffix_tree(const Equal& equal = Equal{}) : equal_{equal} {}
+    auto data() const { return str_.data(); }
+    Size size() const { return str_.size(); }
+
+    static Size size(const substring& str) { return str.second - str.first; }
+    auto begin(const substring& str) const { return data() + str.first; }
+    auto end(const substring& str) const { return data() + str.second; }
+    bool suffix(const substring& str) const { return str.second == size(); }
 
     void clear() noexcept
     {
@@ -41,7 +49,7 @@ public:
         link_ = 0;
     }
 
-    void reserve(size_type len)
+    void reserve(Size len)
     {
         str_.reserve(len);
         nodes_.reserve(len);
@@ -81,93 +89,97 @@ public:
      * Find position of the first occurrence of the pattern as substring
      * in O(M) time, where M is length of the pattern.
      */
-    template <typename InputIt>
-    size_type find(InputIt first, InputIt last) const
+    template <class InputIt>
+    Size find(InputIt first, InputIt last) const
     {
-        auto [prefix_len, edge] = find_edge(first, last);
-        return edge == npos ? npos : substr(edge).first - prefix_len;
+        auto p = find_path(first, last);
+        return substr(p.link).second - p.len;
     }
 
-    /// Find all occurrences of the pattern for explicit suffix tree.
-    template <typename InputIt>
+    /**
+     * Find all occurrences of the pattern for explicit suffix tree
+     * (padded with a terminal symbol not seen in the string).
+     */
+    template <class InputIt>
     auto find_all(InputIt first, InputIt last) const
     {
-        if (!explicit_())
-            throw std::logic_error{"terminal symbol is required"};
-        std::vector<size_type> result;
-        dfs(find_edge(first, last), [&](auto first_pos, auto, auto last_pos) {
-            if (last_pos == size())  // suffix
-                result.push_back(first_pos);
-        });
+        std::vector<Size> result;
+        dfs(find_path(first, last),
+            [&](const auto& str, const auto&, auto len) {
+                if (suffix(str))
+                    result.push_back(str.second - len);
+            },
+            [](auto&&...) {});
         return result;
     }
 
     /**
      * Depth-first traversal of the nodes.
-     * @param vis gets the concatenation of all substrings found on the
-     * path from the root to the node:
-     * @param first_pos - start offset of the substring;
-     * @param nodal_pos - offset of the nodal part (end of the prefix);
-     * @param last_pos - past-the-last.
+     * @param pre and @param post visitors have signature:
+     * @param str - substring of the node;
+     * @param parent_str - substring of the parent node;
+     * @param len - number of characters on the path from the root to the node.
      */
-    template <typename Visitor>
-    void visit(const Visitor& vis) const
+    template <class PreVisit, class PostVisit>
+    void visit(PreVisit pre, PostVisit post) const
     {
-        dfs({0, nodes_.empty() ? npos : 0}, vis);
+        dfs({nodes_.empty() ? npos : 0}, pre, post);
     }
 
 private:
-    using substring = std::pair<size_type, size_type>;
-    using prefix_len_and_edge = std::pair<size_type, size_type>;
-
     struct node {
-        Map<T, size_type> edges;
+        Map<T, Size> edges;
         substring str;
-        size_type link;
+        Size link;
+    };
+
+    struct path {
+        Size link;
+        Size parent_link;
+        Size len;
+        bool visited;
     };
 
     std::vector<T> str_;
-    std::vector<node> nodes_;  // inner only
-    size_type pos_;
-    size_type link_;
+    std::vector<node> nodes_;  // internal nodes
+    Size pos_ = 0;
+    Size link_ = 0;
+    Equal equal_;
 
-    static auto inverse(size_type idx) { return npos - idx - 1; }
-    static auto size(const substring& str) { return str.second - str.first; }
-    auto begin(const substring& str) const { return data() + str.first; }
-    auto end(const substring& str) const { return data() + str.second; }
-    auto reminder(size_type pos) const { return size() - pos; }
-    auto leaf(size_type edge) const { return edge >= nodes_.size(); }
+    static Size inverse(Size n) { return npos - n - 1; }
+    Size reminder(Size pos) const { return size() - pos; }
+    bool leaf(Size link) const { return link >= nodes_.size(); }
 
-    auto substr(size_type edge) const
+    substring substr(Size link) const
     {
-        return leaf(edge) ? substring{inverse(edge), size()} : nodes_[edge].str;
+        return leaf(link) ? substring{inverse(link), size()} : nodes_[link].str;
     }
 
     auto make_linker()
     {
-        return [prev = npos, this](size_type link) mutable {
+        return [prev = npos, this](Size link) mutable {
             if (prev != npos)
                 nodes_[prev].link = link;
             prev = link;
         };
     }
 
-    bool walk_down(size_type edge)
+    bool walk_down(Size link)
     {
-        auto len = size(substr(edge));
+        auto len = size(substr(link));
         if (reminder(pos_) <= len)
             return false;
         pos_ += len;
-        link_ = edge;
+        link_ = link;
         return true;
     }
 
-    size_type split(size_type& edge)
+    Size split(Size& edge)
     {
         auto str = substr(edge);
         substring head{str.first, str.first + reminder(pos_) - 1};
         substring tail{head.second, str.second};
-        if (str_[tail.first] == str_.back())
+        if (equal_(str_[tail.first], str_.back()))
             return npos;
         if (leaf(edge))
             edge = nodes_.size();
@@ -183,45 +195,49 @@ private:
         return result;
     }
 
-    template <typename InputIt>
-    prefix_len_and_edge find_edge(InputIt first, InputIt last) const
+    template <class InputIt>
+    path find_path(InputIt first, InputIt last) const
     {
         if (nodes_.empty())
-            return {0, npos};
-        auto [prefix_len, edge] = prefix_len_and_edge{0, 0};
+            return {npos};
+        path p{};  // root
         while (true) {
-            auto str = substr(edge);
-            auto diff = std::mismatch(first, last, begin(str), end(str));
-            if (diff.first == last)
-                return {prefix_len, edge};
-            if (diff.second != end(str) || leaf(edge))
-                return {0, npos};
-            auto it = nodes_[edge].edges.find(*diff.first);
-            if (it == nodes_[edge].edges.end())
-                return {0, npos};
-            first = diff.first;
-            prefix_len += size(str);
-            edge = it->second;
+            auto str = substr(p.link);
+            p.len += size(str);
+            auto dif = std::mismatch(first, last, begin(str), end(str), equal_);
+            if (dif.first == last)
+                return p;
+            if (dif.second != end(str) || leaf(p.link))
+                return {npos};
+            auto it = nodes_[p.link].edges.find(*dif.first);
+            if (it == nodes_[p.link].edges.end())
+                return {npos};
+            first = dif.first;
+            p.parent_link = p.link;
+            p.link = it->second;
         }
     }
 
-    template <typename Visitor>
-    void dfs(const prefix_len_and_edge& origin, const Visitor& vis) const
+    template <class PreVisit, class PostVisit>
+    void dfs(const path& root, PreVisit pre, PostVisit post) const
     {
-        std::stack<prefix_len_and_edge> stack;
-        decltype(stack) reversed;
-        if (origin.second != npos)
-            stack.push(origin);
+        std::stack<path> stack, tmp;
+        if (root.link != npos)
+            stack.push(root);
         while (!stack.empty()) {
-            auto [prefix_len, edge] = stack.top();
-            stack.pop();
-            auto str = substr(edge);
-            vis(str.first - prefix_len, str.first, str.second);
-            if (!leaf(edge)) {
-                for (auto& [key, edge] : nodes_[edge].edges)
-                    reversed.push({prefix_len + size(str), edge});
-                for (; !reversed.empty(); reversed.pop())
-                    stack.push(reversed.top());
+            if (auto& p = stack.top(); p.visited) {
+                post(substr(p.link), substr(p.parent_link), p.len);
+                stack.pop();
+            }
+            else {
+                pre(substr(p.link), substr(p.parent_link), p.len);
+                p.visited = true;
+                if (!leaf(p.link)) {
+                    for (auto& [key, edge] : nodes_[p.link].edges)
+                        tmp.push({edge, p.link, p.len + size(substr(edge))});
+                    for (; !tmp.empty(); tmp.pop())
+                        stack.push(tmp.top());
+                }
             }
         }
     }

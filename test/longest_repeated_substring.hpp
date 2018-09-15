@@ -3,6 +3,7 @@
 #ifndef STEP_TEST_LONGEST_REPEATED_SUBSTRING_HPP
 #define STEP_TEST_LONGEST_REPEATED_SUBSTRING_HPP
 
+#include <map>
 #include <step/longest_repeated_substring.hpp>
 #include <string>
 #include <string_view>
@@ -24,7 +25,7 @@ TEST_CASE("longest_repeated_substring")
         {"ATCGATCGA$", "ATCGA"},
     };
     for (auto& [str, expected] : CASES) {
-        auto r = step::longest_repeated_substring::find(str);
+        auto r = step::longest_repeated_substring::find<std::map>(str);
         CHECK(expected == std::string(r.first, r.second));
     }
 }
