@@ -148,7 +148,7 @@ TEST_CASE("suffix_tree_find_all")
             offsets.begin(), offsets.end(), expected.begin(), expected.end()));
     }
 }
-
+/*
 #include <boost/container/flat_map.hpp>
 #include <boost/container/small_vector.hpp>
 
@@ -158,13 +158,14 @@ using map_t = boost::container::flat_map<
     T,
     std::less<>,
     boost::container::small_vector<std::pair<Key, T>, 8>>;
-
+*/
 TEST_CASE("suffix_tree_complexity")
 {
     using namespace std::chrono;
-    for (size_t i = 18; i < 25; ++i) {
+    for (size_t i = 18; i < 22; ++i) {
         auto str = random_string(pow(2, i));
-        step::suffix_tree<char, map_t, std::equal_to<>, uint32_t> tree{};
+        step::suffix_tree<char, std::unordered_map, std::equal_to<>, uint32_t>
+            tree{};
         tree.reserve(str.size());
         auto start = high_resolution_clock::now();
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
