@@ -38,7 +38,7 @@ auto find(RandomIt1 first1,
                [&](const auto& str, const auto& parent_str, auto len) {
                    if (!tree.suffix(str))
                        flags[parent_str.first] |= flags[str.first];
-                   else if ((str.second - len) < (last1 - first1))
+                   else if ((str.second - len) < Size(last1 - first1))
                        flags[parent_str.first] |= left_flag;
                    else
                        flags[parent_str.first] |= right_flag;
