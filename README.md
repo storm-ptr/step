@@ -6,6 +6,7 @@
 STL-like algorithms:
 - [edit distance](https://en.wikipedia.org/wiki/Edit_distance)
 - [longest common subsequence](https://en.wikipedia.org/wiki/Longest_common_subsequence_problem)
+- [longest common substring](https://en.wikipedia.org/wiki/Longest_common_substring_problem)
 - [longest increasing subsequence](https://en.wikipedia.org/wiki/Longest_increasing_subsequence)
 - [longest repeated substring](https://en.wikipedia.org/wiki/Longest_repeated_substring_problem)
 - [maximum subarray](https://en.wikipedia.org/wiki/Maximum_subarray_problem)
