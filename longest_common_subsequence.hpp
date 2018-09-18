@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <step/detail/hirschberg.hpp>
-#include <step/utility.hpp>
 
 namespace step {
 namespace longest_common_subsequence {
@@ -60,6 +59,8 @@ struct dynamic_programming {
  *
  * Time complexity O(N*M), space complexity O(min(N,M)), where:
  * N = std::distance(first1, last1), M = std::distance(first2, last2).
+ *
+ * @see https://en.wikipedia.org/wiki/Longest_common_subsequence_problem
  */
 template <typename RandomIt1,
           typename RandomIt2,

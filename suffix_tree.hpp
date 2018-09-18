@@ -4,6 +4,7 @@
 #define STEP_SUFFIX_TREE_HPP
 
 #include <functional>
+#include <iterator>
 #include <limits>
 #include <stack>
 #include <unordered_map>
@@ -16,23 +17,22 @@ namespace step {
  * Time complexity O(N*log(N)), space complexity O(N),
  * where N is length of stirng.
  * @param T - type of the characters;
+ * @param Size - to specify the maximum number of characters;
  * @param Map - an associative container that is used to to store the edges,
  * its key_type shall be T (boost::container::flat_map e.g.);
- * @param Equal - to determine whether two characters are equivalent;
- * @param Size - to specify the maximum number of characters.
+ * @param Equal - to determine whether two characters are equivalent.
  * @see https://en.wikipedia.org/wiki/Suffix_tree
  */
-template <class T,
+template <class T = char,
+          class Size = size_t,
           template <class...> class Map = std::unordered_map,
-          class Equal = std::equal_to<>,
-          class Size = size_t>
+          class Equal = std::equal_to<>>
 class suffix_tree {
 public:
     using value_type = T;
     using substring = std::pair<Size, Size>;  // position range
-    static constexpr auto npos = std::numeric_limits<Size>::max();
+    static constexpr Size npos = std::numeric_limits<Size>::max();
 
-    explicit suffix_tree(const Equal& equal = Equal{}) : equal_{equal} {}
     auto data() const { return str_.data(); }
     Size size() const { return str_.size(); }
 
@@ -96,6 +96,12 @@ public:
         return substr(p.link).second - p.len;
     }
 
+    template <class InputRng>
+    Size find(const InputRng& rng) const
+    {
+        return find(std::begin(rng), std::end(rng));
+    }
+
     /**
      * Find all occurrences of the pattern for explicit suffix tree
      * (padded with a terminal symbol not seen in the string).
@@ -113,6 +119,12 @@ public:
         return result;
     }
 
+    template <class InputRng>
+    auto find_all(const InputRng& rng) const
+    {
+        return find_all(std::begin(rng), std::end(rng));
+    }
+
     /**
      * Depth-first traversal of the nodes.
      * @param pre and @param post visitors have signature:
@@ -123,7 +135,7 @@ public:
     template <class PreVisit, class PostVisit>
     void visit(PreVisit pre, PostVisit post) const
     {
-        dfs({nodes_.empty() ? npos : 0}, pre, post);
+        dfs(nodes_.empty() ? path{npos} : path{}, pre, post);
     }
 
 private:
@@ -144,7 +156,6 @@ private:
     std::vector<node> nodes_;  // internal nodes
     Size pos_ = 0;
     Size link_ = 0;
-    Equal equal_;
 
     static Size inverse(Size n) { return npos - n - 1; }
     Size reminder(Size pos) const { return size() - pos; }
@@ -179,7 +190,7 @@ private:
         auto str = substr(edge);
         substring head{str.first, str.first + reminder(pos_) - 1};
         substring tail{head.second, str.second};
-        if (equal_(str_[tail.first], str_.back()))
+        if (Equal{}(str_[tail.first], str_.back()))
             return npos;
         if (leaf(edge))
             edge = nodes_.size();
@@ -200,19 +211,20 @@ private:
     {
         if (nodes_.empty())
             return {npos};
+        Equal equal{};
         path p{};  // root
         while (true) {
             auto str = substr(p.link);
             p.len += size(str);
-            auto dif = std::mismatch(first, last, begin(str), end(str), equal_);
-            if (dif.first == last)
+            auto diff = std::mismatch(first, last, begin(str), end(str), equal);
+            if (diff.first == last)
                 return p;
-            if (dif.second != end(str) || leaf(p.link))
+            if (diff.second != end(str) || leaf(p.link))
                 return {npos};
-            auto it = nodes_[p.link].edges.find(*dif.first);
+            auto it = nodes_[p.link].edges.find(*diff.first);
             if (it == nodes_[p.link].edges.end())
                 return {npos};
-            first = dif.first;
+            first = diff.first;
             p.parent_link = p.link;
             p.link = it->second;
         }
@@ -234,7 +246,8 @@ private:
                 p.visited = true;
                 if (!leaf(p.link)) {
                     for (auto& [key, edge] : nodes_[p.link].edges)
-                        tmp.push({edge, p.link, p.len + size(substr(edge))});
+                        tmp.push(
+                            {edge, p.link, Size(p.len + size(substr(edge)))});
                     for (; !tmp.empty(); tmp.pop())
                         stack.push(tmp.top());
                 }

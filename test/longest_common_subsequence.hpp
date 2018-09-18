@@ -3,31 +3,37 @@
 #ifndef STEP_TEST_LONGEST_COMMON_SUBSEQUENCE_HPP
 #define STEP_TEST_LONGEST_COMMON_SUBSEQUENCE_HPP
 
-#include <cctype>
-#include <cstring>
-#include <sstream>
 #include <step/longest_common_subsequence.hpp>
-#include <string>
+#include <step/test/utility.hpp>
 #include <string_view>
 
-TEST_CASE("longest_common_subsequence")
+TEST_CASE("longest_common_subsequence_hello_world")
 {
-    using namespace step::longest_common_subsequence;
-    std::ostringstream os;
-    intersection(
-        std::string{"XMJYAUZ"}, "MZJAWXU", std::ostream_iterator<char>(os));
-    CHECK(os.str() == "MJAU");
+    using namespace std::literals;
+    std::string str;
+    step::longest_common_subsequence::intersection("LCS is the basis of "sv,
+                                                   "the diff utility"sv,
+                                                   std::back_inserter(str));
+    CHECK(str == "the if ");
+}
 
-    std::string s;
-    intersection("AGGTAB", std::string_view{"GXTXAYB"}, std::back_inserter(s));
-    CHECK(s == "GTAB");
-
-    std::vector<char> v;
-    intersection(
-        "ABCDGH", "aedfhr", std::back_inserter(v), [](char lhs, char rhs) {
-            return tolower(lhs) == tolower(rhs);
-        });
-    CHECK(strcmp(v.data(), "ADH") == 0);
+TEST_CASE("longest_common_subsequence_intersection")
+{
+    struct {
+        std::string_view lhs;
+        std::string_view rhs;
+        std::string_view expected;
+    } tests[] = {{"XMJYAUZ", "MZJAWXU", "MJAU"},
+                 {"AGGTAB", "GXTXAYB", "GTAB"},
+                 {"ABCDGH", "aedfhr", "ADH"},
+                 {"BANANA", "ATANA", "AANA"},
+                 {"gac", "AGCAT", "ga"}};
+    for (auto& [lhs, rhs, expected] : tests) {
+        std::string str;
+        step::longest_common_subsequence::intersection(
+            lhs, rhs, std::back_inserter(str), case_insensitive_equal_to{});
+        CHECK(str == expected);
+    }
 }
 
 #endif  // STEP_TEST_LONGEST_COMMON_SUBSEQUENCE_HPP

@@ -3,39 +3,26 @@
 #ifndef STEP_TEST_SUFFIX_TREE_HPP
 #define STEP_TEST_SUFFIX_TREE_HPP
 
-#include <algorithm>
 #include <chrono>
-#include <cmath>
 #include <cstdint>
-#include <iostream>
 #include <iterator>
 #include <map>
-#include <random>
 #include <step/suffix_tree.hpp>
-#include <string>
+#include <step/test/utility.hpp>
 #include <string_view>
-#include <unordered_map>
 
-inline std::string random_string(size_t len)
+TEST_CASE("suffix_tree_hello_world")
 {
-    static const char Alphanum[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
-    static std::mt19937 generator{std::random_device{}()};
-    static std::uniform_int_distribution<size_t> distribution{
-        0, sizeof(Alphanum) - 2};
-    std::string result;
-    result.reserve(len);
-    for (size_t i = 0; i < len; ++i)
-        result.push_back(Alphanum[distribution(generator)]);
-    result.back() = '$';
-    return result;
+    using namespace std::literals;
+    auto str = "use the quick find feature to search for a text"sv;
+    step::suffix_tree tree{};
+    std::copy(str.begin(), str.end(), std::back_inserter(tree));
+    CHECK(tree.find("quick"sv) == 8);
 }
 
 inline auto make_suffix_tree(std::string_view str)
 {
-    step::suffix_tree<char, std::map> result{};
+    step::suffix_tree<char, uint16_t, std::map> result;
     std::copy(str.begin(), str.end(), std::back_inserter(result));
     return result;
 }
@@ -56,12 +43,14 @@ std::string to_string(const SuffixTree& tree)
     return os.str();
 }
 
-TEST_CASE("suffix_tree_topology")
+TEST_CASE("suffix_tree_topology_n_find")
 {
     struct {
         std::string_view str;
         std::string_view expected;
-    } CASES[] = {
+    } tests[] = {
+
+        {"", ""},
 
         {"abcabxabcd$", R"(
 $ [10]
@@ -109,15 +98,10 @@ m$ [7]
 uVVVOm$ [2]
 )"}};
 
-    for (auto& [str, expected] : CASES)
-        CHECK(to_string(make_suffix_tree(str)) == expected);
-}
-
-TEST_CASE("suffix_tree_find")
-{
-    for (std::string_view str : {"abcabxabcd$", "BANANA$", "VVuVVVOm$"}) {
+    for (auto& [str, expected] : tests) {
         auto tree = make_suffix_tree(str);
-        CHECK(tree.find(str.begin(), str.begin()) == 0);
+        CHECK(to_string(tree) == expected);
+        CHECK(tree.find(str) == 0);
         for (size_t i = 0; i < str.size(); ++i)
             CHECK(tree.find(str.begin() + i, str.end()) == i);
     }
@@ -128,8 +112,8 @@ TEST_CASE("suffix_tree_find_all")
     struct {
         std::string_view str;
         std::string_view pattern;
-        std::initializer_list<size_t> expected;
-    } CASES[] = {
+        std::initializer_list<uint16_t> expected;
+    } tests[] = {
         {"GEEKSFORGEEKS$", "GEEKS", {0, 8}},
         {"GEEKSFORGEEKS$", "GEEK1", {}},
         {"GEEKSFORGEEKS$", "FOR", {5}},
@@ -141,9 +125,9 @@ TEST_CASE("suffix_tree_find_all")
         {"AAAAAAAAA$", "A", {0, 1, 2, 3, 4, 5, 6, 7, 8}},
         {"AAAAAAAAA$", "AB", {}},
     };
-    for (auto& [str, pattern, expected] : CASES) {
+    for (auto& [str, pattern, expected] : tests) {
         auto tree = make_suffix_tree(str);
-        auto offsets = tree.find_all(pattern.begin(), pattern.end());
+        auto offsets = tree.find_all(pattern);
         CHECK(std::is_permutation(
             offsets.begin(), offsets.end(), expected.begin(), expected.end()));
     }
@@ -153,7 +137,7 @@ TEST_CASE("suffix_tree_find_all")
 #include <boost/container/small_vector.hpp>
 
 template <typename Key, typename T>
-using map_t = boost::container::flat_map<
+using flat_map = boost::container::flat_map<
     Key,
     T,
     std::less<>,
@@ -163,9 +147,9 @@ TEST_CASE("suffix_tree_complexity")
 {
     using namespace std::chrono;
     for (size_t i = 18; i < 22; ++i) {
-        auto str = random_string(pow(2, i));
-        step::suffix_tree<char, std::unordered_map, std::equal_to<>, uint32_t>
-            tree{};
+        auto str = make_random_string(pow(2, i));
+        str.back() = '$';
+        step::suffix_tree<char, uint32_t /*, flat_map*/> tree;
         tree.reserve(str.size());
         auto start = high_resolution_clock::now();
         std::copy(str.begin(), str.end(), std::back_inserter(tree));

@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <optional>
 #include <step/detail/hirschberg.hpp>
-#include <step/utility.hpp>
 
 namespace step {
 namespace edit_distance {
@@ -17,12 +16,12 @@ template <typename ForwardIt,
           typename OutputIt,
           typename Equal,
           typename BinaryOp>
-auto associate_with_equal_or_tail(ForwardIt first,
-                                  ForwardIt last,
-                                  const T& value,
-                                  OutputIt result,
-                                  Equal equal,
-                                  BinaryOp op)
+auto join_on_equal_or_tail(ForwardIt first,
+                           ForwardIt last,
+                           const T& value,
+                           OutputIt result,
+                           Equal equal,
+                           BinaryOp op)
 {
     bool done = false;
     while (first != last) {
@@ -79,18 +78,18 @@ struct dynamic_programming {
                            OutputIt result) const
     {
         if (first1 == last1)
-            return std::transform(first2, last2, result, [&](const auto& item) {
+            return std::transform(first2, last2, result, [&](auto& item) {
                 return std::make_pair(std::nullopt, item);
             });
         else if (first2 == last2)
-            return std::transform(first1, last1, result, [&](const auto& item) {
+            return std::transform(first1, last1, result, [&](auto& item) {
                 return std::make_pair(item, std::nullopt);
             });
         else if (std::next(first1) == last1)
-            return associate_with_equal_or_tail(
+            return join_on_equal_or_tail(
                 first2, last2, *first1, result, equal, make_reverse_pair{});
         else  // std::next(first2) == last2
-            return associate_with_equal_or_tail(
+            return join_on_equal_or_tail(
                 first1, last1, *first2, result, equal, make_pair{});
     }
 };
@@ -105,17 +104,19 @@ struct dynamic_programming {
  *
  * Time complexity O(N*M), space complexity O(min(N,M)), where:
  * N = std::distance(first1, last1), M = std::distance(first2, last2).
+ *
+ * @see https://en.wikipedia.org/wiki/Levenshtein_distance
  */
 template <typename RandomIt1,
           typename RandomIt2,
           typename OutputIt,
           typename Equal>
-OutputIt associate(RandomIt1 first1,
-                   RandomIt1 last1,
-                   RandomIt2 first2,
-                   RandomIt2 last2,
-                   OutputIt result,
-                   Equal equal)
+OutputIt join(RandomIt1 first1,
+              RandomIt1 last1,
+              RandomIt2 first2,
+              RandomIt2 last2,
+              OutputIt result,
+              Equal equal)
 {
     return hirschberg::trace(first1,
                              last1,
@@ -126,13 +127,13 @@ OutputIt associate(RandomIt1 first1,
 }
 
 template <typename RandomIt1, typename RandomIt2, typename OutputIt>
-OutputIt associate(RandomIt1 first1,
-                   RandomIt1 last1,
-                   RandomIt2 first2,
-                   RandomIt2 last2,
-                   OutputIt result)
+OutputIt join(RandomIt1 first1,
+              RandomIt1 last1,
+              RandomIt2 first2,
+              RandomIt2 last2,
+              OutputIt result)
 {
-    return edit_distance::associate(
+    return edit_distance::join(
         first1, last1, first2, last2, result, std::equal_to{});
 }
 
@@ -140,29 +141,27 @@ template <typename RandomRng1,
           typename RandomRng2,
           typename OutputIt,
           typename Equal>
-OutputIt associate(const RandomRng1& rng1,
-                   const RandomRng2& rng2,
-                   OutputIt result,
-                   Equal equal)
+OutputIt join(const RandomRng1& rng1,
+              const RandomRng2& rng2,
+              OutputIt result,
+              Equal equal)
 {
-    return edit_distance::associate(std::begin(rng1),
-                                    std::end(rng1),
-                                    std::begin(rng2),
-                                    std::end(rng2),
-                                    result,
-                                    equal);
+    return edit_distance::join(std::begin(rng1),
+                               std::end(rng1),
+                               std::begin(rng2),
+                               std::end(rng2),
+                               result,
+                               equal);
 }
 
 template <typename RandomRng1, typename RandomRng2, typename OutputIt>
-OutputIt associate(const RandomRng1& rng1,
-                   const RandomRng2& rng2,
-                   OutputIt result)
+OutputIt join(const RandomRng1& rng1, const RandomRng2& rng2, OutputIt result)
 {
-    return edit_distance::associate(std::begin(rng1),
-                                    std::end(rng1),
-                                    std::begin(rng2),
-                                    std::end(rng2),
-                                    result);
+    return edit_distance::join(std::begin(rng1),
+                               std::end(rng1),
+                               std::begin(rng2),
+                               std::end(rng2),
+                               result);
 }
 
 }  // namespace edit_distance

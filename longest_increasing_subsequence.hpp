@@ -70,6 +70,8 @@ public:
  *
  * Time complexity O(N*log(N)), space complexity O(N),
  * where N = std::distance(first, last).
+ *
+ * @see https://en.wikipedia.org/wiki/Longest_increasing_subsequence
  */
 template <typename RandomIt, typename Compare>
 auto partition(RandomIt first, RandomIt last, Compare cmp)

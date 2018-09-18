@@ -6,24 +6,33 @@
 #include <deque>
 #include <sstream>
 #include <step/longest_increasing_subsequence.hpp>
-#include <string>
+#include <step/test/utility.hpp>
 #include <string_view>
 
-TEST_CASE("longest_increasing_subsequence")
+TEST_CASE("longest_increasing_subsequence_hello_world")
+{
+    std::vector v{6, 3, 4, 8, 10, 5, 7, 1, 9, 2};
+    int expected[] = {3, 4, 5, 7, 9};
+    auto it = step::longest_increasing_subsequence::partition(v);
+    CHECK(std::equal(v.begin(), it, std::begin(expected), std::end(expected)));
+}
+
+TEST_CASE("longest_increasing_subsequence_partition")
 {
     using namespace step::longest_increasing_subsequence;
 
-    std::deque d{0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
+    std::deque dq{0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15};
     std::ostringstream os;
-    std::copy(d.begin(), partition(d), std::ostream_iterator<int>(os, " "));
+    std::copy(dq.begin(), partition(dq), std::ostream_iterator<int>(os, " "));
     CHECK(os.str() == "0 2 6 9 11 15 ");
 
-    std::string s{"CBFDEA"};
-    CHECK(std::string_view(s.c_str(), std::distance(s.begin(), partition(s))) ==
-          "BDE");
+    std::string str{"CBfdEA"};
+    auto it = partition(str, case_insensitive_less{});
+    CHECK(std::string_view(str.c_str(), std::distance(str.begin(), it)) ==
+          "BdE");
 
-    int a[] = {60, 41, 50, 21, 33, 9, 22, 10};
-    CHECK(std::vector<int>(std::begin(a), partition(a, std::greater{})) ==
+    int arr[] = {60, 41, 50, 21, 33, 9, 22, 10};
+    CHECK(std::vector<int>(std::begin(arr), partition(arr, std::greater{})) ==
           std::vector{60, 50, 33, 22, 10});
 
     std::vector perm{1, 1, 2, 2, 3, 3, 4, 4};

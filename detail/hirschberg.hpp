@@ -5,7 +5,7 @@
 
 #include <algorithm>
 #include <iterator>
-#include <step/utility.hpp>
+#include <step/detail/utility.hpp>
 
 namespace step {
 namespace hirschberg {

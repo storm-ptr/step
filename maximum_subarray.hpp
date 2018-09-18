@@ -30,25 +30,27 @@ auto make_weighted_range(ForwardIt it)
  *
  * Time complexity O(N), space complexity O(1),
  * where N = std::distance(first, last).
+ *
+ * @see https://en.wikipedia.org/wiki/Maximum_subarray_problem
  */
-template <typename ForwardIt, typename BinaryOp, typename Compare>
+template <typename ForwardIt, typename Plus, typename Less>
 std::pair<ForwardIt, ForwardIt> find(ForwardIt first,
                                      ForwardIt last,
-                                     BinaryOp op,
-                                     Compare cmp)
+                                     Plus plus,
+                                     Less less)
 {
-    using weight_t = decltype(op(*first, *first));
+    using weight_t = decltype(plus(*first, *first));
     if (first == last)
         return {first, last};
     auto rng = detail::make_weighted_range<weight_t>(first);
     auto result = rng;
     while (rng.last != last) {
-        rng.weight = op(std::move(rng.weight), *rng.last);
-        if (cmp(*rng.last, rng.weight))
+        rng.weight = plus(std::move(rng.weight), *rng.last);
+        if (less(*rng.last, rng.weight))
             ++rng.last;
         else
             rng = detail::make_weighted_range<weight_t>(rng.last);
-        if (cmp(result.weight, rng.weight))
+        if (less(result.weight, rng.weight))
             result = rng;
     }
     return {result.first, result.last};
@@ -60,10 +62,10 @@ auto find(ForwardIt first, ForwardIt last)
     return maximum_subarray::find(first, last, std::plus{}, std::less{});
 }
 
-template <typename ForwardRng, typename BinaryOp, typename Compare>
-auto find(const ForwardRng& rng, BinaryOp op, Compare cmp)
+template <typename ForwardRng, typename Plus, typename Less>
+auto find(const ForwardRng& rng, Plus plus, Less less)
 {
-    return maximum_subarray::find(std::begin(rng), std::end(rng), op, cmp);
+    return maximum_subarray::find(std::begin(rng), std::end(rng), plus, less);
 }
 
 template <typename ForwardRng>

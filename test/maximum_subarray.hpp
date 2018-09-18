@@ -8,26 +8,41 @@
 #include <step/maximum_subarray.hpp>
 #include <vector>
 
-TEST_CASE("maximum_subarray")
+TEST_CASE("maximum_subarray_hello_world")
+{
+    int arr[] = {-2, -3, 4, -1, -2, 1, 5, -3};
+    std::array expected{4, -1, -2, 1, 5};
+    auto sub = step::maximum_subarray::find(arr);
+    CHECK(std::equal(sub.first, sub.second, expected.begin(), expected.end()));
+}
+
+TEST_CASE("maximum_subarray_find")
+{
+    struct {
+        std::vector<int> arr;
+        std::vector<int> expected;
+    } tests[] = {
+        {{-2, 1, -3, 4, -1, 2, 1, -5, 4}, {4, -1, 2, 1}},
+        {{2, 3, -1, -20, 5, 10}, {5, 10}},
+        {{-1, -2, 3, 5, 6, -2, -1, 4, -4, 2, -1}, {3, 5, 6, -2, -1, 4}},
+        {{-1, -2, -3, -4, -5}, {-1}},
+        {{7, -6, -8, 5, -2, -6, 7, 4, 8, -9, -3, 2, 6, -4, -6}, {7, 4, 8}},
+        {{0, 1, 2, -3, 3, -1, 0, -4, 0, -1, -4, 2}, {1, 2}}};
+    for (auto& [arr, expected] : tests) {
+        auto sub = step::maximum_subarray::find(arr);
+        CHECK(std::vector<int>(sub.first, sub.second) == expected);
+    }
+}
+
+TEST_CASE("maximum_subarray_kahan")
 {
     using namespace step::maximum_subarray;
-
-    int a[] = {-2, -3, 4, -1, -2, 1, 5, -3};
-    auto sub_a = find(a);
-    CHECK(std::vector<int>(sub_a.first, sub_a.second) ==
-          std::vector{4, -1, -2, 1, 5});
-
-    std::array arr = {-2, 1, -3, 4, -1, 2, 1, -5, 4};
-    auto sub_arr = find(arr);
-    CHECK(std::vector<int>(sub_arr.first, sub_arr.second) ==
-          std::vector{4, -1, 2, 1});
-
     std::vector<float> v{1.};
     v.insert(v.end(), 10000000, 0.0000001);
-    auto sub_v = find(v);
-    auto kahan_sub_v = find(v, step::kahan::plus{}, std::less{});
-    CHECK(std::distance(sub_v.first, sub_v.second) < v.size());
-    CHECK(std::distance(kahan_sub_v.first, kahan_sub_v.second) == v.size());
+    auto sub = find(v);
+    auto kahan_sub = find(v, step::kahan::plus{}, std::less{});
+    CHECK(std::distance(sub.first, sub.second) < v.size());
+    CHECK(std::distance(kahan_sub.first, kahan_sub.second) == v.size());
 }
 
 #endif  // STEP_TEST_MAXIMUM_SUBARRAY_HPP

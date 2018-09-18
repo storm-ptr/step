@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <functional>
 #include <iterator>
 #include <step/suffix_tree.hpp>
 #include <unordered_map>
@@ -13,20 +14,21 @@ namespace step {
 namespace longest_repeated_substring {
 namespace detail {
 
-template <template <class...> class Map,
+template <class Size,
+          template <class...> class Map,
           class Equal,
-          class Size,
           class RandomIt>
-auto find(RandomIt first, RandomIt last, Equal equal)
+auto find(RandomIt first, RandomIt last)
 {
     using value_type = typename std::iterator_traits<RandomIt>::value_type;
-    step::suffix_tree<value_type, Map, Equal, Size> tree{equal};
-    tree.reserve(last - first);
+    step::suffix_tree<value_type, Size, Map, Equal> tree{};
+    tree.reserve(std::distance(first, last));
     std::copy(first, last, std::back_inserter(tree));
     std::pair<RandomIt, RandomIt> result{last, last};
     tree.visit(
         [&](const auto& str, const auto&, auto len) {
-            if (!tree.suffix(str) && len > Size(result.second - result.first))
+            if (!tree.suffix(str) &&
+                len > (Size)std::distance(result.first, result.second))
                 result = std::make_pair(first + str.second - len,
                                         first + str.second);
         },
@@ -50,36 +52,26 @@ auto find(RandomIt first, RandomIt last, Equal equal)
  * @see https://en.wikipedia.org/wiki/Longest_repeated_substring_problem
  */
 template <template <class...> class Map = std::unordered_map,
-          class Equal,
+          class Equal = std::equal_to<>,
           class RandomIt>
-auto find(RandomIt first, RandomIt last, Equal equal)
-{
-    if ((last - first) < std::numeric_limits<int32_t>::max())
-        return detail::find<Map, Equal, uint32_t>(first, last, equal);
-    else
-        return detail::find<Map, Equal, size_t>(first, last, equal);
-}
-
-template <template <class...> class Map = std::unordered_map, class RandomIt>
 auto find(RandomIt first, RandomIt last)
 {
-    return longest_repeated_substring::find<Map>(first, last, std::equal_to{});
+    size_t size = std::distance(first, last);
+    if (size < std::numeric_limits<int16_t>::max())
+        return detail::find<uint16_t, Map, Equal>(first, last);
+    else if (size < std::numeric_limits<int32_t>::max())
+        return detail::find<uint32_t, Map, Equal>(first, last);
+    else
+        return detail::find<size_t, Map, Equal>(first, last);
 }
 
 template <template <class...> class Map = std::unordered_map,
-          class Equal,
+          class Equal = std::equal_to<>,
           class RandomRng>
-auto find(const RandomRng& rng, Equal equal)
-{
-    return longest_repeated_substring::find<Map, Equal>(
-        std::begin(rng), std::end(rng), equal);
-}
-
-template <template <class...> class Map = std::unordered_map, class RandomRng>
 auto find(const RandomRng& rng)
 {
-    return longest_repeated_substring::find<Map>(std::begin(rng),
-                                                 std::end(rng));
+    return longest_repeated_substring::find<Map, Equal>(std::begin(rng),
+                                                        std::end(rng));
 }
 
 }  // namespace longest_repeated_substring

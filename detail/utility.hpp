@@ -11,7 +11,7 @@ namespace step {
 
 struct make_pair {
     template <typename Lhs, typename Rhs>
-    auto operator()(Lhs&& lhs, Rhs&& rhs)
+    auto operator()(Lhs&& lhs, Rhs&& rhs) const
     {
         return std::make_pair(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
     }
@@ -19,7 +19,7 @@ struct make_pair {
 
 struct make_reverse_pair {
     template <typename Lhs, typename Rhs>
-    auto operator()(Lhs&& lhs, Rhs&& rhs)
+    auto operator()(Lhs&& lhs, Rhs&& rhs) const
     {
         return std::make_pair(std::forward<Rhs>(rhs), std::forward<Lhs>(lhs));
     }
