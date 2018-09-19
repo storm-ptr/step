@@ -27,6 +27,7 @@ STL-like algorithms:
   ```
 - [longest increasing subsequence](https://en.wikipedia.org/wiki/Longest_increasing_subsequence)
   ```
+  std::vector v{6, 3, 4, 8, 10, 5, 7, 1, 9, 2};
   int expected[] = {3, 4, 5, 7, 9};
   auto it = step::longest_increasing_subsequence::partition(v);
   CHECK(std::equal(v.begin(), it, std::begin(expected), std::end(expected)));
