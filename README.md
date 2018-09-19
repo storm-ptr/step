@@ -3,7 +3,9 @@
 [![Build Status](https://travis-ci.org/storm-ptr/step.svg?branch=master)](https://travis-ci.org/storm-ptr/step)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/storm-ptr/step?svg=true&branch=master)](https://ci.appveyor.com/project/storm-ptr/step/branch/master)
 
-STL-like algorithms:
+Step is a library of STL-like algorithms and data structures (C++17, header-only).
+
+Algorithms:
 - [edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)
   ```
   pairs_t pairs;
