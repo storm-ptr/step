@@ -49,12 +49,14 @@ auto find(RandomIt first, RandomIt last)
  * @param Map - an associative container that is used to to store the edges;
  * @param Equal - to determine whether two characters are equivalent.
  *
+ * @return a pair of iterators defining the wanted substring.
+ *
  * @see https://en.wikipedia.org/wiki/Longest_repeated_substring_problem
  */
 template <template <class...> class Map = std::unordered_map,
           class Equal = std::equal_to<>,
           class RandomIt>
-auto find(RandomIt first, RandomIt last)
+std::pair<RandomIt, RandomIt> find(RandomIt first, RandomIt last)
 {
     size_t size = std::distance(first, last);
     if (size < std::numeric_limits<int16_t>::max())

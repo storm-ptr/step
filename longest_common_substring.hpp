@@ -70,13 +70,18 @@ auto find(RandomIt1 first1, RandomIt1 last1, RandomIt2 first2, RandomIt2 last2)
  * @param Map - an associative container that is used to to store the edges;
  * @param Equal - to determine whether two characters are equivalent.
  *
+ * @return a pair of iterators defining the wanted substring.
+ *
  * @see https://en.wikipedia.org/wiki/Longest_common_substring_problem
  */
 template <template <class...> class Map = std::unordered_map,
           class Equal = std::equal_to<>,
           class RandomIt1,
           class RandomIt2>
-auto find(RandomIt1 first1, RandomIt1 last1, RandomIt2 first2, RandomIt2 last2)
+std::pair<RandomIt1, RandomIt1> find(RandomIt1 first1,
+                                     RandomIt1 last1,
+                                     RandomIt2 first2,
+                                     RandomIt2 last2)
 {
     size_t size = std::distance(first1, last1) + std::distance(first2, last2);
     if (size < std::numeric_limits<int16_t>::max())

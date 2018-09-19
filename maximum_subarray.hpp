@@ -31,26 +31,29 @@ auto make_weighted_range(ForwardIt it)
  * Time complexity O(N), space complexity O(1),
  * where N = std::distance(first, last).
  *
+ * @return a pair of iterators defining the wanted subarray.
+ *
  * @see https://en.wikipedia.org/wiki/Maximum_subarray_problem
  */
-template <typename ForwardIt, typename Plus, typename Less>
+template <typename ForwardIt, typename BinaryOp, typename Compare>
 std::pair<ForwardIt, ForwardIt> find(ForwardIt first,
                                      ForwardIt last,
-                                     Plus plus,
-                                     Less less)
+                                     BinaryOp op,
+                                     Compare cmp)
 {
-    using weight_t = decltype(plus(*first, *first));
+    // Kadane's algorithm
+    using weight_t = decltype(op(*first, *first));
     if (first == last)
         return {first, last};
     auto rng = detail::make_weighted_range<weight_t>(first);
     auto result = rng;
     while (rng.last != last) {
-        rng.weight = plus(std::move(rng.weight), *rng.last);
-        if (less(*rng.last, rng.weight))
+        rng.weight = op(std::move(rng.weight), *rng.last);
+        if (cmp(*rng.last, rng.weight))
             ++rng.last;
         else
             rng = detail::make_weighted_range<weight_t>(rng.last);
-        if (less(result.weight, rng.weight))
+        if (cmp(result.weight, rng.weight))
             result = rng;
     }
     return {result.first, result.last};
@@ -62,10 +65,10 @@ auto find(ForwardIt first, ForwardIt last)
     return maximum_subarray::find(first, last, std::plus{}, std::less{});
 }
 
-template <typename ForwardRng, typename Plus, typename Less>
-auto find(const ForwardRng& rng, Plus plus, Less less)
+template <typename ForwardRng, typename BinaryOp, typename Compare>
+auto find(const ForwardRng& rng, BinaryOp op, Compare cmp)
 {
-    return maximum_subarray::find(std::begin(rng), std::end(rng), plus, less);
+    return maximum_subarray::find(std::begin(rng), std::end(rng), op, cmp);
 }
 
 template <typename ForwardRng>
