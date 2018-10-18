@@ -4,7 +4,6 @@
 #define STEP_SUFFIX_ARRAY_HPP
 
 #include <algorithm>
-#include <execution>
 #include <step/detail/utility.hpp>
 
 namespace step {
@@ -24,15 +23,14 @@ public:
     using value_type = T;
     using size_type = Size;
 
-    template <class InputIt, class Policy = std::execution::sequenced_policy>
-    suffix_array(InputIt first, InputIt last, const Policy& pol = Policy())
-        : str_(first, last), idx_(make_index(pol))
+    template <class InputIt>
+    suffix_array(InputIt first, InputIt last)
+        : str_(first, last), idx_(make_index())
     {
     }
 
-    template <class InputRng, class Policy = std::execution::sequenced_policy>
-    suffix_array(const InputRng& rng, const Policy& pol = Policy())
-        : suffix_array(rng.begin(), rng.end(), pol)
+    template <class InputRng>
+    suffix_array(const InputRng& rng) : suffix_array(rng.begin(), rng.end())
     {
     }
 
@@ -120,8 +118,7 @@ private:
         return max_rank == sufs.size();
     }
 
-    template <class Policy>
-    auto make_index(const Policy& pol) const
+    auto make_index() const
     {
         auto generator = [pos = Size{}]() mutable { return suffix{pos++}; };
         auto pos = [](auto& suf) { return suf.pos; };
@@ -132,16 +129,16 @@ private:
 
         suffixes_t sufs(size());
         std::generate(sufs.begin(), sufs.end(), generator);
-        std::sort(pol, sufs.begin(), sufs.end(), by_char);
+        std::sort(sufs.begin(), sufs.end(), by_char);
         fill_first_rank(sufs, by_char);
         for (Size offset = 1; !is_sorted(sufs); offset *= 2) {
             fill_second_rank(sufs, offset);
-            std::sort(pol, sufs.begin(), sufs.end(), by_rank);
+            std::sort(sufs.begin(), sufs.end(), by_rank);
             fill_first_rank(sufs, by_rank);
         }
 
         sizes_t result(sufs.size());
-        std::transform(pol, sufs.begin(), sufs.end(), result.begin(), pos);
+        std::transform(sufs.begin(), sufs.end(), result.begin(), pos);
         return result;
     }
 

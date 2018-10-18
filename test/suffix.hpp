@@ -218,7 +218,7 @@ inline auto benchmark_tree(std::string_view str)
 inline auto benchmark_array(std::string_view str)
 {
     auto start = high_resolution_clock::now();
-    step::suffix_array<char, uint32_t> arr{str, std::execution::par_unseq};
+    step::suffix_array<char, uint32_t> arr{str /*, std::execution::par_unseq*/};
     return duration_cast<milliseconds>(high_resolution_clock::now() - start)
         .count();
 }
