@@ -49,7 +49,7 @@ std::string tree_topology(const SuffixTree& tree)
 template <typename SuffixTree>
 auto tree_to_array(const SuffixTree& tree)
 {
-    std::vector<SuffixTree::size_type> result;
+    std::vector<typename SuffixTree::size_type> result;
     result.reserve(tree.size());
     tree.visit(
         [&](const auto& str, const auto&, auto len) {
