@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cctype>
 #include <functional>
+#include <iostream>
 #include <random>
 #include <string>
 #include <unordered_map>
@@ -52,6 +53,31 @@ inline std::string make_random_string(size_t len)
         return alphanum[distribution(generator)];
     });
     return result;
+}
+
+template <class T>
+struct manipulator {
+    static constexpr int width = 12;
+
+    const T& val;
+    std::ios_base& (*align)(std::ios_base&);
+
+    friend std::ostream& operator<<(std::ostream& os, const manipulator& manip)
+    {
+        return os << std::setw(width) << manip.align << manip.val;
+    }
+};
+
+template <class T>
+auto left(const T& val)
+{
+    return manipulator<T>{val, std::left};
+}
+
+template <class T>
+auto right(const T& val)
+{
+    return manipulator<T>{val, std::right};
 }
 
 #endif  // STEP_TEST_UTILITY_HPP

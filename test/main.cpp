@@ -10,4 +10,4 @@
 #include <step/test/longest_increasing_subsequence.hpp>
 #include <step/test/longest_repeated_substring.hpp>
 #include <step/test/maximum_subarray.hpp>
-#include <step/test/suffix_tree.hpp>
+#include <step/test/suffix.hpp>

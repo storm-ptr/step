@@ -18,8 +18,7 @@ namespace step {
  * where N is length of stirng.
  * @param T - type of the characters;
  * @param Size - to specify the maximum number of characters;
- * @param Map - an associative container that is used to to store the edges,
- * its key_type shall be T (boost::container::flat_map e.g.);
+ * @param Map - to associate characters with edges, its key_type shall be T;
  * @param Equal - to determine whether two characters are equivalent.
  * @see https://en.wikipedia.org/wiki/Suffix_tree
  */
@@ -30,8 +29,8 @@ template <class T = char,
 class suffix_tree {
 public:
     using value_type = T;
+    using size_type = Size;
     using substring = std::pair<Size, Size>;  // position range
-    static constexpr Size npos = std::numeric_limits<Size>::max();
 
     auto data() const { return str_.data(); }
     Size size() const { return str_.size(); }
@@ -57,18 +56,22 @@ public:
 
     /// Basic exception guarantee.
     void push_back(T val) try {
-        str_.push_back(std::move(val));
+        str_.push_back(val);
         if (nodes_.empty())
             nodes_.emplace_back();  // root
-        auto set_link_to = make_linker();
+        auto set_link_to = [this, nodes = nodes_.size()](Size link) mutable {
+            if (nodes < nodes_.size() && nodes != link) {
+                nodes_[nodes++].link = link;
+            }
+        };
         while (reminder(pos_)) {
             if (auto& edge = nodes_[link_].edges[str_[pos_]]; edge) {
                 if (walk_down(edge))
                     continue;
-                if (auto link = split(edge); link != npos)
-                    set_link_to(link);
+                if (split(edge))
+                    set_link_to(nodes_.size() - 1);
                 else
-                    return set_link_to(link_);  // rule 3
+                    return set_link_to(link_);
             }
             else {
                 edge = inverse(pos_);
@@ -152,27 +155,20 @@ private:
         bool visited;
     };
 
+    static constexpr Size npos = std::numeric_limits<Size>::max();
+
     std::vector<T> str_;
     std::vector<node> nodes_;  // internal nodes
     Size pos_ = 0;
     Size link_ = 0;
 
-    static Size inverse(Size n) { return npos - n - 1; }
+    static Size inverse(Size n) { return n == npos ? npos : npos - n - 1; }
     Size reminder(Size pos) const { return size() - pos; }
     bool leaf(Size link) const { return link >= nodes_.size(); }
 
-    substring substr(Size link) const
+    auto substr(Size link) const
     {
         return leaf(link) ? substring{inverse(link), size()} : nodes_[link].str;
-    }
-
-    auto make_linker()
-    {
-        return [prev = npos, this](Size link) mutable {
-            if (prev != npos)
-                nodes_[prev].link = link;
-            prev = link;
-        };
     }
 
     bool walk_down(Size link)
@@ -185,25 +181,23 @@ private:
         return true;
     }
 
-    Size split(Size& edge)
+    bool split(Size& edge)
     {
         auto str = substr(edge);
-        substring head{str.first, str.first + reminder(pos_) - 1};
-        substring tail{head.second, str.second};
+        auto head = substring{str.first, str.first + reminder(pos_) - 1};
+        auto tail = substring{head.second, str.second};
         if (Equal{}(str_[tail.first], str_.back()))
-            return npos;
-        if (leaf(edge))
-            edge = nodes_.size();
-        auto result = edge;
+            return false;
+        Size link = edge;
+        edge = nodes_.size();
         nodes_.push_back({{{str_.back(), inverse(size() - 1)}}, head});
-        if (result == nodes_.size() - 1)
-            nodes_[result].edges[str_[tail.first]] = inverse(tail.first);
+        if (leaf(link))
+            nodes_.back().edges[str_[tail.first]] = inverse(tail.first);
         else {
-            nodes_[result].str = tail;
-            std::swap(nodes_[result], nodes_.back());
-            nodes_[result].edges[str_[tail.first]] = nodes_.size() - 1;
+            nodes_.back().edges[str_[tail.first]] = link;
+            nodes_[link].str = tail;
         }
-        return result;
+        return true;
     }
 
     template <class InputIt>

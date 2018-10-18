@@ -67,7 +67,7 @@ auto find(RandomIt1 first1, RandomIt1 last1, RandomIt2 first2, RandomIt2 last2)
  * N = std::distance(first1, last1) and M = std::distance(first2, last2).
  *
  * A suffix tree with optional parameters is used under the hood:
- * @param Map - an associative container that is used to to store the edges;
+ * @param Map - to associate characters with edges;
  * @param Equal - to determine whether two characters are equivalent.
  *
  * @return a pair of iterators defining the wanted substring.

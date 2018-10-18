@@ -4,10 +4,17 @@
 #define STEP_UTILITY_HPP
 
 #include <array>
+#include <iterator>
 #include <utility>
 #include <vector>
 
 namespace step {
+
+template <class It>
+using iterator_value_t = typename std::iterator_traits<It>::value_type;
+
+template <class Rng>
+using range_value_t = iterator_value_t<decltype(std::declval<Rng>().begin())>;
 
 struct make_pair {
     template <typename Lhs, typename Rhs>
