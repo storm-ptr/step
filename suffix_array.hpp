@@ -168,18 +168,12 @@ private:
     }
 };
 
-template <class InputIt,
-          class Policy = std::execution::sequenced_policy,
-          class Size = size_t,
-          class Compare = std::less<>>
-suffix_array(InputIt, InputIt, const Policy& = Policy())
+template <class InputIt, class Size = size_t, class Compare = std::less<>>
+suffix_array(InputIt, InputIt)
     ->suffix_array<iterator_value_t<InputIt>, Size, Compare>;
 
-template <class InputRng,
-          class Policy = std::execution::sequenced_policy,
-          class Size = size_t,
-          class Compare = std::less<>>
-suffix_array(const InputRng&, const Policy& = Policy())
+template <class InputRng, class Size = size_t, class Compare = std::less<>>
+suffix_array(const InputRng&)
     ->suffix_array<range_value_t<InputRng>, Size, Compare>;
 
 }  // namespace step
