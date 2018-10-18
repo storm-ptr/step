@@ -6,13 +6,13 @@ git:
 matrix:
   include:
   - os: linux
-    env: COMPILER=g++-7
+    env: COMPILER=g++-8
     addons:
       apt:
         sources:
         - ubuntu-toolchain-r-test
         packages:
-        - g++-7
+        - g++-8
 script:
 - wget -P $TRAVIS_BUILD_DIR/.. https://raw.githubusercontent.com/catchorg/Catch2/v2.0.1/single_include/catch.hpp
 - cd $TRAVIS_BUILD_DIR/test
