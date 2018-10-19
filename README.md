@@ -72,8 +72,8 @@ Data structures:
   [wiki](https://en.wikipedia.org/wiki/Suffix_array)
   ```C++
   auto str = "how can I quickly search for text within a document?"sv;
-  step::suffix_array tree{str};
-  CHECK(tree.find("quick"sv) == 10);
+  step::suffix_array arr{str};
+  CHECK(arr.find("quick"sv) == 10);
   ```
   </p></details>
 * <details><summary>suffix tree</summary><p>
