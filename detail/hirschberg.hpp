@@ -4,7 +4,6 @@
 #define STEP_HIRSCHBERG_HPP
 
 #include <algorithm>
-#include <iterator>
 #include <step/detail/utility.hpp>
 
 namespace step {

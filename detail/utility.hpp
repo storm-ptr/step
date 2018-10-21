@@ -17,22 +17,34 @@ template <class Rng>
 using range_value_t = iterator_value_t<decltype(std::declval<Rng>().begin())>;
 
 struct make_pair {
-    template <typename Lhs, typename Rhs>
-    auto operator()(Lhs&& lhs, Rhs&& rhs) const
+    template <class Lhs, class Rhs>
+    constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
     {
         return std::make_pair(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
     }
 };
 
 struct make_reverse_pair {
-    template <typename Lhs, typename Rhs>
-    auto operator()(Lhs&& lhs, Rhs&& rhs) const
+    template <class Lhs, class Rhs>
+    constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
     {
         return std::make_pair(std::forward<Rhs>(rhs), std::forward<Lhs>(lhs));
     }
 };
 
-template <typename T, size_t N>
+template <class Compare>
+class equivalence {
+    Compare cmp_;
+
+public:
+    template <class T>
+    constexpr bool operator()(const T& lhs, const T& rhs) const
+    {
+        return !cmp_(lhs, rhs) && !cmp_(rhs, lhs);
+    }
+};
+
+template <class T, size_t N>
 class ring_table {
     std::array<std::vector<T>, N> rows_;
 

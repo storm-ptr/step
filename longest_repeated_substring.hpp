@@ -7,21 +7,41 @@
 #include <cstdint>
 #include <functional>
 #include <iterator>
+#include <step/detail/utility.hpp>
+#include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
 #include <unordered_map>
+
+/// @see https://en.wikipedia.org/wiki/Longest_repeated_substring_problem
 
 namespace step {
 namespace longest_repeated_substring {
 namespace detail {
 
+template <class Size, class Compare, class RandomIt>
+auto using_suffix_array(RandomIt first, RandomIt last)
+{
+    auto arr =
+        step::enhanced_suffix_array<iterator_value_t<RandomIt>, Size, Compare>{
+            first, last};
+    auto& lcp = arr.longest_common_prefix();
+    auto it = std::max_element(lcp.begin(), lcp.end());
+    std::pair<RandomIt, RandomIt> result{last, last};
+    if (it != lcp.end() && *it > 0) {
+        auto pos = arr.index()[std::distance(lcp.begin(), it)];
+        result.first = first + pos;
+        result.second = result.first + *it;
+    }
+    return result;
+}
+
 template <class Size,
           template <class...> class Map,
           class Equal,
           class RandomIt>
-auto find(RandomIt first, RandomIt last)
+auto using_suffix_tree(RandomIt first, RandomIt last)
 {
-    using value_type = typename std::iterator_traits<RandomIt>::value_type;
-    step::suffix_tree<value_type, Size, Map, Equal> tree{};
+    step::suffix_tree<iterator_value_t<RandomIt>, Size, Map, Equal> tree{};
     tree.reserve(std::distance(first, last));
     std::copy(first, last, std::back_inserter(tree));
     std::pair<RandomIt, RandomIt> result{last, last};
@@ -50,30 +70,58 @@ auto find(RandomIt first, RandomIt last)
  * @param Equal - to determine whether two characters are equivalent.
  *
  * @return a pair of iterators defining the wanted substring.
- *
- * @see https://en.wikipedia.org/wiki/Longest_repeated_substring_problem
  */
 template <template <class...> class Map = std::unordered_map,
           class Equal = std::equal_to<>,
           class RandomIt>
-std::pair<RandomIt, RandomIt> find(RandomIt first, RandomIt last)
+std::pair<RandomIt, RandomIt> using_suffix_tree(RandomIt first, RandomIt last)
 {
     size_t size = std::distance(first, last);
     if (size < std::numeric_limits<int16_t>::max())
-        return detail::find<uint16_t, Map, Equal>(first, last);
+        return detail::using_suffix_tree<uint16_t, Map, Equal>(first, last);
     else if (size < std::numeric_limits<int32_t>::max())
-        return detail::find<uint32_t, Map, Equal>(first, last);
+        return detail::using_suffix_tree<uint32_t, Map, Equal>(first, last);
     else
-        return detail::find<size_t, Map, Equal>(first, last);
+        return detail::using_suffix_tree<size_t, Map, Equal>(first, last);
 }
 
 template <template <class...> class Map = std::unordered_map,
           class Equal = std::equal_to<>,
           class RandomRng>
-auto find(const RandomRng& rng)
+auto using_suffix_tree(const RandomRng& rng)
 {
-    return longest_repeated_substring::find<Map, Equal>(std::begin(rng),
-                                                        std::end(rng));
+    return longest_repeated_substring::using_suffix_tree<Map, Equal>(
+        std::begin(rng), std::end(rng));
+}
+
+/**
+ * Find the longest substring of a string that occurs at least twice.
+ *
+ * Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
+ * N = std::distance(first, last).
+ *
+ * A suffix array with optional parameter is used under the hood:
+ * @param Compare - to determine the order of characters.
+ *
+ * @return a pair of iterators defining the wanted substring.
+ */
+template <class Compare = std::less<>, class RandomIt>
+std::pair<RandomIt, RandomIt> using_suffix_array(RandomIt first, RandomIt last)
+{
+    size_t size = std::distance(first, last);
+    if (size < std::numeric_limits<int16_t>::max())
+        return detail::using_suffix_array<uint16_t, Compare>(first, last);
+    else if (size < std::numeric_limits<int32_t>::max())
+        return detail::using_suffix_array<uint32_t, Compare>(first, last);
+    else
+        return detail::using_suffix_array<size_t, Compare>(first, last);
+}
+
+template <class Compare = std::less<>, class RandomRng>
+auto using_suffix_array(const RandomRng& rng)
+{
+    return longest_repeated_substring::using_suffix_array<Compare>(
+        std::begin(rng), std::end(rng));
 }
 
 }  // namespace longest_repeated_substring

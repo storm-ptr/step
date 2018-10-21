@@ -22,6 +22,7 @@ class suffix_array {
 public:
     using value_type = T;
     using size_type = Size;
+    using sizes_type = std::vector<Size>;
 
     template <class InputIt>
     suffix_array(InputIt first, InputIt last)
@@ -76,28 +77,30 @@ private:
     };
 
     using suffixes_t = std::vector<suffix>;
-    using sizes_t = std::vector<Size>;
 
     std::vector<T> str_;
-    sizes_t idx_;
+    sizes_type idx_;
 
-    template <class Predicate>
-    static void fill_first_rank(suffixes_t& sufs, const Predicate& pred)
+    template <class SuffixCompare>
+    static void fill_first_rank(suffixes_t& sufs, const SuffixCompare& cmp)
     {
         auto it = sufs.begin();
         auto last = sufs.end();
-        for (Size rank = 1; it != last; ++rank) {
-            auto next = std::adjacent_find(it, last, pred);
-            if (next != last)
-                ++next;
-            std::for_each(it, next, [=](auto& suf) { suf.rank.first = rank; });
-            it = next;
+        if (it == last)
+            return;
+        Size i{1};
+        for (auto next = std::next(it); next != last; ++next, ++it) {
+            bool less = cmp(*it, *next);
+            it->rank.first = i;
+            if (less)
+                ++i;
         }
+        it->rank.first = i;
     }
 
-    static auto make_pos_to_rank_map(const suffixes_t& sufs)
+    static auto make_pos_to_rank_map(suffixes_t& sufs)
     {
-        sizes_t result(sufs.size());
+        sizes_type result(sufs.size());
         for (Size i = 0; i < sufs.size(); ++i)
             result[sufs[i].pos] = sufs[i].rank.first;
         return result;
@@ -107,12 +110,12 @@ private:
     {
         auto map = make_pos_to_rank_map(sufs);
         for (auto& suf : sufs) {
-            Size pos = suf.pos + offset;
-            suf.rank.second = pos < map.size() ? map[pos] : 0;
+            Size i = suf.pos + offset;
+            suf.rank.second = i < map.size() ? map[i] : 0;
         }
     }
 
-    static bool is_sorted(const suffixes_t& sufs)
+    static bool is_sorted(suffixes_t& sufs)
     {
         Size max_rank = sufs.empty() ? 0 : sufs.back().rank.first;
         return max_rank == sufs.size();
@@ -120,15 +123,15 @@ private:
 
     auto make_index() const
     {
-        auto generator = [pos = Size{}]() mutable { return suffix{pos++}; };
+        auto gen = [i = Size{}]() mutable { return suffix{i++}; };
         auto pos = [](auto& suf) { return suf.pos; };
         auto by_rank = [](auto& lhs, auto& rhs) { return lhs.rank < rhs.rank; };
-        auto by_char = [this, cmp = Compare{}](auto& lhs, auto& rhs) {
+        auto by_char = [=, cmp = Compare{}](auto& lhs, auto& rhs) {
             return cmp(str_[lhs.pos], str_[rhs.pos]);
         };
 
         suffixes_t sufs(size());
-        std::generate(sufs.begin(), sufs.end(), generator);
+        std::generate(sufs.begin(), sufs.end(), gen);
         std::sort(sufs.begin(), sufs.end(), by_char);
         fill_first_rank(sufs, by_char);
         for (Size offset = 1; !is_sorted(sufs); offset *= 2) {
@@ -137,7 +140,7 @@ private:
             fill_first_rank(sufs, by_rank);
         }
 
-        sizes_t result(sufs.size());
+        sizes_type result(sufs.size());
         std::transform(sufs.begin(), sufs.end(), result.begin(), pos);
         return result;
     }
@@ -157,7 +160,7 @@ private:
     auto equal_range(InputIt first, InputIt last) const
     {
         auto result = std::make_pair(idx_.begin(), idx_.end());
-        Size offset{};
+        auto offset = Size{};
         std::for_each(first, last, [&](T val) {
             result = std::equal_range(result.first,
                                       result.second,
@@ -175,6 +178,74 @@ suffix_array(InputIt, InputIt)
 template <class InputRng, class Size = size_t, class Compare = std::less<>>
 suffix_array(const InputRng&)
     ->suffix_array<range_value_t<InputRng>, Size, Compare>;
+
+/**
+ * Kasai's algorithm for constructing longest common prefix array.
+ * @see https://en.wikipedia.org/wiki/LCP_array
+ */
+template <class T = char, class Size = size_t, class Compare = std::less<>>
+class enhanced_suffix_array : public suffix_array<T, Size, Compare> {
+public:
+    template <class InputIt>
+    enhanced_suffix_array(InputIt first, InputIt last)
+        : suffix_array<T, Size, Compare>(first, last), lcp_(make_lcp())
+    {
+    }
+
+    template <class InputRng>
+    enhanced_suffix_array(const InputRng& rng)
+        : enhanced_suffix_array(rng.begin(), rng.end())
+    {
+    }
+
+    const auto& longest_common_prefix() const { return lcp_; }
+
+private:
+    sizes_type lcp_;
+
+    auto iter(Size pos) const { return data() + pos; }
+    auto iter() const { return iter(size()); }
+
+    auto make_rank() const
+    {
+        sizes_type result(size());
+        for (Size i = 0; i < size(); ++i)
+            result[index()[i]] = i;
+        return result;
+    }
+
+    auto make_lcp() const
+    {
+        auto result = sizes_type(size());
+        auto rank = make_rank();
+        auto eq = equivalence<Compare>{};
+        for (Size i = 0, lcp = 0; i < size(); ++i) {
+            auto cur = rank[i];
+            auto next = cur + 1;
+            lcp = next == size()
+                      ? 0
+                      : std::distance(iter(i),
+                                      std::mismatch(iter(i + lcp),
+                                                    iter(),
+                                                    iter(index()[next] + lcp),
+                                                    iter(),
+                                                    eq)
+                                          .first);
+            result[cur] = lcp;
+            if (lcp)
+                --lcp;
+        }
+        return result;
+    }
+};
+
+template <class InputIt, class Size = size_t, class Compare = std::less<>>
+enhanced_suffix_array(InputIt, InputIt)
+    ->enhanced_suffix_array<iterator_value_t<InputIt>, Size, Compare>;
+
+template <class InputRng, class Size = size_t, class Compare = std::less<>>
+enhanced_suffix_array(const InputRng&)
+    ->enhanced_suffix_array<range_value_t<InputRng>, Size, Compare>;
 
 }  // namespace step
 

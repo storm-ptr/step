@@ -18,8 +18,8 @@ using namespace std::chrono;
 TEST_CASE("suffix_array_hello_world")
 {
     auto str = "how can I quickly search for text within a document?"sv;
-    step::suffix_array tree{str};
-    CHECK(tree.find("quick"sv) == 10);
+    step::suffix_array arr{str};
+    CHECK(arr.find("quick"sv) == 10);
 }
 
 TEST_CASE("suffix_tree_hello_world")
@@ -176,8 +176,8 @@ TEST_CASE("suffix_array_n_tree_find")
 
 TEST_CASE("suffix_array_n_tree_cross_check")
 {
-    for (size_t i = 0; i < 1000; ++i) {
-        auto str = make_random_string(100);
+    for (size_t i = 0; i < 100; ++i) {
+        auto str = make_random_string(10000);
         str += str;
         str.back() = '$';
 
@@ -187,7 +187,7 @@ TEST_CASE("suffix_array_n_tree_cross_check")
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
         CHECK(arr.index() == tree_to_array(tree));
 
-        auto pattern = make_random_string(4);
+        auto pattern = make_random_string(2);
         auto arr_all = arr.find_all(pattern);
         auto tree_all = tree.find_all(pattern);
         CHECK(std::is_permutation(
@@ -218,7 +218,7 @@ inline auto benchmark_tree(std::string_view str)
 inline auto benchmark_array(std::string_view str)
 {
     auto start = high_resolution_clock::now();
-    step::suffix_array<char, uint32_t> arr{str /*, std::execution::par_unseq*/};
+    step::suffix_array<char, uint32_t> arr{str};
     return duration_cast<milliseconds>(high_resolution_clock::now() - start)
         .count();
 }
@@ -241,19 +241,6 @@ inline void benchmark(size_t len)
               << right(dual_arr) << " |\n";
 }
 
-/*
- Intel(R) Core(TM) i7-6600U CPU @ 2.60GHz
-
-              | suffix tree  | suffix tree  | suffix arr   | suffix arr   |
- text (chars) | random (ms)  | doubled (ms) | random (ms)  | doubled (ms) |
-       262144 |           76 |           39 |           27 |          102 |
-       524288 |          166 |           94 |           55 |          224 |
-      1048576 |          357 |          194 |          132 |          546 |
-      2097152 |          784 |          385 |          310 |         1403 |
-      4194304 |         1964 |          891 |          692 |         3780 |
-      8388608 |         5101 |         2373 |         1807 |         7681 |
-     16777216 |        10385 |         4805 |         3251 |        17202 |
-*/
 TEST_CASE("suffix_array_n_tree_complexity")
 {
     std::cout << " " << left("") << " | " << left("suffix tree") << " | "
