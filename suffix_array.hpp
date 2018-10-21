@@ -184,11 +184,17 @@ suffix_array(const InputRng&)
 template <class T = char, class Size = size_t, class Compare = std::less<>>
 class enhanced_suffix_array : public suffix_array<T, Size, Compare> {
 public:
-    using sizes_type = typename suffix_array<T, Size, Compare>::sizes_type;
+    using base_type = suffix_array<T, Size, Compare>;
+    using base_type::data;
+    using base_type::find;
+    using base_type::find_all;
+    using base_type::index;
+    using base_type::size;
+    using typename base_type::sizes_type;
 
     template <class InputIt>
     enhanced_suffix_array(InputIt first, InputIt last)
-        : suffix_array<T, Size, Compare>(first, last), lcp_(make_lcp())
+        : base_type(first, last), lcp_(make_lcp())
     {
     }
 
