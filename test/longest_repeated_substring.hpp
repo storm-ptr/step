@@ -10,7 +10,7 @@
 
 TEST_CASE("longest_repeated_substring_hello_world")
 {
-    auto range = step::longest_repeated_substring::using_suffix_tree(
+    auto range = step::longest_repeated_substring::find_with_suffix_tree(
         "the longest substring of a string that occurs at least twice");
     CHECK("string " == std::string(range.first, range.second));
 }
@@ -36,11 +36,12 @@ TEST_CASE("longest_repeated_substring")
     };
     for (auto& [str, expect] : tests) {
         auto arr_rng =
-            step::longest_repeated_substring::using_suffix_array(str);
+            step::longest_repeated_substring::find_with_suffix_array(str);
         CHECK(expect == std::string(arr_rng.first, arr_rng.second));
 
         auto tree_rng =
-            step::longest_repeated_substring::using_suffix_tree<std::map>(str);
+            step::longest_repeated_substring::find_with_suffix_tree<std::map>(
+                str);
         CHECK(expect == std::string(tree_rng.first, tree_rng.second));
     }
 }
@@ -50,7 +51,7 @@ TEST_CASE("longest_repeated_substring_case_insensitive")
     const char str[] = "geeksForGeeks";
     const std::string expect = "geeks";
 
-    auto arr_rng = step::longest_repeated_substring::using_suffix_array<
+    auto arr_rng = step::longest_repeated_substring::find_with_suffix_array<
         case_insensitive_less>(str);
     CHECK(std::equal(expect.begin(),
                      expect.end(),
@@ -58,7 +59,7 @@ TEST_CASE("longest_repeated_substring_case_insensitive")
                      arr_rng.second,
                      case_insensitive_equal_to{}));
 
-    auto tree_rng = step::longest_repeated_substring::using_suffix_tree<
+    auto tree_rng = step::longest_repeated_substring::find_with_suffix_tree<
         case_insensitive_unordered_map,
         case_insensitive_equal_to>(str);
     CHECK(std::equal(expect.begin(),

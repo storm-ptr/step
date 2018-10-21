@@ -18,7 +18,7 @@ namespace longest_repeated_substring {
 namespace detail {
 
 template <class Size, class Compare, class RandomIt>
-auto using_suffix_array(RandomIt first, RandomIt last)
+auto find_with_suffix_array(RandomIt first, RandomIt last)
 {
     auto arr = enhanced_suffix_array<iterator_value_t<RandomIt>, Size, Compare>{
         first, last};
@@ -37,7 +37,7 @@ template <class Size,
           template <class...> class Map,
           class Equal,
           class RandomIt>
-auto using_suffix_tree(RandomIt first, RandomIt last)
+auto find_with_suffix_tree(RandomIt first, RandomIt last)
 {
     suffix_tree<iterator_value_t<RandomIt>, Size, Map, Equal> tree{};
     tree.reserve(std::distance(first, last));
@@ -72,23 +72,23 @@ auto using_suffix_tree(RandomIt first, RandomIt last)
 template <template <class...> class Map = std::unordered_map,
           class Equal = std::equal_to<>,
           class RandomIt>
-std::pair<RandomIt, RandomIt> using_suffix_tree(RandomIt first, RandomIt last)
+auto find_with_suffix_tree(RandomIt first, RandomIt last)
 {
     size_t size = std::distance(first, last);
     if (size < std::numeric_limits<int16_t>::max())
-        return detail::using_suffix_tree<uint16_t, Map, Equal>(first, last);
+        return detail::find_with_suffix_tree<uint16_t, Map, Equal>(first, last);
     else if (size < std::numeric_limits<int32_t>::max())
-        return detail::using_suffix_tree<uint32_t, Map, Equal>(first, last);
+        return detail::find_with_suffix_tree<uint32_t, Map, Equal>(first, last);
     else
-        return detail::using_suffix_tree<size_t, Map, Equal>(first, last);
+        return detail::find_with_suffix_tree<size_t, Map, Equal>(first, last);
 }
 
 template <template <class...> class Map = std::unordered_map,
           class Equal = std::equal_to<>,
           class RandomRng>
-auto using_suffix_tree(const RandomRng& rng)
+auto find_with_suffix_tree(const RandomRng& rng)
 {
-    return longest_repeated_substring::using_suffix_tree<Map, Equal>(
+    return longest_repeated_substring::find_with_suffix_tree<Map, Equal>(
         std::begin(rng), std::end(rng));
 }
 
@@ -104,21 +104,21 @@ auto using_suffix_tree(const RandomRng& rng)
  * @return a pair of iterators defining the wanted substring.
  */
 template <class Compare = std::less<>, class RandomIt>
-std::pair<RandomIt, RandomIt> using_suffix_array(RandomIt first, RandomIt last)
+auto find_with_suffix_array(RandomIt first, RandomIt last)
 {
     size_t size = std::distance(first, last);
     if (size < std::numeric_limits<int16_t>::max())
-        return detail::using_suffix_array<uint16_t, Compare>(first, last);
+        return detail::find_with_suffix_array<uint16_t, Compare>(first, last);
     else if (size < std::numeric_limits<int32_t>::max())
-        return detail::using_suffix_array<uint32_t, Compare>(first, last);
+        return detail::find_with_suffix_array<uint32_t, Compare>(first, last);
     else
-        return detail::using_suffix_array<size_t, Compare>(first, last);
+        return detail::find_with_suffix_array<size_t, Compare>(first, last);
 }
 
 template <class Compare = std::less<>, class RandomRng>
-auto using_suffix_array(const RandomRng& rng)
+auto find_with_suffix_array(const RandomRng& rng)
 {
-    return longest_repeated_substring::using_suffix_array<Compare>(
+    return longest_repeated_substring::find_with_suffix_array<Compare>(
         std::begin(rng), std::end(rng));
 }
 
