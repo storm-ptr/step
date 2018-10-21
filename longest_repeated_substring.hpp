@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
-#include <iterator>
 #include <step/detail/utility.hpp>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
@@ -21,9 +20,8 @@ namespace detail {
 template <class Size, class Compare, class RandomIt>
 auto using_suffix_array(RandomIt first, RandomIt last)
 {
-    auto arr =
-        step::enhanced_suffix_array<iterator_value_t<RandomIt>, Size, Compare>{
-            first, last};
+    auto arr = enhanced_suffix_array<iterator_value_t<RandomIt>, Size, Compare>{
+        first, last};
     auto& lcp = arr.longest_common_prefix();
     auto it = std::max_element(lcp.begin(), lcp.end());
     std::pair<RandomIt, RandomIt> result{last, last};
@@ -41,7 +39,7 @@ template <class Size,
           class RandomIt>
 auto using_suffix_tree(RandomIt first, RandomIt last)
 {
-    step::suffix_tree<iterator_value_t<RandomIt>, Size, Map, Equal> tree{};
+    suffix_tree<iterator_value_t<RandomIt>, Size, Map, Equal> tree{};
     tree.reserve(std::distance(first, last));
     std::copy(first, last, std::back_inserter(tree));
     std::pair<RandomIt, RandomIt> result{last, last};

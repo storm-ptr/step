@@ -20,8 +20,6 @@ namespace step {
 template <class T = char, class Size = size_t, class Compare = std::less<>>
 class suffix_array {
 public:
-    using value_type = T;
-    using size_type = Size;
     using sizes_type = std::vector<Size>;
 
     template <class InputIt>
@@ -186,6 +184,8 @@ suffix_array(const InputRng&)
 template <class T = char, class Size = size_t, class Compare = std::less<>>
 class enhanced_suffix_array : public suffix_array<T, Size, Compare> {
 public:
+    using sizes_type = typename suffix_array<T, Size, Compare>::sizes_type;
+
     template <class InputIt>
     enhanced_suffix_array(InputIt first, InputIt last)
         : suffix_array<T, Size, Compare>(first, last), lcp_(make_lcp())
