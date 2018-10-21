@@ -50,7 +50,7 @@ Algorithms:
 
   [wiki](https://en.wikipedia.org/wiki/Longest_repeated_substring_problem)
   ```C++
-  auto range = step::longest_repeated_substring::find(
+  auto range = step::longest_repeated_substring::using_suffix_tree(
       "the longest substring of a string that occurs at least twice");
   CHECK("string " == std::string(range.first, range.second));
   ```
