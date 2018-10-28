@@ -10,10 +10,7 @@ namespace step {
 namespace hirschberg {
 namespace detail {
 
-template <typename RandomIt1,
-          typename RandomIt2,
-          typename DynamicProg,
-          typename BinaryOp>
+template <class RandomIt1, class RandomIt2, class DynamicProg, class BinaryOp>
 auto partition_point(RandomIt1 first1,
                      RandomIt1 last1,
                      RandomIt2 first2,
@@ -38,10 +35,7 @@ auto partition_point(RandomIt1 first1,
 }  // namespace detail
 
 /// @see https://en.wikipedia.org/wiki/Hirschberg's_algorithm
-template <typename RandomIt1,
-          typename RandomIt2,
-          typename OutputIt,
-          typename DynamicProg>
+template <class RandomIt1, class RandomIt2, class OutputIt, class DynamicProg>
 OutputIt trace(RandomIt1 first1,
                RandomIt1 last1,
                RandomIt2 first2,

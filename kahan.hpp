@@ -13,7 +13,7 @@ namespace kahan {
  * floating point numbers. (What about complex numbers?)
  * @see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
  */
-template <typename T>
+template <class T>
 class floating_point {
     T value_{};
     T error_{};
@@ -53,7 +53,7 @@ public:
 };
 
 struct plus {
-    template <typename Lhs, typename Rhs>
+    template <class Lhs, class Rhs>
     constexpr auto operator()(const Lhs& lhs, const Rhs& rhs) const
     {
         return floating_point(lhs) + floating_point(rhs);

@@ -10,14 +10,14 @@ namespace step {
 namespace maximum_subarray {
 namespace detail {
 
-template <typename T, typename ForwardIt>
+template <class T, class ForwardIt>
 struct weighted_range {
     T weight;
     ForwardIt first;
     ForwardIt last;
 };
 
-template <typename T, typename ForwardIt>
+template <class T, class ForwardIt>
 auto make_weighted_range(ForwardIt it)
 {
     return weighted_range<T, ForwardIt>{*it, it, std::next(it)};
@@ -27,15 +27,12 @@ auto make_weighted_range(ForwardIt it)
 
 /**
  * Find the bounds of the contiguous subrange which has the largest sum.
- *
  * Time complexity O(N), space complexity O(1),
  * where N = std::distance(first, last).
- *
  * @return a pair of iterators defining the wanted subarray.
- *
  * @see https://en.wikipedia.org/wiki/Maximum_subarray_problem
  */
-template <typename ForwardIt, typename BinaryOp, typename Compare>
+template <class ForwardIt, class BinaryOp, class Compare>
 std::pair<ForwardIt, ForwardIt> find(ForwardIt first,
                                      ForwardIt last,
                                      BinaryOp op,
@@ -59,19 +56,19 @@ std::pair<ForwardIt, ForwardIt> find(ForwardIt first,
     return {result.first, result.last};
 }
 
-template <typename ForwardIt>
+template <class ForwardIt>
 auto find(ForwardIt first, ForwardIt last)
 {
     return maximum_subarray::find(first, last, std::plus{}, std::less{});
 }
 
-template <typename ForwardRng, typename BinaryOp, typename Compare>
+template <class ForwardRng, class BinaryOp, class Compare>
 auto find(const ForwardRng& rng, BinaryOp op, Compare cmp)
 {
     return maximum_subarray::find(std::begin(rng), std::end(rng), op, cmp);
 }
 
-template <typename ForwardRng>
+template <class ForwardRng>
 auto find(const ForwardRng& rng)
 {
     return maximum_subarray::find(std::begin(rng), std::end(rng));

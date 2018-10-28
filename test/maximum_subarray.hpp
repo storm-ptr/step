@@ -11,16 +11,16 @@
 TEST_CASE("maximum_subarray_hello_world")
 {
     int arr[] = {-2, -3, 4, -1, -2, 1, 5, -3};
-    std::array expected{4, -1, -2, 1, 5};
+    std::array expect{4, -1, -2, 1, 5};
     auto sub = step::maximum_subarray::find(arr);
-    CHECK(std::equal(sub.first, sub.second, expected.begin(), expected.end()));
+    CHECK(std::equal(sub.first, sub.second, expect.begin(), expect.end()));
 }
 
 TEST_CASE("maximum_subarray_find")
 {
     struct {
         std::vector<int> arr;
-        std::vector<int> expected;
+        std::vector<int> expect;
     } tests[] = {
         {{-2, 1, -3, 4, -1, 2, 1, -5, 4}, {4, -1, 2, 1}},
         {{2, 3, -1, -20, 5, 10}, {5, 10}},
@@ -28,9 +28,9 @@ TEST_CASE("maximum_subarray_find")
         {{-1, -2, -3, -4, -5}, {-1}},
         {{7, -6, -8, 5, -2, -6, 7, 4, 8, -9, -3, 2, 6, -4, -6}, {7, 4, 8}},
         {{0, 1, 2, -3, 3, -1, 0, -4, 0, -1, -4, 2}, {1, 2}}};
-    for (auto& [arr, expected] : tests) {
+    for (auto& [arr, expect] : tests) {
         auto sub = step::maximum_subarray::find(arr);
-        CHECK(std::vector<int>(sub.first, sub.second) == expected);
+        CHECK(std::vector<int>(sub.first, sub.second) == expect);
     }
 }
 

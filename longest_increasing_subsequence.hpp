@@ -23,7 +23,7 @@ class increasing_subsequences {
     std::unordered_map<size_t, std::optional<size_t>> prevs_;
 
 public:
-    template <typename RandomIt, typename Compare>
+    template <class RandomIt, class Compare>
     increasing_subsequences(RandomIt first, RandomIt last, Compare cmp)
     {
         size_t size = std::distance(first, last);
@@ -62,18 +62,14 @@ public:
  * Finds a subsequence of a given sequence in which the subsequence's elements
  * are in sorted order, lowest to highest, and in which the subsequence is as
  * long as possible. This subsequence is not necessarily contiguous, or unique.
- *
  * Reorders the elements in such a way that all elements for the subsequence
  * precede the others.
- *
  * @return iterator to the end of the subsequence.
- *
  * Time complexity O(N*log(N)), space complexity O(N),
  * where N = std::distance(first, last).
- *
  * @see https://en.wikipedia.org/wiki/Longest_increasing_subsequence
  */
-template <typename RandomIt, typename Compare>
+template <class RandomIt, class Compare>
 auto partition(RandomIt first, RandomIt last, Compare cmp)
 {
     using std::swap;
@@ -85,20 +81,20 @@ auto partition(RandomIt first, RandomIt last, Compare cmp)
     return it;
 }
 
-template <typename RandomIt>
+template <class RandomIt>
 auto partition(RandomIt first, RandomIt last)
 {
     return longest_increasing_subsequence::partition(first, last, std::less{});
 }
 
-template <typename RandomRng, typename Compare>
+template <class RandomRng, class Compare>
 auto partition(RandomRng& rng, Compare cmp)
 {
     return longest_increasing_subsequence::partition(
         std::begin(rng), std::end(rng), cmp);
 }
 
-template <typename RandomRng>
+template <class RandomRng>
 auto partition(RandomRng& rng)
 {
     return longest_increasing_subsequence::partition(std::begin(rng),

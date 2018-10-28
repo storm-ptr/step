@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 struct case_insensitive_hash {
-    template <typename T>
+    template <class T>
     size_t operator()(T that) const
     {
         return std::hash<T>{}(tolower(that));
@@ -20,7 +20,7 @@ struct case_insensitive_hash {
 };
 
 struct case_insensitive_equal_to {
-    template <typename T>
+    template <class T>
     bool operator()(T lhs, T rhs) const
     {
         return tolower(lhs) == tolower(rhs);
@@ -28,14 +28,14 @@ struct case_insensitive_equal_to {
 };
 
 struct case_insensitive_less {
-    template <typename T>
+    template <class T>
     bool operator()(T lhs, T rhs) const
     {
         return tolower(lhs) < tolower(rhs);
     }
 };
 
-template <typename Key, typename T>
+template <class Key, class T>
 using case_insensitive_unordered_map = std::
     unordered_map<Key, T, case_insensitive_hash, case_insensitive_equal_to>;
 

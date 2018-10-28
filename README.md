@@ -31,7 +31,7 @@ Algorithms:
 
   [wiki](https://en.wikipedia.org/wiki/Longest_common_substring_problem)
   ```C++
-  auto range = step::longest_common_substring::find(
+  auto range = step::longest_common_substring::find_with_suffix_tree(
       "the longest string that is #", "a substring of two strings $");
   CHECK(" string" == std::string(range.first, range.second));
   ```
@@ -41,16 +41,16 @@ Algorithms:
   [wiki](https://en.wikipedia.org/wiki/Longest_increasing_subsequence)
   ```C++
   std::vector v{6, 3, 4, 8, 10, 5, 7, 1, 9, 2};
-  int expected[] = {3, 4, 5, 7, 9};
+  int expect[] = {3, 4, 5, 7, 9};
   auto it = step::longest_increasing_subsequence::partition(v);
-  CHECK(std::equal(v.begin(), it, std::begin(expected), std::end(expected)));
+  CHECK(std::equal(v.begin(), it, std::begin(expect), std::end(expect)));
   ```
   </p></details>
 * <details><summary>longest repeated substring</summary><p>
 
   [wiki](https://en.wikipedia.org/wiki/Longest_repeated_substring_problem)
   ```C++
-  auto range = step::longest_repeated_substring::find_with_suffix_tree(
+  auto range = step::longest_repeated_substring::find_with_suffix_array(
       "the longest substring of a string that occurs at least twice");
   CHECK("string " == std::string(range.first, range.second));
   ```
@@ -60,9 +60,9 @@ Algorithms:
   [wiki](https://en.wikipedia.org/wiki/Maximum_subarray_problem)
   ```C++
   int arr[] = {-2, -3, 4, -1, -2, 1, 5, -3};
-  std::array expected{4, -1, -2, 1, 5};
+  std::array expect{4, -1, -2, 1, 5};
   auto sub = step::maximum_subarray::find(arr);
-  CHECK(std::equal(sub.first, sub.second, expected.begin(), expected.end()));
+  CHECK(std::equal(sub.first, sub.second, expect.begin(), expect.end()));
   ```
   </p></details>
 

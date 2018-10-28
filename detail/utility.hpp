@@ -5,16 +5,17 @@
 
 #include <array>
 #include <iterator>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 namespace step {
 
 template <class It>
-using iterator_value_t = typename std::iterator_traits<It>::value_type;
+using iterator_value = typename std::iterator_traits<It>::value_type;
 
 template <class Rng>
-using range_value_t = iterator_value_t<decltype(std::declval<Rng>().begin())>;
+using range_value = iterator_value<decltype(std::declval<Rng>().begin())>;
 
 struct make_pair {
     template <class Lhs, class Rhs>
@@ -43,6 +44,30 @@ public:
         return !cmp_(lhs, rhs) && !cmp_(rhs, lhs);
     }
 };
+
+template <class, class = std::void_t<>>
+struct has_key_equal : std::false_type {
+};
+
+template <class T>
+struct has_key_equal<T, std::void_t<typename T::key_equal>> : std::true_type {
+};
+
+template <class T>
+struct key_equal {
+    using type = typename T::key_equal;
+};
+
+template <class T>
+struct key_equivalence {
+    using type = equivalence<typename T::key_compare>;
+};
+
+template <class T>
+using key_equal_or_equivalence =
+    typename std::conditional_t<has_key_equal<T>::value,
+                                key_equal<T>,
+                                key_equivalence<T>>::type;
 
 template <class T, size_t N>
 class ring_table {

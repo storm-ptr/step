@@ -10,12 +10,12 @@ namespace step {
 namespace longest_common_subsequence {
 namespace detail {
 
-template <typename Equal>
+template <class Equal>
 struct dynamic_programming {
     Equal equal;
 
     /// @see https://www.geeksforgeeks.org/longest-common-subsequence/
-    template <typename RandomIt1, typename RandomIt2>
+    template <class RandomIt1, class RandomIt2>
     auto make_last_row(RandomIt1 first1,
                        RandomIt1 last1,
                        RandomIt2 first2,
@@ -34,7 +34,7 @@ struct dynamic_programming {
 
     bool operator()(size_t lhs, size_t rhs) const { return lhs > rhs; }
 
-    template <typename RandomIt1, typename RandomIt2, typename OutputIt>
+    template <class RandomIt1, class RandomIt2, class OutputIt>
     OutputIt trivial_trace(RandomIt1 first1,
                            RandomIt1 last1,
                            RandomIt2 first2,
@@ -56,16 +56,11 @@ struct dynamic_programming {
  * Find the longest subsequence present in two sequences. A subsequence is a
  * sequence that appears in the same relative order, but not necessarily
  * contiguous.
- *
  * Time complexity O(N*M), space complexity O(min(N,M)), where:
  * N = std::distance(first1, last1), M = std::distance(first2, last2).
- *
  * @see https://en.wikipedia.org/wiki/Longest_common_subsequence_problem
  */
-template <typename RandomIt1,
-          typename RandomIt2,
-          typename OutputIt,
-          typename Equal>
+template <class RandomIt1, class RandomIt2, class OutputIt, class Equal>
 OutputIt intersection(RandomIt1 first1,
                       RandomIt1 last1,
                       RandomIt2 first2,
@@ -81,7 +76,7 @@ OutputIt intersection(RandomIt1 first1,
                              detail::dynamic_programming<Equal>{equal});
 }
 
-template <typename RandomIt1, typename RandomIt2, typename OutputIt>
+template <class RandomIt1, class RandomIt2, class OutputIt>
 OutputIt intersection(RandomIt1 first1,
                       RandomIt1 last1,
                       RandomIt2 first2,
@@ -92,10 +87,7 @@ OutputIt intersection(RandomIt1 first1,
         first1, last1, first2, last2, result, std::equal_to{});
 }
 
-template <typename RandomRng1,
-          typename RandomRng2,
-          typename OutputIt,
-          typename Equal>
+template <class RandomRng1, class RandomRng2, class OutputIt, class Equal>
 OutputIt intersection(const RandomRng1& rng1,
                       const RandomRng2& rng2,
                       OutputIt result,
@@ -109,7 +101,7 @@ OutputIt intersection(const RandomRng1& rng1,
                                                     equal);
 }
 
-template <typename RandomRng1, typename RandomRng2, typename OutputIt>
+template <class RandomRng1, class RandomRng2, class OutputIt>
 OutputIt intersection(const RandomRng1& rng1,
                       const RandomRng2& rng2,
                       OutputIt result)

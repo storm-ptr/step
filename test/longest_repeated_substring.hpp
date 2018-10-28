@@ -10,7 +10,7 @@
 
 TEST_CASE("longest_repeated_substring_hello_world")
 {
-    auto range = step::longest_repeated_substring::find_with_suffix_tree(
+    auto range = step::longest_repeated_substring::find_with_suffix_array(
         "the longest substring of a string that occurs at least twice");
     CHECK("string " == std::string(range.first, range.second));
 }
@@ -60,8 +60,7 @@ TEST_CASE("longest_repeated_substring_case_insensitive")
                      case_insensitive_equal_to{}));
 
     auto tree_rng = step::longest_repeated_substring::find_with_suffix_tree<
-        case_insensitive_unordered_map,
-        case_insensitive_equal_to>(str);
+        case_insensitive_unordered_map>(str);
     CHECK(std::equal(expect.begin(),
                      expect.end(),
                      tree_rng.first,

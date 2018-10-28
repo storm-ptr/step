@@ -24,7 +24,7 @@ TEST_CASE("edit_distance_associate")
     struct {
         std::string_view lhs;
         std::string_view rhs;
-        pairs_t expected;
+        pairs_t expect;
     } tests[] = {{"SUNDAY",
                   "saturday",
                   pairs_t{{'S', 's'},
@@ -64,11 +64,11 @@ TEST_CASE("edit_distance_associate")
                           {'d', 'd'},
                           {'a', 'a'},
                           {'i', std::nullopt}}}};
-    for (auto& [lhs, rhs, expected] : tests) {
+    for (auto& [lhs, rhs, expect] : tests) {
         pairs_t pairs;
         step::edit_distance::join(
             lhs, rhs, std::back_inserter(pairs), case_insensitive_equal_to{});
-        CHECK(pairs == expected);
+        CHECK(pairs == expect);
     }
 }
 

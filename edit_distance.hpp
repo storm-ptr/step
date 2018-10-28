@@ -11,11 +11,7 @@ namespace step {
 namespace edit_distance {
 namespace detail {
 
-template <typename ForwardIt,
-          typename T,
-          typename OutputIt,
-          typename Equal,
-          typename BinaryOp>
+template <class ForwardIt, class T, class OutputIt, class Equal, class BinaryOp>
 auto join_on_equal_or_tail(ForwardIt first,
                            ForwardIt last,
                            const T& value,
@@ -38,12 +34,12 @@ auto join_on_equal_or_tail(ForwardIt first,
     return result;
 }
 
-template <typename Equal>
+template <class Equal>
 struct dynamic_programming {
     Equal equal;
 
     /// @see https://en.wikipedia.org/wiki/Wagner–Fischer_algorithm
-    template <typename RandomIt1, typename RandomIt2>
+    template <class RandomIt1, class RandomIt2>
     auto make_last_row(RandomIt1 first1,
                        RandomIt1 last1,
                        RandomIt2 first2,
@@ -70,7 +66,7 @@ struct dynamic_programming {
 
     bool operator()(size_t lhs, size_t rhs) const { return lhs < rhs; }
 
-    template <typename RandomIt1, typename RandomIt2, typename OutputIt>
+    template <class RandomIt1, class RandomIt2, class OutputIt>
     OutputIt trivial_trace(RandomIt1 first1,
                            RandomIt1 last1,
                            RandomIt2 first2,
@@ -101,16 +97,11 @@ struct dynamic_programming {
  * measured with the Levenshtein distance, defined to be the sum of the costs of
  * insertions, replacements, deletions, and null actions needed to change one
  * string into the other.
- *
  * Time complexity O(N*M), space complexity O(min(N,M)), where:
  * N = std::distance(first1, last1), M = std::distance(first2, last2).
- *
  * @see https://en.wikipedia.org/wiki/Levenshtein_distance
  */
-template <typename RandomIt1,
-          typename RandomIt2,
-          typename OutputIt,
-          typename Equal>
+template <class RandomIt1, class RandomIt2, class OutputIt, class Equal>
 OutputIt join(RandomIt1 first1,
               RandomIt1 last1,
               RandomIt2 first2,
@@ -126,7 +117,7 @@ OutputIt join(RandomIt1 first1,
                              detail::dynamic_programming<Equal>{equal});
 }
 
-template <typename RandomIt1, typename RandomIt2, typename OutputIt>
+template <class RandomIt1, class RandomIt2, class OutputIt>
 OutputIt join(RandomIt1 first1,
               RandomIt1 last1,
               RandomIt2 first2,
@@ -137,10 +128,7 @@ OutputIt join(RandomIt1 first1,
         first1, last1, first2, last2, result, std::equal_to{});
 }
 
-template <typename RandomRng1,
-          typename RandomRng2,
-          typename OutputIt,
-          typename Equal>
+template <class RandomRng1, class RandomRng2, class OutputIt, class Equal>
 OutputIt join(const RandomRng1& rng1,
               const RandomRng2& rng2,
               OutputIt result,
@@ -154,7 +142,7 @@ OutputIt join(const RandomRng1& rng1,
                                equal);
 }
 
-template <typename RandomRng1, typename RandomRng2, typename OutputIt>
+template <class RandomRng1, class RandomRng2, class OutputIt>
 OutputIt join(const RandomRng1& rng1, const RandomRng2& rng2, OutputIt result)
 {
     return edit_distance::join(std::begin(rng1),

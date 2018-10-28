@@ -30,7 +30,7 @@ TEST_CASE("suffix_tree_hello_world")
     CHECK(tree.find("quick"sv) == 8);
 }
 
-template <typename SuffixTree>
+template <class SuffixTree>
 std::string tree_topology(const SuffixTree& tree)
 {
     std::ostringstream os;
@@ -46,8 +46,8 @@ std::string tree_topology(const SuffixTree& tree)
     return os.str();
 }
 
-template <typename SuffixTree>
-auto tree_to_array(const SuffixTree& tree)
+template <class SuffixTree>
+auto suffix_tree_order(const SuffixTree& tree)
 {
     std::vector<typename SuffixTree::size_type> result;
     result.reserve(tree.size());
@@ -57,6 +57,16 @@ auto tree_to_array(const SuffixTree& tree)
                 result.push_back(str.second - len);
         },
         [](auto&&...) {});
+    return result;
+}
+
+template <class SuffixArray>
+auto suffix_array_order(const SuffixArray& arr)
+{
+    using size_type = typename SuffixArray::size_type;
+    std::vector<size_type> result(arr.size());
+    for (size_type i = 0; i < arr.size(); ++i)
+        result[i] = arr.nth_element(i);
     return result;
 }
 
@@ -185,29 +195,37 @@ TEST_CASE("suffix_array_n_tree_cross_check")
         step::suffix_tree<char, uint16_t, std::map> tree{};
         tree.reserve(str.size());
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
-        CHECK(arr.index() == tree_to_array(tree));
 
-        auto pattern = make_random_string(2);
-        auto arr_all = arr.find_all(pattern);
-        auto tree_all = tree.find_all(pattern);
-        CHECK(std::is_permutation(
-            arr_all.first, arr_all.second, tree_all.begin(), tree_all.end()));
+        CHECK(suffix_array_order(arr) == suffix_tree_order(tree));
+
+        for (size_t j = 2; j <= 4; ++j) {
+            auto pattern = make_random_string(j);
+            auto arr_all = arr.find_all(pattern);
+            auto tree_all = tree.find_all(pattern);
+            CHECK(std::is_permutation(arr_all.first,
+                                      arr_all.second,
+                                      tree_all.begin(),
+                                      tree_all.end()));
+        }
     }
 }
 /*
 #include <boost/container/flat_map.hpp>
 #include <boost/container/small_vector.hpp>
 
-template <typename Key, typename T>
-using flat_map = boost::container::flat_map<
+template <class Key, class T>
+using custom_map = boost::container::flat_map<
     Key,
     T,
     std::less<>,
     boost::container::small_vector<std::pair<Key, T>, 8>>;
 */
+template <class Key, class T>
+using custom_map = std::unordered_map<Key, T, std::hash<Key>, std::equal_to<>>;
+
 inline auto benchmark_tree(std::string_view str)
 {
-    step::suffix_tree<char, uint32_t /*, flat_map*/> tree{};
+    step::suffix_tree<char, uint32_t, custom_map> tree{};
     tree.reserve(str.size());
     auto start = high_resolution_clock::now();
     std::copy(str.begin(), str.end(), std::back_inserter(tree));
