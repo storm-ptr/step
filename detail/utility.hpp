@@ -11,12 +11,6 @@
 
 namespace step {
 
-template <class It>
-using iterator_value = typename std::iterator_traits<It>::value_type;
-
-template <class Rng>
-using range_value = iterator_value<decltype(std::declval<Rng>().begin())>;
-
 struct make_pair {
     template <class Lhs, class Rhs>
     constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
@@ -45,6 +39,26 @@ public:
     }
 };
 
+template <class T, size_t N>
+class ring_table {
+    std::array<std::vector<T>, N> rows_;
+
+public:
+    explicit ring_table(size_t cols)
+    {
+        for (auto& row : rows_)
+            row.resize(cols);
+    }
+
+    auto& operator[](size_t row) { return rows_[row % N]; }
+};
+
+template <class It>
+using iterator_value = typename std::iterator_traits<It>::value_type;
+
+template <class Rng>
+using range_value = iterator_value<decltype(std::declval<Rng>().begin())>;
+
 template <class, class = std::void_t<>>
 struct has_key_equal : std::false_type {
 };
@@ -68,20 +82,6 @@ using key_equal_or_equivalence =
     typename std::conditional_t<has_key_equal<T>::value,
                                 key_equal<T>,
                                 key_equivalence<T>>::type;
-
-template <class T, size_t N>
-class ring_table {
-    std::array<std::vector<T>, N> rows_;
-
-public:
-    explicit ring_table(size_t cols)
-    {
-        for (auto& row : rows_)
-            row.resize(cols);
-    }
-
-    auto& operator[](size_t row) { return rows_[row % N]; }
-};
 
 }  // namespace step
 

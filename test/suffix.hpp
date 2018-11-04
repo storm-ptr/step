@@ -178,7 +178,8 @@ TEST_CASE("suffix_array_n_tree_find")
         CHECK(tree.find(str) == 0);
         CHECK(tree.find(""sv) == 0);
         CHECK(tree.find("not found"sv) == tree.size());
-        auto tree_all = tree.find_all(pattern);
+        std::vector<size_t> tree_all;
+        tree.find_all(pattern, std::back_inserter(tree_all));
         CHECK(std::is_permutation(
             tree_all.begin(), tree_all.end(), expect.begin(), expect.end()));
     }
@@ -201,7 +202,8 @@ TEST_CASE("suffix_array_n_tree_cross_check")
         for (size_t j = 2; j <= 4; ++j) {
             auto pattern = make_random_string(j);
             auto arr_all = arr.find_all(pattern);
-            auto tree_all = tree.find_all(pattern);
+            std::vector<uint16_t> tree_all;
+            tree.find_all(pattern, std::back_inserter(tree_all));
             CHECK(std::is_permutation(arr_all.first,
                                       arr_all.second,
                                       tree_all.begin(),

@@ -28,9 +28,25 @@ public:
     Size nth_element(Size nth) const { return idx_[nth]; }
 
     template <class InputIt>
-    suffix_array(InputIt first, InputIt last)
-        : str_(first, last), idx_(make_index())
+    suffix_array(InputIt first, InputIt last) : str_(first, last), idx_(size())
     {
+        auto gen = [i = Size{}]() mutable { return suffix{i++}; };
+        auto pos = [](auto& sfx) { return sfx.pos; };
+        auto by_rank = [](auto& lhs, auto& rhs) { return lhs.rank < rhs.rank; };
+        auto by_char = [this](auto& lhs, auto& rhs) {
+            return cmp_(str_[lhs.pos], str_[rhs.pos]);
+        };
+
+        std::vector<suffix> sfxs(size());
+        std::generate(sfxs.begin(), sfxs.end(), gen);
+        std::sort(sfxs.begin(), sfxs.end(), by_char);
+        fill_first_rank(sfxs.begin(), sfxs.end(), by_char);
+        for (Size shift = 1; !is_sorted(sfxs.begin(), sfxs.end()); shift *= 2) {
+            fill_second_rank(sfxs.begin(), sfxs.end(), shift);
+            std::sort(sfxs.begin(), sfxs.end(), by_rank);
+            fill_first_rank(sfxs.begin(), sfxs.end(), by_rank);
+        }
+        std::transform(sfxs.begin(), sfxs.end(), idx_.begin(), pos);
     }
 
     template <class InputRng>
@@ -47,12 +63,12 @@ public:
     auto find_all(InputIt first, InputIt last) const
     {
         auto result = std::make_pair(idx_.begin(), idx_.end());
-        auto offset = Size{};
+        auto shift = Size{};
         std::for_each(first, last, [&](T val) {
             result = std::equal_range(result.first,
                                       result.second,
                                       size(),
-                                      compare_with(val, offset++));
+                                      compare_with(val, shift++));
         });
         return result;
     }
@@ -82,10 +98,11 @@ public:
      * Time and space complexity O(N), where N is length of text.
      * @see https://en.wikipedia.org/wiki/LCP_array
      */
-    auto make_longest_common_prefix_array() const
+    template <class RandomIt>
+    void longest_common_prefix_array(RandomIt result) const
     {
-        auto result = std::vector<Size>(size());
-        auto inv = make_inverse_suffix_array();
+        std::vector<Size> inv(size());
+        inverse_suffix_array(inv.begin());
         for (Size pos = 0, lcp = 0; pos < size(); ++pos) {
             auto cur = inv[pos];
             auto next = cur + 1;
@@ -94,7 +111,7 @@ public:
                                           str_.end(),
                                           str_.begin() + idx_[next] + lcp,
                                           str_.end(),
-                                          eq);
+                                          eq_);
                 lcp = std::distance(str_.begin() + pos, diff.first);
             }
             else
@@ -103,114 +120,84 @@ public:
             if (lcp)
                 --lcp;
         }
-        return result;
     }
 
 private:
-    inline static const auto cmp = Compare{};
-    inline static const auto eq = equivalence<Compare>{};
+    inline static const auto cmp_ = Compare{};
+    inline static const auto eq_ = equivalence<Compare>{};
 
     struct suffix {
         Size pos;
         std::pair<Size, Size> rank;
     };
 
-    using suffixes = std::vector<suffix>;
-
     std::vector<T> str_;
     std::vector<Size> idx_;
 
-    template <class SuffixCompare>
-    static void fill_first_rank(suffixes& sufs, const SuffixCompare& suf_cmp)
+    template <class SfxIt, class Cmp>
+    static void fill_first_rank(SfxIt first, SfxIt last, const Cmp& cmp)
     {
-        auto it = sufs.begin();
-        auto last = sufs.end();
-        if (it == last)
+        if (first == last)
             return;
         Size i{1};
-        for (auto next = std::next(it); next != last; ++next, ++it) {
-            bool less = suf_cmp(*it, *next);
-            it->rank.first = i;
+        for (auto next = std::next(first); next != last; ++next, ++first) {
+            bool less = cmp(*first, *next);
+            first->rank.first = i;
             if (less)
                 ++i;
         }
-        it->rank.first = i;
+        first->rank.first = i;
     }
 
-    static auto make_inverse_first_rank(suffixes& sufs)
+    template <class SfxIt, class RandomIt>
+    static void inverse_first_rank(SfxIt first, SfxIt last, RandomIt result)
     {
-        std::vector<Size> result(sufs.size());
-        for (Size i = 0; i < sufs.size(); ++i)
-            result[sufs[i].pos] = sufs[i].rank.first;
-        return result;
+        std::for_each(
+            first, last, [&](auto& sfx) { result[sfx.pos] = sfx.rank.first; });
     }
 
-    static void fill_second_rank(suffixes& sufs, Size offset)
+    template <class SfxIt>
+    static void fill_second_rank(SfxIt first, SfxIt last, Size shift)
     {
-        auto inv = make_inverse_first_rank(sufs);
-        for (auto& suf : sufs) {
-            Size pos = suf.pos + offset;
-            suf.rank.second = pos < inv.size() ? inv[pos] : 0;
-        }
+        std::vector<Size> inv(std::distance(first, last));
+        inverse_first_rank(first, last, inv.begin());
+        std::for_each(first, last, [&](auto& sfx) {
+            Size pos = sfx.pos + shift;
+            sfx.rank.second = pos < inv.size() ? inv[pos] : 0;
+        });
     }
 
-    static bool is_sorted(suffixes& sufs)
+    template <class SfxIt>
+    static bool is_sorted(SfxIt first, SfxIt last)
     {
-        Size max_rank = sufs.empty() ? 0 : sufs.back().rank.first;
-        return max_rank == sufs.size();
+        return first == last ||
+               std::prev(last)->rank.first == std::distance(first, last);
     }
 
-    auto make_index() const
-    {
-        auto gen = [i = Size{}]() mutable { return suffix{i++}; };
-        auto pos = [](auto& suf) { return suf.pos; };
-        auto by_rank = [](auto& lhs, auto& rhs) { return lhs.rank < rhs.rank; };
-        auto by_char = [this](auto& lhs, auto& rhs) {
-            return cmp(str_[lhs.pos], str_[rhs.pos]);
-        };
-
-        suffixes sufs(size());
-        std::generate(sufs.begin(), sufs.end(), gen);
-        std::sort(sufs.begin(), sufs.end(), by_char);
-        fill_first_rank(sufs, by_char);
-        for (Size offset = 1; !is_sorted(sufs); offset *= 2) {
-            fill_second_rank(sufs, offset);
-            std::sort(sufs.begin(), sufs.end(), by_rank);
-            fill_first_rank(sufs, by_rank);
-        }
-
-        std::vector<Size> result(sufs.size());
-        std::transform(sufs.begin(), sufs.end(), result.begin(), pos);
-        return result;
-    }
-
-    auto compare_with(T val, Size offset) const
+    auto compare_with(T val, Size shift) const
     {
         return [=](Size lhs, Size rhs) {
             bool lefty = lhs < size();
-            Size pos = (lefty ? lhs : rhs) + offset;
+            Size pos = (lefty ? lhs : rhs) + shift;
             return pos < size()
-                       ? (lefty ? cmp(str_[pos], val) : cmp(val, str_[pos]))
+                       ? (lefty ? cmp_(str_[pos], val) : cmp_(val, str_[pos]))
                        : lefty;
         };
     }
 
-    auto make_inverse_suffix_array() const
+    template <class RandomIt>
+    void inverse_suffix_array(RandomIt result) const
     {
-        std::vector<Size> result(size());
         for (Size i = 0; i < size(); ++i)
             result[idx_[i]] = i;
-        return result;
     }
 };
 
-template <class InputIt, class Size = size_t, class Compare = std::less<>>
-suffix_array(InputIt, InputIt)
-    ->suffix_array<iterator_value<InputIt>, Size, Compare>;
+template <class InputIt>
+suffix_array(InputIt, InputIt)->suffix_array<iterator_value<InputIt>>;
 
-template <class InputRng, class Size = size_t, class Compare = std::less<>>
-suffix_array(const InputRng&)
-    ->suffix_array<range_value<InputRng>, Size, Compare>;
+template <class InputRng>
+suffix_array(const InputRng&)->suffix_array<range_value<InputRng>>;
 
 }  // namespace step
 

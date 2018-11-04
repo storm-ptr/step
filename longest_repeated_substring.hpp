@@ -21,9 +21,10 @@ namespace detail {
 template <class Size, class Compare, class RandomIt>
 auto find_with_suffix_array(RandomIt first, RandomIt last)
 {
-    std::pair<RandomIt, RandomIt> result{last, last};
+    auto result = std::make_pair(last, last);
     suffix_array<iterator_value<RandomIt>, Size, Compare> arr{first, last};
-    auto lcp = arr.make_longest_common_prefix_array();
+    std::vector<Size> lcp(arr.size());
+    arr.longest_common_prefix_array(lcp.begin());
     auto it = std::max_element(lcp.begin(), lcp.end());
     if (it != lcp.end() && *it > 0) {
         auto pos = arr.nth_element(std::distance(lcp.begin(), it));
@@ -36,16 +37,17 @@ auto find_with_suffix_array(RandomIt first, RandomIt last)
 template <class Size, template <class...> class Map, class RandomIt>
 auto find_with_suffix_tree(RandomIt first, RandomIt last)
 {
-    std::pair<RandomIt, RandomIt> result{last, last};
+    auto result = std::make_pair(last, last);
     suffix_tree<iterator_value<RandomIt>, Size, Map> tree{};
     tree.reserve(std::distance(first, last));
     std::copy(first, last, std::back_inserter(tree));
     tree.visit(
         [&](const auto& str, const auto&, auto len) {
             if (!tree.suffix(str) &&
-                len > (Size)std::distance(result.first, result.second))
-                result = std::make_pair(first + str.second - len,
-                                        first + str.second);
+                len > (Size)std::distance(result.first, result.second)) {
+                result.second = first + str.second;
+                result.first = result.second - len;
+            }
         },
         [](auto&&...) {});
     return result;

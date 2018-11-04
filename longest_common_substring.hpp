@@ -31,10 +31,11 @@ auto find_with_suffix_array(RandomIt1 first1,
                             RandomIt2 first2,
                             RandomIt2 last2)
 {
-    auto result = std::pair<RandomIt1, RandomIt1>{last1, last1};
+    auto result = std::make_pair(last1, last1);
     auto arr = step::suffix_array<iterator_value<RandomIt1>, Size, Compare>{
         join(first1, last1, first2, last2)};
-    auto lcp = arr.make_longest_common_prefix_array();
+    auto lcp = std::vector<Size>(arr.size());
+    arr.longest_common_prefix_array(lcp.begin());
     Size size1 = std::distance(first1, last1);
     for (Size i = 1; i < arr.size(); ++i) {
         if ((arr.nth_element(i - 1) < size1) == (arr.nth_element(i) < size1))
@@ -61,10 +62,10 @@ auto find_with_suffix_tree(RandomIt1 first1,
     static constexpr uint8_t left_flag = 1;
     static constexpr uint8_t right_flag = 2;
 
-    std::pair<RandomIt1, RandomIt1> result{last1, last1};
+    auto result = std::make_pair(last1, last1);
+    auto tree = step::suffix_tree<iterator_value<RandomIt1>, Size, Map>{};
     Size size1 = std::distance(first1, last1);
     Size size2 = std::distance(first2, last2);
-    step::suffix_tree<iterator_value<RandomIt1>, Size, Map> tree{};
     tree.reserve(size1 + size2);
     std::copy(first1, last1, std::back_inserter(tree));
     std::copy(first2, last2, std::back_inserter(tree));
@@ -82,9 +83,10 @@ auto find_with_suffix_tree(RandomIt1 first1,
         [&](const auto& str, const auto&, auto len) {
             if (!tree.suffix(str) &&
                 flags[str.first] == (left_flag | right_flag) &&
-                len > (Size)std::distance(result.first, result.second))
-                result = std::make_pair(first1 + str.second - len,
-                                        first1 + str.second);
+                len > (Size)std::distance(result.first, result.second)) {
+                result.second = first1 + str.second;
+                result.first = result.second - len;
+            }
         },
         [](auto&&...) {});
     return result;
