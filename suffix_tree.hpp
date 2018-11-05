@@ -223,13 +223,13 @@ private:
         }
     }
 
-    void push_edges(std::stack<path>& stack, const path& way) const
+    void push_edges(std::stack<path>& dest, const path& src) const
     {
-        std::stack<path> reversed;
-        for (auto& [key, edge] : nodes_[way.link].edges)
-            reversed.push({edge, way.link, Size(way.len + size(substr(edge)))});
-        for (; !reversed.empty(); reversed.pop())
-            stack.push(reversed.top());
+        std::stack<path> reverse;
+        for (auto& [key, edge] : nodes_[src.link].edges)
+            reverse.push({edge, src.link, Size(src.len + size(substr(edge)))});
+        for (; !reverse.empty(); reverse.pop())
+            dest.push(reverse.top());
     }
 
     template <class PreVisitor, class PostVisitor>

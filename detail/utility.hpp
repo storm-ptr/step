@@ -86,10 +86,10 @@ using key_equal_or_equivalence =
                                 key_equivalence<T>>::type;
 
 template <class T, class... It>
-void append(T&& to, std::pair<It, It>... from)
+void append(T&& dest, std::pair<It, It>... src)
 {
-    to.reserve(to.size() + (std::distance(from.first, from.second) + ...));
-    (std::copy(from.first, from.second, std::back_inserter(to)), ...);
+    dest.reserve(dest.size() + (std::distance(src.first, src.second) + ...));
+    (std::copy(src.first, src.second, std::back_inserter(dest)), ...);
 }
 
 template <class F, class... It>
