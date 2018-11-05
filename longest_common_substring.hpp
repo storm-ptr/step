@@ -4,8 +4,6 @@
 #define STEP_LONGEST_COMMON_SUBSTRING_HPP
 
 #include <algorithm>
-#include <cstdint>
-#include <limits>
 #include <step/detail/utility.hpp>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
@@ -16,81 +14,74 @@ namespace step {
 namespace longest_common_substring {
 namespace detail {
 
-// #include <boost/range/join.hpp>
-template <class RandomIt1, class RandomIt2>
-auto join(RandomIt1 first1, RandomIt1 last1, RandomIt2 first2, RandomIt2 last2)
-{
-    std::vector<iterator_value<RandomIt1>> result(first1, last1);
-    result.insert(result.end(), first2, last2);
-    return result;
-}
-
-template <class Size, class Compare, class RandomIt1, class RandomIt2>
-auto find_with_suffix_array(RandomIt1 first1,
-                            RandomIt1 last1,
-                            RandomIt2 first2,
-                            RandomIt2 last2)
-{
-    auto result = std::make_pair(last1, last1);
-    auto arr = step::suffix_array<iterator_value<RandomIt1>, Size, Compare>{
-        join(first1, last1, first2, last2)};
-    auto lcp = std::vector<Size>(arr.size());
-    arr.longest_common_prefix_array(lcp.begin());
-    Size size1 = std::distance(first1, last1);
-    for (Size i = 1; i < arr.size(); ++i) {
-        if ((arr.nth_element(i - 1) < size1) == (arr.nth_element(i) < size1))
-            continue;
-        Size pos = std::min<Size>(arr.nth_element(i - 1), arr.nth_element(i));
-        Size len = std::min<Size>(lcp[i - 1], size1 - pos);
-        if (len > (Size)std::distance(result.first, result.second)) {
-            result.first = first1 + pos;
-            result.second = result.first + len;
-        }
-    }
-    return result;
-}
-
-template <class Size,
-          template <class...> class Map,
-          class RandomIt1,
-          class RandomIt2>
-auto find_with_suffix_tree(RandomIt1 first1,
-                           RandomIt1 last1,
-                           RandomIt2 first2,
-                           RandomIt2 last2)
-{
-    static constexpr uint8_t left_flag = 1;
-    static constexpr uint8_t right_flag = 2;
-
-    auto result = std::make_pair(last1, last1);
-    auto tree = step::suffix_tree<iterator_value<RandomIt1>, Size, Map>{};
-    Size size1 = std::distance(first1, last1);
-    Size size2 = std::distance(first2, last2);
-    tree.reserve(size1 + size2);
-    std::copy(first1, last1, std::back_inserter(tree));
-    std::copy(first2, last2, std::back_inserter(tree));
-    std::unordered_map<Size, uint8_t> flags;
-    tree.visit([](auto&&...) {},
-               [&](const auto& str, const auto& parent_str, auto len) {
-                   if (!tree.suffix(str))
-                       flags[parent_str.first] |= flags[str.first];
-                   else if ((str.second - len) < size1)
-                       flags[parent_str.first] |= left_flag;
-                   else
-                       flags[parent_str.first] |= right_flag;
-               });
-    tree.visit(
-        [&](const auto& str, const auto&, auto len) {
-            if (!tree.suffix(str) &&
-                flags[str.first] == (left_flag | right_flag) &&
-                len > (Size)std::distance(result.first, result.second)) {
-                result.second = first1 + str.second;
-                result.first = result.second - len;
+template <class Compare>
+struct suffix_array_searcher {
+    template <class Size, class RandomIt1, class RandomIt2>
+    auto operator()(Size,
+                    std::pair<RandomIt1, RandomIt1> rng1,
+                    std::pair<RandomIt2, RandomIt2> rng2) const
+    {
+        using value_t = iterator_value<RandomIt1>;
+        auto result = std::make_pair(rng1.second, rng1.second);
+        auto str = std::vector<value_t>{};
+        append(str, rng1, rng2);
+        auto arr = suffix_array<value_t, Size, Compare>{std::move(str)};
+        auto lcp = std::vector<Size>(arr.size());
+        arr.longest_common_prefix_array(lcp.begin());
+        Size size1 = std::distance(rng1.first, rng1.second);
+        for (Size i = 1; i < arr.size(); ++i) {
+            auto prev = arr.nth_element(i - 1);
+            auto cur = arr.nth_element(i);
+            if ((prev < size1) != (cur < size1)) {
+                auto pos = std::min<Size>(prev, cur);
+                auto len = std::min<Size>(lcp[i - 1], size1 - pos);
+                if (len > (Size)std::distance(result.first, result.second)) {
+                    result.first = rng1.first + pos;
+                    result.second = result.first + len;
+                }
             }
-        },
-        [](auto&&...) {});
-    return result;
-}
+        }
+        return result;
+    }
+};
+
+template <template <class...> class Map>
+struct suffix_tree_searcher {
+    inline static const uint8_t left_flag = 1;
+    inline static const uint8_t right_flag = 2;
+
+    template <class Size, class RandomIt1, class RandomIt2>
+    auto operator()(Size,
+                    std::pair<RandomIt1, RandomIt1> rng1,
+                    std::pair<RandomIt2, RandomIt2> rng2) const
+    {
+        auto result = std::make_pair(rng1.second, rng1.second);
+        auto tree = suffix_tree<iterator_value<RandomIt1>, Size, Map>{};
+        append(tree, rng1, rng2);
+        auto flags = std::unordered_map<Size, uint8_t>{};
+        Size size1 = std::distance(rng1.first, rng1.second);
+        tree.visit([](auto&&...) {},
+                   [&](const auto& str, const auto& parent_str, auto len) {
+                       if (!tree.suffix(str))
+                           flags[parent_str.first] |= flags[str.first];
+                       else if ((str.second - len) < size1)
+                           flags[parent_str.first] |= left_flag;
+                       else
+                           flags[parent_str.first] |= right_flag;
+                   });
+        tree.visit(
+            [&](const auto& str, const auto&, auto len) {
+                if (!tree.suffix(str) &&
+                    flags[str.first] == (left_flag | right_flag) &&
+                    len > (Size)std::distance(result.first, result.second)) {
+                    result.second = rng1.first + str.second;
+                    result.first = result.second - len;
+                }
+            },
+            [](auto&&...) {});
+        return result;
+    }
+};
 
 }  // namespace detail
 
@@ -103,21 +94,14 @@ auto find_with_suffix_tree(RandomIt1 first1,
  * @return a pair of iterators defining the wanted substring.
  */
 template <class Compare = std::less<>, class RandomIt1, class RandomIt2>
-std::pair<RandomIt1, RandomIt1> find_with_suffix_array(RandomIt1 first1,
-                                                       RandomIt1 last1,
-                                                       RandomIt2 first2,
-                                                       RandomIt2 last2)
+auto find_with_suffix_array(RandomIt1 first1,
+                            RandomIt1 last1,
+                            RandomIt2 first2,
+                            RandomIt2 last2)
 {
-    size_t size = std::distance(first1, last1) + std::distance(first2, last2);
-    if (size < std::numeric_limits<int16_t>::max())
-        return detail::find_with_suffix_array<uint16_t, Compare>(
-            first1, last1, first2, last2);
-    else if (size < std::numeric_limits<int32_t>::max())
-        return detail::find_with_suffix_array<uint32_t, Compare>(
-            first1, last1, first2, last2);
-    else
-        return detail::find_with_suffix_array<size_t, Compare>(
-            first1, last1, first2, last2);
+    auto searcher = detail::suffix_array_searcher<Compare>{};
+    return invoke(
+        searcher, std::make_pair(first1, last1), std::make_pair(first2, last2));
 }
 
 template <class Compare = std::less<>, class RandomRng1, class RandomRng2>
@@ -139,21 +123,14 @@ auto find_with_suffix_array(const RandomRng1& rng1, const RandomRng2& rng2)
 template <template <class...> class Map = std::unordered_map,
           class RandomIt1,
           class RandomIt2>
-std::pair<RandomIt1, RandomIt1> find_with_suffix_tree(RandomIt1 first1,
-                                                      RandomIt1 last1,
-                                                      RandomIt2 first2,
-                                                      RandomIt2 last2)
+auto find_with_suffix_tree(RandomIt1 first1,
+                           RandomIt1 last1,
+                           RandomIt2 first2,
+                           RandomIt2 last2)
 {
-    size_t size = std::distance(first1, last1) + std::distance(first2, last2);
-    if (size < std::numeric_limits<int16_t>::max())
-        return detail::find_with_suffix_tree<uint16_t, Map>(
-            first1, last1, first2, last2);
-    else if (size < std::numeric_limits<int32_t>::max())
-        return detail::find_with_suffix_tree<uint32_t, Map>(
-            first1, last1, first2, last2);
-    else
-        return detail::find_with_suffix_tree<size_t, Map>(
-            first1, last1, first2, last2);
+    auto searcher = detail::suffix_tree_searcher<Map>{};
+    return invoke(
+        searcher, std::make_pair(first1, last1), std::make_pair(first2, last2));
 }
 
 template <template <class...> class Map = std::unordered_map,

@@ -4,13 +4,9 @@
 #define STEP_LONGEST_REPEATED_SUBSTRING_HPP
 
 #include <algorithm>
-#include <cstdint>
-#include <functional>
-#include <limits>
 #include <step/detail/utility.hpp>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
-#include <unordered_map>
 
 /// @see https://en.wikipedia.org/wiki/Longest_repeated_substring_problem
 
@@ -18,40 +14,46 @@ namespace step {
 namespace longest_repeated_substring {
 namespace detail {
 
-template <class Size, class Compare, class RandomIt>
-auto find_with_suffix_array(RandomIt first, RandomIt last)
-{
-    auto result = std::make_pair(last, last);
-    suffix_array<iterator_value<RandomIt>, Size, Compare> arr{first, last};
-    std::vector<Size> lcp(arr.size());
-    arr.longest_common_prefix_array(lcp.begin());
-    auto it = std::max_element(lcp.begin(), lcp.end());
-    if (it != lcp.end() && *it > 0) {
-        auto pos = arr.nth_element(std::distance(lcp.begin(), it));
-        result.first = first + pos;
-        result.second = result.first + *it;
+template <class Compare>
+struct suffix_array_searcher {
+    template <class Size, class RandomIt>
+    auto operator()(Size, std::pair<RandomIt, RandomIt> rng) const
+    {
+        using value_t = iterator_value<RandomIt>;
+        auto result = std::make_pair(rng.second, rng.second);
+        auto arr = suffix_array<value_t, Size, Compare>{rng.first, rng.second};
+        auto lcp = std::vector<Size>(arr.size());
+        arr.longest_common_prefix_array(lcp.begin());
+        auto it = std::max_element(lcp.begin(), lcp.end());
+        if (it != lcp.end() && *it > 0) {
+            auto pos = arr.nth_element(std::distance(lcp.begin(), it));
+            result.first = rng.first + pos;
+            result.second = result.first + *it;
+        }
+        return result;
     }
-    return result;
-}
+};
 
-template <class Size, template <class...> class Map, class RandomIt>
-auto find_with_suffix_tree(RandomIt first, RandomIt last)
-{
-    auto result = std::make_pair(last, last);
-    suffix_tree<iterator_value<RandomIt>, Size, Map> tree{};
-    tree.reserve(std::distance(first, last));
-    std::copy(first, last, std::back_inserter(tree));
-    tree.visit(
-        [&](const auto& str, const auto&, auto len) {
-            if (!tree.suffix(str) &&
-                len > (Size)std::distance(result.first, result.second)) {
-                result.second = first + str.second;
-                result.first = result.second - len;
-            }
-        },
-        [](auto&&...) {});
-    return result;
-}
+template <template <class...> class Map>
+struct suffix_tree_searcher {
+    template <class Size, class RandomIt>
+    auto operator()(Size, std::pair<RandomIt, RandomIt> rng) const
+    {
+        auto result = std::make_pair(rng.second, rng.second);
+        auto tree = suffix_tree<iterator_value<RandomIt>, Size, Map>{};
+        append(tree, rng);
+        tree.visit(
+            [&](const auto& str, const auto&, auto len) {
+                if (!tree.suffix(str) &&
+                    len > (Size)std::distance(result.first, result.second)) {
+                    result.second = rng.first + str.second;
+                    result.first = result.second - len;
+                }
+            },
+            [](auto&&...) {});
+        return result;
+    }
+};
 
 }  // namespace detail
 
@@ -66,13 +68,8 @@ auto find_with_suffix_tree(RandomIt first, RandomIt last)
 template <class Compare = std::less<>, class RandomIt>
 auto find_with_suffix_array(RandomIt first, RandomIt last)
 {
-    size_t size = std::distance(first, last);
-    if (size < std::numeric_limits<int16_t>::max())
-        return detail::find_with_suffix_array<uint16_t, Compare>(first, last);
-    else if (size < std::numeric_limits<int32_t>::max())
-        return detail::find_with_suffix_array<uint32_t, Compare>(first, last);
-    else
-        return detail::find_with_suffix_array<size_t, Compare>(first, last);
+    auto searcher = detail::suffix_array_searcher<Compare>{};
+    return invoke(searcher, std::make_pair(first, last));
 }
 
 template <class Compare = std::less<>, class RandomRng>
@@ -94,13 +91,8 @@ auto find_with_suffix_array(const RandomRng& rng)
 template <template <class...> class Map = std::unordered_map, class RandomIt>
 auto find_with_suffix_tree(RandomIt first, RandomIt last)
 {
-    size_t size = std::distance(first, last);
-    if (size < std::numeric_limits<int16_t>::max())
-        return detail::find_with_suffix_tree<uint16_t, Map>(first, last);
-    else if (size < std::numeric_limits<int32_t>::max())
-        return detail::find_with_suffix_tree<uint32_t, Map>(first, last);
-    else
-        return detail::find_with_suffix_tree<size_t, Map>(first, last);
+    auto searcher = detail::suffix_tree_searcher<Map>{};
+    return invoke(searcher, std::make_pair(first, last));
 }
 
 template <template <class...> class Map = std::unordered_map, class RandomRng>

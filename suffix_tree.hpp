@@ -3,7 +3,6 @@
 #ifndef STEP_SUFFIX_TREE_HPP
 #define STEP_SUFFIX_TREE_HPP
 
-#include <limits>
 #include <optional>
 #include <stack>
 #include <step/detail/utility.hpp>
@@ -55,7 +54,7 @@ public:
     void push_back(T val) try {
         str_.push_back(val);
         for (auto connect = make_linker(); reminder(pos_);) {
-            if (auto& edge = nodes_[link_].edges[str_[pos_]]; edge) {
+            if (auto& edge = nodes_[link_].edges[str_[pos_]]) {
                 if (walk_down(edge))
                     continue;
                 if (!split(edge))
@@ -99,22 +98,22 @@ public:
      * (padded with a terminal symbol not seen in the string).
      */
     template <class InputIt, class OutputIt>
-    OutputIt find_all(InputIt first, InputIt last, OutputIt out) const
+    OutputIt find_all(InputIt first, InputIt last, OutputIt result) const
     {
         if (auto way = find_path(first, last))
             dfs(*way,
                 [&](const auto& str, const auto&, auto len) {
                     if (suffix(str))
-                        *out++ = str.second - len;
+                        *result++ = str.second - len;
                 },
                 [](auto&&...) {});
-        return out;
+        return result;
     }
 
     template <class InputRng, class OutputIt>
-    OutputIt find_all(const InputRng& rng, OutputIt out) const
+    OutputIt find_all(const InputRng& rng, OutputIt result) const
     {
-        return find_all(std::begin(rng), std::end(rng), out);
+        return find_all(std::begin(rng), std::end(rng), result);
     }
 
     /**

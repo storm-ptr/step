@@ -28,7 +28,18 @@ public:
     Size nth_element(Size nth) const { return idx_[nth]; }
 
     template <class InputIt>
-    suffix_array(InputIt first, InputIt last) : str_(first, last), idx_(size())
+    suffix_array(InputIt first, InputIt last)
+        : suffix_array(std::vector<T>(first, last))
+    {
+    }
+
+    template <class InputRng>
+    suffix_array(const InputRng& rng)
+        : suffix_array(std::begin(rng), std::end(rng))
+    {
+    }
+
+    suffix_array(std::vector<T>&& str) : str_(std::move(str)), idx_(size())
     {
         auto gen = [i = Size{}]() mutable { return suffix{i++}; };
         auto pos = [](auto& sfx) { return sfx.pos; };
@@ -47,11 +58,6 @@ public:
             fill_first_rank(sfxs.begin(), sfxs.end(), by_rank);
         }
         std::transform(sfxs.begin(), sfxs.end(), idx_.begin(), pos);
-    }
-
-    template <class InputRng>
-    suffix_array(const InputRng& rng) : suffix_array(rng.begin(), rng.end())
-    {
     }
 
     /**
@@ -101,10 +107,11 @@ public:
     template <class RandomIt>
     void longest_common_prefix_array(RandomIt result) const
     {
-        std::vector<Size> inv(size());
-        inverse_suffix_array(inv.begin());
+        std::vector<Size> inverse(size());
+        for (Size i = 0; i < size(); ++i)
+            inverse[idx_[i]] = i;
         for (Size pos = 0, lcp = 0; pos < size(); ++pos) {
-            auto cur = inv[pos];
+            auto cur = inverse[pos];
             auto next = cur + 1;
             if (next < size()) {
                 auto diff = std::mismatch(str_.begin() + pos + lcp,
@@ -134,8 +141,8 @@ private:
     std::vector<T> str_;
     std::vector<Size> idx_;
 
-    template <class SfxIt, class Cmp>
-    static void fill_first_rank(SfxIt first, SfxIt last, const Cmp& cmp)
+    template <class SuffixIt, class Cmp>
+    static void fill_first_rank(SuffixIt first, SuffixIt last, const Cmp& cmp)
     {
         if (first == last)
             return;
@@ -149,26 +156,20 @@ private:
         first->rank.first = i;
     }
 
-    template <class SfxIt, class RandomIt>
-    static void inverse_first_rank(SfxIt first, SfxIt last, RandomIt result)
+    template <class SuffixIt>
+    static void fill_second_rank(SuffixIt first, SuffixIt last, Size shift)
     {
+        std::vector<Size> inverse(std::distance(first, last));
         std::for_each(
-            first, last, [&](auto& sfx) { result[sfx.pos] = sfx.rank.first; });
-    }
-
-    template <class SfxIt>
-    static void fill_second_rank(SfxIt first, SfxIt last, Size shift)
-    {
-        std::vector<Size> inv(std::distance(first, last));
-        inverse_first_rank(first, last, inv.begin());
+            first, last, [&](auto& sfx) { inverse[sfx.pos] = sfx.rank.first; });
         std::for_each(first, last, [&](auto& sfx) {
             Size pos = sfx.pos + shift;
-            sfx.rank.second = pos < inv.size() ? inv[pos] : 0;
+            sfx.rank.second = pos < inverse.size() ? inverse[pos] : 0;
         });
     }
 
-    template <class SfxIt>
-    static bool is_sorted(SfxIt first, SfxIt last)
+    template <class SuffixIt>
+    static bool is_sorted(SuffixIt first, SuffixIt last)
     {
         return first == last ||
                std::prev(last)->rank.first == std::distance(first, last);
@@ -183,13 +184,6 @@ private:
                        ? (lefty ? cmp_(str_[pos], val) : cmp_(val, str_[pos]))
                        : lefty;
         };
-    }
-
-    template <class RandomIt>
-    void inverse_suffix_array(RandomIt result) const
-    {
-        for (Size i = 0; i < size(); ++i)
-            result[idx_[i]] = i;
     }
 };
 

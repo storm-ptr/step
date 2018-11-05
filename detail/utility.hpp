@@ -4,7 +4,9 @@
 #define STEP_UTILITY_HPP
 
 #include <array>
+#include <cstdint>
 #include <iterator>
+#include <limits>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -82,6 +84,27 @@ using key_equal_or_equivalence =
     typename std::conditional_t<has_key_equal<T>::value,
                                 key_equal<T>,
                                 key_equivalence<T>>::type;
+
+template <class T, class... It>
+void append(T&& to, std::pair<It, It>... from)
+{
+    to.reserve(to.size() + (std::distance(from.first, from.second) + ...));
+    (std::copy(from.first, from.second, std::back_inserter(to)), ...);
+}
+
+template <class F, class... It>
+auto invoke(F&& f, std::pair<It, It>... args)
+{
+    auto size = (std::distance(args.first, args.second) + ...);
+    if (size < std::numeric_limits<int8_t>::max())
+        return f((uint8_t)size, args...);
+    else if (size < std::numeric_limits<int16_t>::max())
+        return f((uint16_t)size, args...);
+    else if (size < std::numeric_limits<int32_t>::max())
+        return f((uint32_t)size, args...);
+    else
+        return f((size_t)size, args...);
+}
 
 }  // namespace step
 

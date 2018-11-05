@@ -4,8 +4,6 @@
 #define STEP_TEST_SUFFIX_HPP
 
 #include <chrono>
-#include <cstdint>
-#include <iterator>
 #include <map>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
