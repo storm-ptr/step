@@ -18,18 +18,18 @@ class floating_point {
     T value_{};
     T error_{};
 
-    auto tie() const { return std::tie(value_, error_); }
+    constexpr auto tie() const { return std::tie(value_, error_); }
 
 public:
-    /* implicit */ constexpr floating_point(const T& value) : value_{value} {}
-
-    constexpr T value() const { return value_; }
+    constexpr floating_point() = default;
+    constexpr floating_point(const T& value) : value_{value} {}
+    explicit operator T() const { return value_; }
 
     friend constexpr floating_point operator+(const floating_point& lhs,
                                               const floating_point& rhs)
     {
         auto term = rhs.value_ - (lhs.error_ + rhs.error_);
-        floating_point result(lhs.value_ + term);
+        auto result = floating_point(lhs.value_ + term);
         result.error_ = (result.value_ - lhs.value_) - term;
         return result;
     }

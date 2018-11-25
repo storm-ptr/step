@@ -191,7 +191,7 @@ template <class InputIt>
 suffix_array(InputIt, InputIt)->suffix_array<iterator_value<InputIt>>;
 
 template <class InputRng>
-suffix_array(const InputRng&)->suffix_array<range_value<InputRng>>;
+suffix_array(InputRng)->suffix_array<range_value<InputRng>>;
 
 }  // namespace step
 

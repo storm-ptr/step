@@ -5,6 +5,7 @@
 
 #include <chrono>
 #include <map>
+#include <step/blob.hpp>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
 #include <step/test/utility.hpp>
@@ -241,34 +242,32 @@ inline auto benchmark_array(std::string_view str)
         .count();
 }
 
-inline void benchmark(size_t len)
+inline void benchmark(size_t len, step::blob& result)
 {
     auto str = make_random_string(len);
     str.back() = '$';
-    auto rnd_tree = benchmark_tree(str);
-    auto rnd_arr = benchmark_array(str);
-
+    step::write_variant(static_cast<int64_t>(str.size()), result);
+    step::write_variant(benchmark_array(str), result);
+    step::write_variant(benchmark_tree(str), result);
     auto mid = str.begin() + str.size() / 2;
     std::copy(str.begin(), mid, mid);
     str.back() = '$';
-    auto dual_tree = benchmark_tree(str);
-    auto dual_arr = benchmark_array(str);
-
-    std::cout << " " << right(str.size()) << " | " << right(rnd_tree) << " | "
-              << right(dual_tree) << " | " << right(rnd_arr) << " | "
-              << right(dual_arr) << " |\n";
+    step::write_variant(benchmark_array(str), result);
+    step::write_variant(benchmark_tree(str), result);
 }
 
 TEST_CASE("suffix_array_n_tree_complexity")
 {
-    std::cout << " " << left("") << " | " << left("suffix tree") << " | "
-              << left("suffix tree") << " | " << left("suffix array") << " | "
-              << left("suffix array") << " |\n"
-              << " " << left("text (chars)") << " | " << left("random (ms)")
-              << " | " << left("doubled (ms)") << " | " << left("random (ms)")
-              << " | " << left("doubled (ms)") << " |\n";
-    for (size_t i = 18; i < 22; ++i)
-        benchmark(std::exp2(i));
+    step::blob result;
+    for (size_t i = 17; i < 21; ++i)
+        benchmark(std::exp2(i), result);
+    std::cout << step::table{
+        {"text (chars)",
+         "suffix array (ms)",
+         "suffix tree (ms)",
+         "half copy SA (ms)",
+         "half copy ST (ms)"},
+        step::make_variants(static_cast<step::blob_view>(result))};
 }
 
 #endif  // STEP_TEST_SUFFIX_HPP
