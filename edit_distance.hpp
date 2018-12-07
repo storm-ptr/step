@@ -7,8 +7,7 @@
 #include <optional>
 #include <step/detail/hirschberg.hpp>
 
-namespace step {
-namespace edit_distance {
+namespace step::edit_distance {
 namespace detail {
 
 template <class ForwardIt, class T, class OutputIt, class Equal, class BinaryOp>
@@ -152,7 +151,6 @@ OutputIt join(const RandomRng1& rng1, const RandomRng2& rng2, OutputIt result)
                                result);
 }
 
-}  // namespace edit_distance
-}  // namespace step
+}  // namespace step::edit_distance
 
 #endif  // STEP_EDIT_DISTANCE_HPP

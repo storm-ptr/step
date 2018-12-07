@@ -119,15 +119,15 @@ void append(T&& dest, std::pair<It, It>... src)
 template <class F, class... It>
 auto invoke(F&& f, std::pair<It, It>... args)
 {
-    auto size = (std::distance(args.first, args.second) + ...);
-    if (size < std::numeric_limits<int8_t>::max())
-        return f((uint8_t)size, args...);
-    else if (size < std::numeric_limits<int16_t>::max())
-        return f((uint16_t)size, args...);
-    else if (size < std::numeric_limits<int32_t>::max())
-        return f((uint32_t)size, args...);
+    auto count = (std::distance(args.first, args.second) + ...);
+    if (count < std::numeric_limits<int8_t>::max())
+        return f((uint8_t)count, args...);
+    else if (count < std::numeric_limits<int16_t>::max())
+        return f((uint16_t)count, args...);
+    else if (count < std::numeric_limits<int32_t>::max())
+        return f((uint32_t)count, args...);
     else
-        return f((size_t)size, args...);
+        return f((size_t)count, args...);
 }
 
 }  // namespace step

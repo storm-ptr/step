@@ -242,32 +242,31 @@ inline auto benchmark_array(std::string_view str)
         .count();
 }
 
-inline void benchmark(size_t len, step::blob& result)
+inline void benchmark(size_t len, step::blob::container& result)
 {
     auto str = make_random_string(len);
     str.back() = '$';
-    step::write_variant(static_cast<int64_t>(str.size()), result);
-    step::write_variant(benchmark_array(str), result);
-    step::write_variant(benchmark_tree(str), result);
+    result << step::blob::variant(static_cast<int64_t>(str.size()))
+           << step::blob::variant(benchmark_array(str))
+           << step::blob::variant(benchmark_tree(str));
     auto mid = str.begin() + str.size() / 2;
     std::copy(str.begin(), mid, mid);
     str.back() = '$';
-    step::write_variant(benchmark_array(str), result);
-    step::write_variant(benchmark_tree(str), result);
+    result << step::blob::variant(benchmark_array(str))
+           << step::blob::variant(benchmark_tree(str));
 }
 
 TEST_CASE("suffix_array_n_tree_complexity")
 {
-    step::blob result;
+    step::blob::container result;
     for (size_t i = 17; i < 21; ++i)
         benchmark(std::exp2(i), result);
-    std::cout << step::table{
-        {"text (chars)",
-         "suffix array (ms)",
-         "suffix tree (ms)",
-         "half copy SA (ms)",
-         "half copy ST (ms)"},
-        step::make_variants(static_cast<step::blob_view>(result))};
+    std::cout << step::blob::table{{"text (chars)",
+                                    "suffix array (ms)",
+                                    "suffix tree (ms)",
+                                    "half copy SA (ms)",
+                                    "half copy ST (ms)"},
+                                   result};
 }
 
 #endif  // STEP_TEST_SUFFIX_HPP

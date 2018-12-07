@@ -61,8 +61,8 @@ Algorithms:
   ```C++
   int arr[] = {-2, -3, 4, -1, -2, 1, 5, -3};
   std::array expect{4, -1, -2, 1, 5};
-  auto sub = step::maximum_subarray::find(arr);
-  CHECK(std::equal(sub.first, sub.second, expect.begin(), expect.end()));
+  auto range = step::maximum_subarray::find(arr);
+  CHECK(std::equal(range.first, range.second, expect.begin(), expect.end()));
   ```
   </p></details>
 

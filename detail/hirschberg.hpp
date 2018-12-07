@@ -4,10 +4,9 @@
 #define STEP_HIRSCHBERG_HPP
 
 #include <algorithm>
-#include <step/detail/utility.hpp>
+#include <step/utility.hpp>
 
-namespace step {
-namespace hirschberg {
+namespace step::hirschberg {
 namespace detail {
 
 template <class RandomIt1, class RandomIt2, class DynamicProg, class BinaryOp>
@@ -60,7 +59,6 @@ OutputIt trace(RandomIt1 first1,
     return result;
 }
 
-}  // namespace hirschberg
-}  // namespace step
+}  // namespace step::hirschberg
 
 #endif  // STEP_HIRSCHBERG_HPP

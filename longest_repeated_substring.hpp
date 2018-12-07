@@ -4,14 +4,12 @@
 #define STEP_LONGEST_REPEATED_SUBSTRING_HPP
 
 #include <algorithm>
-#include <step/detail/utility.hpp>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
+#include <step/utility.hpp>
 
 /// @see https://en.wikipedia.org/wiki/Longest_repeated_substring_problem
-
-namespace step {
-namespace longest_repeated_substring {
+namespace step::longest_repeated_substring {
 namespace detail {
 
 template <class Compare>
@@ -102,7 +100,6 @@ auto find_with_suffix_tree(const RandomRng& rng)
         std::begin(rng), std::end(rng));
 }
 
-}  // namespace longest_repeated_substring
-}  // namespace step
+}  // namespace step::longest_repeated_substring
 
 #endif  // STEP_LONGEST_REPEATED_SUBSTRING_HPP

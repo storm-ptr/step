@@ -10,8 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace step {
-namespace longest_increasing_subsequence {
+namespace step::longest_increasing_subsequence {
 namespace detail {
 
 /*
@@ -101,7 +100,6 @@ auto partition(RandomRng& rng)
                                                      std::end(rng));
 }
 
-}  // namespace longest_increasing_subsequence
-}  // namespace step
+}  // namespace step::longest_increasing_subsequence
 
 #endif  // STEP_LONGEST_INCREASING_SUBSEQUENCE_HPP

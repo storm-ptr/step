@@ -5,8 +5,7 @@
 
 #include <tuple>
 
-namespace step {
-namespace kahan {
+namespace step::kahan {
 
 /**
  * Reduces the numerical error in the total obtained by adding a sequence of
@@ -60,7 +59,6 @@ struct plus {
     }
 };
 
-}  // namespace kahan
-}  // namespace step
+}  // namespace step::kahan
 
 #endif  // STEP_KAHAN_HPP

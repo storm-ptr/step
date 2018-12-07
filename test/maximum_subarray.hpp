@@ -12,8 +12,8 @@ TEST_CASE("maximum_subarray_hello_world")
 {
     int arr[] = {-2, -3, 4, -1, -2, 1, 5, -3};
     std::array expect{4, -1, -2, 1, 5};
-    auto sub = step::maximum_subarray::find(arr);
-    CHECK(std::equal(sub.first, sub.second, expect.begin(), expect.end()));
+    auto range = step::maximum_subarray::find(arr);
+    CHECK(std::equal(range.first, range.second, expect.begin(), expect.end()));
 }
 
 TEST_CASE("maximum_subarray_find")
@@ -29,8 +29,8 @@ TEST_CASE("maximum_subarray_find")
         {{7, -6, -8, 5, -2, -6, 7, 4, 8, -9, -3, 2, 6, -4, -6}, {7, 4, 8}},
         {{0, 1, 2, -3, 3, -1, 0, -4, 0, -1, -4, 2}, {1, 2}}};
     for (auto& [arr, expect] : tests) {
-        auto sub = step::maximum_subarray::find(arr);
-        CHECK(std::vector<int>(sub.first, sub.second) == expect);
+        auto rng = step::maximum_subarray::find(arr);
+        CHECK(std::vector<int>(rng.first, rng.second) == expect);
     }
 }
 
@@ -39,10 +39,10 @@ TEST_CASE("maximum_subarray_kahan")
     using namespace step::maximum_subarray;
     std::vector<float> v{1.};
     v.insert(v.end(), 10000000, 0.0000001);
-    auto sub = find(v);
-    auto kahan_sub = find(v, step::kahan::plus{}, std::less{});
-    CHECK(std::distance(sub.first, sub.second) < v.size());
-    CHECK(std::distance(kahan_sub.first, kahan_sub.second) == v.size());
+    auto rng = find(v);
+    auto kahan_rng = find(v, step::kahan::plus{}, std::less{});
+    CHECK(std::distance(rng.first, rng.second) < v.size());
+    CHECK(std::distance(kahan_rng.first, kahan_rng.second) == v.size());
 }
 
 #endif  // STEP_TEST_MAXIMUM_SUBARRAY_HPP

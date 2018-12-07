@@ -5,27 +5,29 @@
 
 #include <functional>
 #include <limits>
-#include <step/detail/utility.hpp>
+#include <numeric>
 #include <step/kahan.hpp>
+#include <type_traits>
 
-template <class InputIt, class BinaryOp>
-auto sum(InputIt first, InputIt last, BinaryOp op)
+template <class T>
+std::enable_if_t<std::is_floating_point_v<T>> test_kahan()
 {
-    decltype(op(*first, *first)) result{};
-    for (; first != last; ++first)
-        result = op(result, *first);
-    return static_cast<step::iterator_value<InputIt>>(result);
+    T eps = std::numeric_limits<T>::epsilon();
+    T quarter = eps / (T)4.;
+    T arr[] = {(T)1., quarter, quarter, quarter, quarter};
+    T acc = std::accumulate(std::begin(arr), std::end(arr), T{});
+    T kahan_acc = (T)std::accumulate(
+        std::begin(arr), std::end(arr), step::kahan::floating_point<T>{});
+    CHECK((T)1. != (T)1. + eps);
+    CHECK(acc == (T)1.);
+    CHECK(kahan_acc == (T)1. + eps);
 }
 
 TEST_CASE("kahan")
 {
-    long double eps = std::numeric_limits<long double>::epsilon();
-    long double quarter = eps / 4.;
-    long double arr[] = {1., quarter, quarter, quarter, quarter};
-    long double a = sum(std::begin(arr), std::end(arr), std::plus{});
-    long double b = sum(std::begin(arr), std::end(arr), step::kahan::plus{});
-    CHECK(a == 1.);
-    CHECK(b == 1. + eps);
+    test_kahan<float>();
+    test_kahan<double>();
+    test_kahan<long double>();
 }
 
 #endif  // STEP_TEST_KAHAN_HPP

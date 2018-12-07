@@ -6,8 +6,7 @@
 #include <algorithm>
 #include <step/detail/hirschberg.hpp>
 
-namespace step {
-namespace longest_common_subsequence {
+namespace step::longest_common_subsequence {
 namespace detail {
 
 template <class Equal>
@@ -113,7 +112,6 @@ OutputIt intersection(const RandomRng1& rng1,
                                                     result);
 }
 
-}  // namespace longest_common_subsequence
-}  // namespace step
+}  // namespace step::longest_common_subsequence
 
 #endif  // STEP_LONGEST_COMMON_SUBSEQUENCE_HPP

@@ -6,8 +6,7 @@
 #include <iterator>
 #include <utility>
 
-namespace step {
-namespace maximum_subarray {
+namespace step::maximum_subarray {
 namespace detail {
 
 template <class T, class ForwardIt>
@@ -74,7 +73,6 @@ auto find(const ForwardRng& rng)
     return maximum_subarray::find(std::begin(rng), std::end(rng));
 }
 
-}  // namespace maximum_subarray
-}  // namespace step
+}  // namespace step::maximum_subarray
 
 #endif  // STEP_MAXIMUM_SUBARRAY_HPP

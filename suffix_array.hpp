@@ -4,7 +4,7 @@
 #define STEP_SUFFIX_ARRAY_HPP
 
 #include <algorithm>
-#include <step/detail/utility.hpp>
+#include <step/utility.hpp>
 
 namespace step {
 
