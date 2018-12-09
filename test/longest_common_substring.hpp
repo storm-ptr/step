@@ -5,7 +5,7 @@
 
 #include <map>
 #include <step/longest_common_substring.hpp>
-#include <step/test/utility.hpp>
+#include <step/test/case_insensitive.hpp>
 #include <string_view>
 
 TEST_CASE("longest_common_substring_hello_world")
@@ -50,11 +50,11 @@ TEST_CASE("longest_common_substring_case_insensitive")
     const auto expect = "geeks"s;
 
     auto arr_rng = step::longest_common_substring::find_with_suffix_array<
-        case_insensitive_less>(str1, str2);
+        step::case_insensitive::less>(str1, str2);
     CHECK(expect == std::string(arr_rng.first, arr_rng.second));
 
     auto tree_rng = step::longest_common_substring::find_with_suffix_tree<
-        case_insensitive_unordered_map>(str1, str2);
+        step::case_insensitive::unordered_map>(str1, str2);
     CHECK(expect == std::string(tree_rng.first, tree_rng.second));
 }
 

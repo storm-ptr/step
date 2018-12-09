@@ -1,6 +1,5 @@
 // Andrew Naplavkov
 
-#include <step/blob.hpp>
 #include <step/edit_distance.hpp>
 #include <step/kahan.hpp>
 #include <step/longest_common_subsequence.hpp>

@@ -4,7 +4,7 @@
 #define STEP_TEST_LONGEST_COMMON_SUBSEQUENCE_HPP
 
 #include <step/longest_common_subsequence.hpp>
-#include <step/test/utility.hpp>
+#include <step/test/case_insensitive.hpp>
 #include <string_view>
 
 TEST_CASE("longest_common_subsequence_hello_world")
@@ -31,7 +31,10 @@ TEST_CASE("longest_common_subsequence_intersection")
     for (auto& [lhs, rhs, expect] : tests) {
         std::string str;
         step::longest_common_subsequence::intersection(
-            lhs, rhs, std::back_inserter(str), case_insensitive_equal_to{});
+            lhs,
+            rhs,
+            std::back_inserter(str),
+            step::case_insensitive::equal_to{});
         CHECK(str == expect);
     }
 }

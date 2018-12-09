@@ -3,12 +3,13 @@
 #ifndef STEP_TEST_SUFFIX_HPP
 #define STEP_TEST_SUFFIX_HPP
 
+#include <algorithm>
 #include <chrono>
 #include <map>
-#include <step/blob.hpp>
+#include <random>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
-#include <step/test/utility.hpp>
+#include <step/test/blob.hpp>
 #include <string_view>
 
 using namespace std::literals;
@@ -182,6 +183,22 @@ TEST_CASE("suffix_array_n_tree_find")
         CHECK(std::is_permutation(
             tree_all.begin(), tree_all.end(), expect.begin(), expect.end()));
     }
+}
+
+inline std::string make_random_string(size_t len)
+{
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    static std::mt19937 generator{std::random_device{}()};
+    static std::uniform_int_distribution<size_t> distribution{
+        0, sizeof(alphanum) - 2};
+    std::string result(len, '\0');
+    std::generate(result.begin(), result.end(), [&] {
+        return alphanum[distribution(generator)];
+    });
+    return result;
 }
 
 TEST_CASE("suffix_array_n_tree_cross_check")

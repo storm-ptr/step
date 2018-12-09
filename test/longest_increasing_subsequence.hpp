@@ -6,7 +6,7 @@
 #include <deque>
 #include <sstream>
 #include <step/longest_increasing_subsequence.hpp>
-#include <step/test/utility.hpp>
+#include <step/test/case_insensitive.hpp>
 #include <string_view>
 
 TEST_CASE("longest_increasing_subsequence_hello_world")
@@ -27,7 +27,7 @@ TEST_CASE("longest_increasing_subsequence_partition")
     CHECK(os.str() == "0 2 6 9 11 15 ");
 
     std::string str{"CBfdEA"};
-    auto it = partition(str, case_insensitive_less{});
+    auto it = partition(str, step::case_insensitive::less{});
     CHECK(std::string_view(str.c_str(), std::distance(str.begin(), it)) ==
           "BdE");
 

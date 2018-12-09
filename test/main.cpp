@@ -4,7 +4,6 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
-#include <step/test/blob.hpp>
 #include <step/test/edit_distance.hpp>
 #include <step/test/kahan.hpp>
 #include <step/test/longest_common_subsequence.hpp>

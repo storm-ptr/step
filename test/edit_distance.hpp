@@ -4,7 +4,7 @@
 #define STEP_TEST_EDIT_DISTANCE_HPP
 
 #include <step/edit_distance.hpp>
-#include <step/test/utility.hpp>
+#include <step/test/case_insensitive.hpp>
 #include <string_view>
 
 using option_t = std::optional<char>;
@@ -66,8 +66,10 @@ TEST_CASE("edit_distance_associate")
                           {'i', std::nullopt}}}};
     for (auto& [lhs, rhs, expect] : tests) {
         pairs_t pairs;
-        step::edit_distance::join(
-            lhs, rhs, std::back_inserter(pairs), case_insensitive_equal_to{});
+        step::edit_distance::join(lhs,
+                                  rhs,
+                                  std::back_inserter(pairs),
+                                  step::case_insensitive::equal_to{});
         CHECK(pairs == expect);
     }
 }
