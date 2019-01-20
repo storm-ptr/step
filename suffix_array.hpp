@@ -188,10 +188,10 @@ private:
 };
 
 template <class InputIt>
-suffix_array(InputIt, InputIt)->suffix_array<iterator_value<InputIt>>;
+suffix_array(InputIt, InputIt)->suffix_array<iter_value_t<InputIt>>;
 
 template <class InputRng>
-suffix_array(InputRng)->suffix_array<range_value<InputRng>>;
+suffix_array(InputRng)->suffix_array<range_value_t<InputRng>>;
 
 }  // namespace step
 

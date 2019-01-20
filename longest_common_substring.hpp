@@ -19,7 +19,7 @@ struct suffix_array_searcher {
                     std::pair<RandomIt1, RandomIt1> rng1,
                     std::pair<RandomIt2, RandomIt2> rng2) const
     {
-        using value_t = iterator_value<RandomIt1>;
+        using value_t = iter_value_t<RandomIt1>;
         auto result = std::make_pair(rng1.second, rng1.second);
         auto str = std::vector<value_t>{};
         append(str, rng1, rng2);
@@ -54,7 +54,7 @@ struct suffix_tree_searcher {
                     std::pair<RandomIt2, RandomIt2> rng2) const
     {
         auto result = std::make_pair(rng1.second, rng1.second);
-        auto tree = suffix_tree<iterator_value<RandomIt1>, Size, Map>{};
+        auto tree = suffix_tree<iter_value_t<RandomIt1>, Size, Map>{};
         append(tree, rng1, rng2);
         auto flags = std::unordered_map<Size, uint8_t>{};
         Size size1 = std::distance(rng1.first, rng1.second);

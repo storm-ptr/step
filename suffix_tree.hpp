@@ -131,7 +131,7 @@ public:
     }
 
 private:
-    inline static const auto eq_ = key_equal_or_equivalence<Map<T, Size>>{};
+    inline static const auto eq_ = key_equal_or_equivalence_t<Map<T, Size>>{};
 
     struct node {
         Map<T, Size> edges;

@@ -22,6 +22,10 @@ struct overloaded : Ts... {
 template <class... Ts>
 overloaded(Ts...)->overloaded<Ts...>;
 
+template <class T, class Result = void>
+using if_arithmetic_t =
+    std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, Result>;
+
 struct make_pair {
     template <class Lhs, class Rhs>
     constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
@@ -83,27 +87,25 @@ struct key_equivalence {
 };
 
 template <class T>
-using key_equal_or_equivalence =
+using key_equal_or_equivalence_t =
     typename std::conditional_t<has_key_equal<T>::value,
                                 key_equal<T>,
                                 key_equivalence<T>>::type;
 
 template <class It>
-using iterator_value = typename std::iterator_traits<It>::value_type;
+using iter_value_t = typename std::iterator_traits<It>::value_type;
 
 template <class Rng>
-using range_value = iterator_value<decltype(std::declval<Rng>().begin())>;
+using iterator_t = decltype(std::declval<Rng>().begin());
 
-template <class T, class R = void>
-using if_trivially_copyable =
-    std::enable_if_t<std::is_trivially_copyable_v<T>, R>;
+template <class Rng>
+using range_value_t = iter_value_t<iterator_t<Rng>>;
 
 template <class V, class T, size_t I = 0>
 constexpr size_t variant_index()
 {
-    if constexpr (I == std::variant_size_v<V>)
-        return I;
-    else if constexpr (std::is_same_v<std::variant_alternative_t<I, V>, T>)
+    if constexpr (I == std::variant_size_v<V> ||
+                  std::is_same_v<std::variant_alternative_t<I, V>, T>)
         return I;
     else
         return variant_index<V, T, I + 1>();

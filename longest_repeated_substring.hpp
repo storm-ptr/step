@@ -17,7 +17,7 @@ struct suffix_array_searcher {
     template <class Size, class RandomIt>
     auto operator()(Size, std::pair<RandomIt, RandomIt> rng) const
     {
-        using value_t = iterator_value<RandomIt>;
+        using value_t = iter_value_t<RandomIt>;
         auto result = std::make_pair(rng.second, rng.second);
         auto arr = suffix_array<value_t, Size, Compare>{rng.first, rng.second};
         auto lcp = std::vector<Size>(arr.size());
@@ -38,7 +38,7 @@ struct suffix_tree_searcher {
     auto operator()(Size, std::pair<RandomIt, RandomIt> rng) const
     {
         auto result = std::make_pair(rng.second, rng.second);
-        auto tree = suffix_tree<iterator_value<RandomIt>, Size, Map>{};
+        auto tree = suffix_tree<iter_value_t<RandomIt>, Size, Map>{};
         append(tree, rng);
         tree.visit(
             [&](const auto& str, const auto&, auto len) {
