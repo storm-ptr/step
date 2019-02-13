@@ -1,4 +1,4 @@
-CXXFLAGS=/std:c++17 /O2 /EHsc $(CXXFLAGS)
+CXXFLAGS=/std:c++17 /EHsc /O2 /W3 $(CXXFLAGS)
 EXECUTABLE=diff.exe
 INCLUDE=..\..\..;$(INCLUDE)
 OBJECTS=$(SOURCES:.cpp=.obj)

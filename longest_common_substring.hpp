@@ -26,7 +26,7 @@ struct suffix_array_searcher {
         auto arr = suffix_array<value_t, Size, Compare>{std::move(str)};
         auto lcp = std::vector<Size>(arr.size());
         arr.longest_common_prefix_array(lcp.begin());
-        Size size1 = std::distance(rng1.first, rng1.second);
+        auto size1 = (Size)std::distance(rng1.first, rng1.second);
         for (Size i = 1; i < arr.size(); ++i) {
             auto prev = arr.nth_element(i - 1);
             auto cur = arr.nth_element(i);
@@ -57,7 +57,7 @@ struct suffix_tree_searcher {
         auto tree = suffix_tree<iter_value_t<RandomIt1>, Size, Map>{};
         append(tree, rng1, rng2);
         auto flags = std::unordered_map<Size, uint8_t>{};
-        Size size1 = std::distance(rng1.first, rng1.second);
+        auto size1 = (Size)std::distance(rng1.first, rng1.second);
         tree.visit([](auto&&...) {},
                    [&](const auto& str, const auto& parent_str, auto len) {
                        if (!tree.suffix(str))

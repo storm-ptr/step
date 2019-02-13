@@ -23,7 +23,7 @@ public:
     using value_type = T;
     using size_type = Size;
 
-    Size size() const { return str_.size(); }
+    auto size() const { return (Size)str_.size(); }
     auto data() const { return str_.data(); }
     Size nth_element(Size nth) const { return idx_[nth]; }
 
@@ -119,7 +119,7 @@ public:
                                           str_.begin() + idx_[next] + lcp,
                                           str_.end(),
                                           eq_);
-                lcp = std::distance(str_.begin() + pos, diff.first);
+                lcp = (Size)std::distance(str_.begin() + pos, diff.first);
             }
             else
                 lcp = 0;

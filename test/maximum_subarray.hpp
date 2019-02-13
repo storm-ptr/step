@@ -38,10 +38,10 @@ TEST_CASE("maximum_subarray_kahan")
 {
     using namespace step::maximum_subarray;
     std::vector<float> v{1.};
-    v.insert(v.end(), 10000000, 0.0000001);
+    v.insert(v.end(), 10000000, 0.0000001f);
     auto rng = find(v);
     auto kahan_rng = find(v, step::kahan::plus{}, std::less{});
-    CHECK(std::distance(rng.first, rng.second) < v.size());
+    CHECK((size_t)std::distance(rng.first, rng.second) < v.size());
     CHECK(std::distance(kahan_rng.first, kahan_rng.second) == v.size());
 }
 

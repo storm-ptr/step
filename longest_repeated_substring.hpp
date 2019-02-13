@@ -24,7 +24,7 @@ struct suffix_array_searcher {
         arr.longest_common_prefix_array(lcp.begin());
         auto it = std::max_element(lcp.begin(), lcp.end());
         if (it != lcp.end() && *it > 0) {
-            auto pos = arr.nth_element(std::distance(lcp.begin(), it));
+            auto pos = arr.nth_element((Size)std::distance(lcp.begin(), it));
             result.first = rng.first + pos;
             result.second = result.first + *it;
         }

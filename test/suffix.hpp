@@ -210,7 +210,7 @@ TEST_CASE("suffix_array_n_tree_cross_check")
 
         step::suffix_array<char, uint16_t> arr{str};
         step::suffix_tree<char, uint16_t, std::map> tree{};
-        tree.reserve(str.size());
+        tree.reserve((uint16_t)str.size());
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
 
         CHECK(suffix_array_order(arr) == suffix_tree_order(tree));
@@ -244,7 +244,7 @@ using custom_map = std::unordered_map<Key, T, std::hash<Key>, std::equal_to<>>;
 inline auto benchmark_tree(std::string_view str)
 {
     step::suffix_tree<char, uint32_t, custom_map> tree{};
-    tree.reserve(str.size());
+    tree.reserve((uint32_t)str.size());
     auto start = high_resolution_clock::now();
     std::copy(str.begin(), str.end(), std::back_inserter(tree));
     return duration_cast<milliseconds>(high_resolution_clock::now() - start)
@@ -274,7 +274,7 @@ TEST_CASE("suffix_array_n_tree_complexity")
 {
     step::variant_ostream result;
     for (size_t i = 17; i < 21; ++i)
-        benchmark(std::exp2(i), result);
+        benchmark((size_t)std::exp2(i), result);
     std::cout << step::rowset{{"text (chars)",
                                "suffix array (ms)",
                                "suffix tree (ms)",

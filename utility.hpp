@@ -114,7 +114,9 @@ constexpr size_t variant_index()
 template <class T, class... It>
 void append(T&& dest, std::pair<It, It>... src)
 {
-    dest.reserve(dest.size() + (std::distance(src.first, src.second) + ...));
+    using size_type = decltype(dest.size());
+    dest.reserve(dest.size() +
+                 ((size_type)std::distance(src.first, src.second) + ...));
     (std::copy(src.first, src.second, std::back_inserter(dest)), ...);
 }
 

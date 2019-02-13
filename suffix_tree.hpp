@@ -28,7 +28,7 @@ public:
     using size_type = Size;
     using substring = std::pair<Size, Size>;  // half-open position range
 
-    Size size() const { return str_.size(); }
+    auto size() const { return (Size)str_.size(); }
     auto data() const { return str_.data(); }
 
     static Size size(const substring& str) { return str.second - str.first; }
@@ -59,7 +59,7 @@ public:
                     continue;
                 if (!split(edge))
                     return connect(link_);
-                connect(nodes_.size() - 1);
+                connect(nodes() - 1);
             }
             else {
                 edge = inverse(pos_);
@@ -146,7 +146,8 @@ private:
 
     static Size inverse(Size n) { return std::numeric_limits<Size>::max() - n; }
     Size reminder(Size pos) const { return size() - pos; }
-    bool leaf(Size link) const { return link >= nodes_.size(); }
+    auto nodes() const { return (Size)nodes_.size(); }
+    bool leaf(Size link) const { return link >= nodes(); }
 
     auto substr(Size link) const
     {
@@ -157,8 +158,8 @@ private:
     {
         if (nodes_.empty())
             nodes_.emplace_back();  // root
-        return [this, last = nodes_.size()](Size link) mutable {
-            if (last < nodes_.size() && last != link)
+        return [this, last = nodes()](Size link) mutable {
+            if (last < nodes() && last != link)
                 nodes_[last++].link = link;
         };
     }
@@ -181,7 +182,7 @@ private:
         if (eq_(str_[tail.first], str_.back()))
             return false;
         Size link = edge;
-        edge = nodes_.size();
+        edge = nodes();
         nodes_.push_back({{{str_.back(), inverse(size() - 1)}}, head});
         if (leaf(link))
             nodes_.back().edges[str_[tail.first]] = inverse(tail.first);

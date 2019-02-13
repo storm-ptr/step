@@ -1,4 +1,4 @@
-CXXFLAGS+=-std=c++17 -O2
+CXXFLAGS+=-std=c++17 -O2 -Wall
 EXECUTABLE=diff
 INCLUDEPATH=../../..
 INCFLAGS=$(foreach x, $(INCLUDEPATH), -I$x)
