@@ -172,7 +172,7 @@ private:
     static bool is_sorted(SuffixIt first, SuffixIt last)
     {
         return first == last ||
-               std::prev(last)->rank.first == std::distance(first, last);
+               std::prev(last)->rank.first == (Size)std::distance(first, last);
     }
 
     auto compare_with(T val, Size shift) const

@@ -204,7 +204,7 @@ private:
     std::optional<path> find_path(InputIt first, InputIt last) const
     {
         if (nodes_.empty())
-            return {};
+            return std::nullopt;
         path result{};  // root
         while (true) {
             auto str = substr(result.link);
@@ -213,11 +213,11 @@ private:
             if (diff.first == last)
                 return result;
             if (diff.second != end(str) || leaf(result.link))
-                return {};
+                return std::nullopt;
             auto& edges = nodes_[result.link].edges;
             auto it = edges.find(*diff.first);
             if (it == edges.end())
-                return {};
+                return std::nullopt;
             first = diff.first;
             result.parent_link = result.link;
             result.link = it->second;
