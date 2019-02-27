@@ -96,7 +96,7 @@ template <class It>
 using iter_value_t = typename std::iterator_traits<It>::value_type;
 
 template <class Rng>
-using iterator_t = decltype(std::declval<Rng>().begin());
+using iterator_t = decltype(std::begin(std::declval<Rng>()));
 
 template <class Rng>
 using range_value_t = iter_value_t<iterator_t<Rng>>;
