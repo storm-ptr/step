@@ -124,10 +124,11 @@ public:
      * @param len - number of characters on the path from the root to the node.
      */
     template <class PreVisitor, class PostVisitor>
-    void visit(PreVisitor pre, PostVisitor post) const
+    void visit(PreVisitor&& pre, PostVisitor&& post) const
     {
-        if (!nodes_.empty())
-            dfs({}, pre, post);
+        if (nodes_.empty())
+            return;
+        dfs({}, std::forward<PreVisitor>(pre), std::forward<PostVisitor>(post));
     }
 
 private:
