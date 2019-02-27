@@ -9,7 +9,6 @@
 #include <limits>
 #include <type_traits>
 #include <utility>
-#include <variant>
 #include <vector>
 
 namespace step {
@@ -22,9 +21,14 @@ struct overloaded : Ts... {
 template <class... Ts>
 overloaded(Ts...)->overloaded<Ts...>;
 
-template <class T, class Result = void>
-using if_arithmetic_t =
-    std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, Result>;
+template <class It>
+using iter_value_t = typename std::iterator_traits<It>::value_type;
+
+template <class Rng>
+using iterator_t = decltype(std::begin(std::declval<Rng>()));
+
+template <class Rng>
+using range_value_t = iter_value_t<iterator_t<Rng>>;
 
 struct make_pair {
     template <class Lhs, class Rhs>
@@ -40,20 +44,6 @@ struct make_reverse_pair {
     {
         return std::make_pair(std::forward<Rhs>(rhs), std::forward<Lhs>(lhs));
     }
-};
-
-template <class T, size_t N>
-class ring_table {
-    std::array<std::vector<T>, N> rows_;
-
-public:
-    explicit ring_table(size_t cols)
-    {
-        for (auto& row : rows_)
-            row.resize(cols);
-    }
-
-    auto& operator[](size_t row) { return rows_[row % N]; }
 };
 
 template <class Compare>
@@ -92,25 +82,6 @@ using key_equal_or_equivalence_t =
                                 key_equal<T>,
                                 key_equivalence<T>>::type;
 
-template <class It>
-using iter_value_t = typename std::iterator_traits<It>::value_type;
-
-template <class Rng>
-using iterator_t = decltype(std::begin(std::declval<Rng>()));
-
-template <class Rng>
-using range_value_t = iter_value_t<iterator_t<Rng>>;
-
-template <class V, class T, size_t I = 0>
-constexpr size_t variant_index()
-{
-    if constexpr (I == std::variant_size_v<V> ||
-                  std::is_same_v<std::variant_alternative_t<I, V>, T>)
-        return I;
-    else
-        return variant_index<V, T, I + 1>();
-}
-
 template <class T, class... It>
 void append(T&& dest, std::pair<It, It>... src)
 {
@@ -133,6 +104,20 @@ auto invoke(F&& f, std::pair<It, It>... args)
     else
         return f((size_t)count, args...);
 }
+
+template <class T, size_t N>
+class ring_table {
+    std::array<std::vector<T>, N> rows_;
+
+public:
+    explicit ring_table(size_t cols)
+    {
+        for (auto& row : rows_)
+            row.resize(cols);
+    }
+
+    auto& operator[](size_t row) { return rows_[row % N]; }
+};
 
 }  // namespace step
 
