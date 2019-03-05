@@ -17,8 +17,10 @@ matrix:
     addons:
       apt:
         sources:
+        - ubuntu-toolchain-r-test
         - llvm-toolchain-xenial-7
         packages:
+        - g++-8
         - clang-7
 script:
 - wget -P $TRAVIS_BUILD_DIR/.. https://raw.githubusercontent.com/catchorg/Catch2/v2.0.1/single_include/catch.hpp
