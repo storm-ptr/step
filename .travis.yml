@@ -14,13 +14,12 @@ matrix:
         packages:
         - g++-8
   - env: COMPILER=clang++-7
-      addons:
-        apt:
-          packages:
-            - clang-7
-          sources:
-            - llvm-toolchain-xenial-7
-
+    addons:
+      apt:
+        sources:
+        - llvm-toolchain-xenial-7
+        packages:
+        - clang-7
 script:
 - wget -P $TRAVIS_BUILD_DIR/.. https://raw.githubusercontent.com/catchorg/Catch2/v2.0.1/single_include/catch.hpp
 - cd $TRAVIS_BUILD_DIR/test
