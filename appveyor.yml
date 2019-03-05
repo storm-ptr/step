@@ -1,4 +1,6 @@
-os: Visual Studio 2017
+image:
+  - Visual Studio 2017
+  - Ubuntu1804
 
 platform: x64
 
@@ -8,12 +10,15 @@ clone_depth: 1
 
 install:
   - ps: Invoke-WebRequest -Uri https://raw.githubusercontent.com/catchorg/Catch2/v2.0.1/single_include/catch.hpp -OutFile $env:APPVEYOR_BUILD_FOLDER\..\catch.hpp
-  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+  - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+  - sh: sudo apt-get --yes install build-essential
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%/example/diff
-  - nmake /f makefile.windows
+  - cmd: nmake /f makefile.windows
+  - sh: make -f ./makefile.ubuntu
 
 test_script:
   - cd %APPVEYOR_BUILD_FOLDER%/test
-  - nmake /f makefile.windows test
+  - cmd: nmake /f makefile.windows test
+  - sh: make -f ./makefile.ubuntu test
