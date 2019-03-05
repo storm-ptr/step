@@ -11,14 +11,15 @@ clone_depth: 1
 install:
   - ps: Invoke-WebRequest -Uri https://raw.githubusercontent.com/catchorg/Catch2/v2.0.1/single_include/catch.hpp -OutFile $env:APPVEYOR_BUILD_FOLDER\..\catch.hpp
   - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
-  - sh: sudo apt-get --yes install build-essential
 
 build_script:
-  - cd %APPVEYOR_BUILD_FOLDER%/example/diff
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%/example/diff
+  - sh: cd $APPVEYOR_BUILD_FOLDER/example/diff
   - cmd: nmake /f makefile.windows
-  - sh: make -f ./makefile.ubuntu
+  - sh: make -f ./makefile.ubuntu CXX=g++8
 
 test_script:
-  - cd %APPVEYOR_BUILD_FOLDER%/test
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%/test
+  - sh: cd $APPVEYOR_BUILD_FOLDER/test
   - cmd: nmake /f makefile.windows test
-  - sh: make -f ./makefile.ubuntu test
+  - sh: make -f ./makefile.ubuntu test CXX=g++8
