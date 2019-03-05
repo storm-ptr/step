@@ -16,10 +16,10 @@ build_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%/example/diff
   - sh: cd $APPVEYOR_BUILD_FOLDER/example/diff
   - cmd: nmake /f makefile.windows
-  - sh: make -f ./makefile.ubuntu CXX=g++8
+  - sh: make -f ./makefile.ubuntu CXX=g++
 
 test_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%/test
   - sh: cd $APPVEYOR_BUILD_FOLDER/test
   - cmd: nmake /f makefile.windows test
-  - sh: make -f ./makefile.ubuntu test CXX=g++8
+  - sh: make -f ./makefile.ubuntu test CXX=g++
