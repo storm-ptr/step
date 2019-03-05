@@ -14,12 +14,20 @@ install:
 
 build_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%/example/diff
-  - sh: cd $APPVEYOR_BUILD_FOLDER/example/diff
   - cmd: nmake /f makefile.windows
+  - cmd: nmake /f makefile.windows clean
+  - sh: cd $APPVEYOR_BUILD_FOLDER/example/diff
   - sh: make -f ./makefile.ubuntu CXX=g++
+  - sh: make -f ./makefile.ubuntu clean
+  - sh: make -f ./makefile.ubuntu CXX=clang++
+  - sh: make -f ./makefile.ubuntu clean
 
 test_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%/test
-  - sh: cd $APPVEYOR_BUILD_FOLDER/test
   - cmd: nmake /f makefile.windows test
+  - cmd: nmake /f makefile.windows clean
+  - sh: cd $APPVEYOR_BUILD_FOLDER/test
   - sh: make -f ./makefile.ubuntu test CXX=g++
+  - sh: make -f ./makefile.ubuntu clean
+  - sh: make -f ./makefile.ubuntu test CXX=clang++
+  - sh: make -f ./makefile.ubuntu clean
