@@ -3,10 +3,8 @@
 #ifndef STEP_LONGEST_COMMON_SUBSTRING_HPP
 #define STEP_LONGEST_COMMON_SUBSTRING_HPP
 
-#include <algorithm>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
-#include <step/utility.hpp>
 
 /// @see https://en.wikipedia.org/wiki/Longest_common_substring_problem
 namespace step::longest_common_substring {
@@ -59,20 +57,20 @@ struct suffix_tree_searcher {
         auto flags = std::unordered_map<Size, uint8_t>{};
         auto size1 = (Size)std::distance(rng1.first, rng1.second);
         tree.visit([](auto&&...) {},
-                   [&](const auto& str, const auto& parent_str, auto len) {
-                       if (!tree.suffix(str))
-                           flags[parent_str.first] |= flags[str.first];
-                       else if ((str.second - len) < size1)
+                   [&](const auto& node_str, const auto& parent_str, auto len) {
+                       if (!tree.suffix(node_str))
+                           flags[parent_str.first] |= flags[node_str.first];
+                       else if ((node_str.second - len) < size1)
                            flags[parent_str.first] |= left_flag;
                        else
                            flags[parent_str.first] |= right_flag;
                    });
         tree.visit(
-            [&](const auto& str, const auto&, auto len) {
-                if (!tree.suffix(str) &&
-                    flags[str.first] == (left_flag | right_flag) &&
+            [&](const auto& node_str, const auto&, auto len) {
+                if (!tree.suffix(node_str) &&
+                    flags[node_str.first] == (left_flag | right_flag) &&
                     len > (Size)std::distance(result.first, result.second)) {
-                    result.second = rng1.first + str.second;
+                    result.second = rng1.first + node_str.second;
                     result.first = result.second - len;
                 }
             },

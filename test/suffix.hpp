@@ -33,11 +33,11 @@ std::string tree_topology(const Tree& tree)
 {
     std::ostringstream os;
     tree.visit(
-        [&](const auto& str, const auto&, auto len) {
+        [&](const auto& node_str, const auto&, auto len) {
             os << std::setw(len) << std::setfill(' ')
-               << std::string_view{tree.begin(str), tree.size(str)};
-            if (tree.suffix(str))
-                os << " [" << str.second - len << "]";
+               << std::string_view{tree.begin(node_str), tree.size(node_str)};
+            if (tree.suffix(node_str))
+                os << " [" << node_str.second - len << "]";
             os << "\n";
         },
         [](auto&&...) {});
@@ -50,9 +50,9 @@ auto tree_order(const Tree& tree)
     std::vector<typename Tree::size_type> res;
     res.reserve(tree.size());
     tree.visit(
-        [&](const auto& str, const auto&, auto len) {
-            if (tree.suffix(str))
-                res.push_back(str.second - len);
+        [&](const auto& node_str, const auto&, auto len) {
+            if (tree.suffix(node_str))
+                res.push_back(node_str.second - len);
         },
         [](auto&&...) {});
     return res;

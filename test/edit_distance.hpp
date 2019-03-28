@@ -19,7 +19,7 @@ TEST_CASE("edit_distance_hello_world")
           pairs_t{{'t', std::nullopt}, {'h', 'h'}, {'i', 'a'}, {'s', 's'}});
 }
 
-TEST_CASE("edit_distance_associate")
+TEST_CASE("edit_distance_join")
 {
     struct {
         std::string_view lhs;

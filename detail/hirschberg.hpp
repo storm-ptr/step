@@ -3,11 +3,9 @@
 #ifndef STEP_HIRSCHBERG_HPP
 #define STEP_HIRSCHBERG_HPP
 
-#include <algorithm>
-#include <step/utility.hpp>
+#include <step/detail/utility.hpp>
 
 namespace step::hirschberg {
-namespace detail {
 
 template <class RandomIt1, class RandomIt2, class DynamicProg, class BinaryOp>
 auto partition_point(RandomIt1 first1,
@@ -31,8 +29,6 @@ auto partition_point(RandomIt1 first1,
     return op(split1, split2);
 }
 
-}  // namespace detail
-
 /// @see https://en.wikipedia.org/wiki/Hirschberg's_algorithm
 template <class RandomIt1, class RandomIt2, class OutputIt, class DynamicProg>
 OutputIt trace(RandomIt1 first1,
@@ -49,9 +45,9 @@ OutputIt trace(RandomIt1 first1,
 
     auto [split1, split2] =
         size2 < size1
-            ? detail::partition_point(
+            ? hirschberg::partition_point(
                   first1, last1, first2, last2, dp, make_pair{})
-            : detail::partition_point(
+            : hirschberg::partition_point(
                   first2, last2, first1, last1, dp, make_reverse_pair{});
 
     result = hirschberg::trace(first1, split1, first2, split2, result, dp);

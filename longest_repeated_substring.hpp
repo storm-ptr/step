@@ -3,10 +3,8 @@
 #ifndef STEP_LONGEST_REPEATED_SUBSTRING_HPP
 #define STEP_LONGEST_REPEATED_SUBSTRING_HPP
 
-#include <algorithm>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
-#include <step/utility.hpp>
 
 /// @see https://en.wikipedia.org/wiki/Longest_repeated_substring_problem
 namespace step::longest_repeated_substring {
@@ -41,10 +39,10 @@ struct suffix_tree_searcher {
         auto tree = suffix_tree<iter_value_t<RandomIt>, Size, Map>{};
         append(tree, rng);
         tree.visit(
-            [&](const auto& str, const auto&, auto len) {
-                if (!tree.suffix(str) &&
+            [&](const auto& node_str, const auto&, auto len) {
+                if (!tree.suffix(node_str) &&
                     len > (Size)std::distance(result.first, result.second)) {
-                    result.second = rng.first + str.second;
+                    result.second = rng.first + node_str.second;
                     result.first = result.second - len;
                 }
             },

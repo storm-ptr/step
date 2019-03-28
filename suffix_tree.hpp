@@ -5,7 +5,7 @@
 
 #include <optional>
 #include <stack>
-#include <step/utility.hpp>
+#include <step/detail/utility.hpp>
 #include <unordered_map>
 
 namespace step {
@@ -30,7 +30,6 @@ public:
 
     auto size() const { return (Size)str_.size(); }
     auto data() const { return str_.data(); }
-
     static Size size(const substring& str) { return str.second - str.first; }
     auto begin(const substring& str) const { return data() + str.first; }
     auto end(const substring& str) const { return data() + str.second; }
@@ -53,7 +52,7 @@ public:
     /// Basic exception guarantee.
     void push_back(T val) try {
         str_.push_back(val);
-        for (auto connect = make_linker(); reminder(pos_);) {
+        for (auto connect = connector(); reminder(pos_);) {
             if (auto& edge = nodes_[link_].edges[str_[pos_]]) {
                 if (walk_down(edge))
                     continue;
@@ -66,7 +65,7 @@ public:
                 connect(link_);
             }
             if (link_)  // not root
-                link_ = nodes_[link_].link;
+                link_ = nodes_[link_].shortcut;
             else
                 ++pos_;
         }
@@ -102,9 +101,9 @@ public:
     {
         if (auto way = find_path(first, last))
             dfs(*way,
-                [&](const auto& str, const auto&, auto len) {
-                    if (suffix(str))
-                        *result++ = str.second - len;
+                [&](const auto& node_str, const auto&, auto len) {
+                    if (suffix(node_str))
+                        *result++ = node_str.second - len;
                 },
                 [](auto&&...) {});
         return result;
@@ -119,7 +118,7 @@ public:
     /**
      * Depth-first traversal of the nodes.
      * @param pre and @param post visitors have signature:
-     * @param str - substring of the node;
+     * @param node_str - substring of the node;
      * @param parent_str - substring of the parent node;
      * @param len - number of characters on the path from the root to the node.
      */
@@ -137,7 +136,7 @@ private:
     struct node {
         Map<T, Size> edges;
         substring str;
-        Size link;
+        Size shortcut;  // suffix link
     };
 
     std::vector<T> str_;
@@ -155,13 +154,13 @@ private:
         return leaf(link) ? substring{inverse(link), size()} : nodes_[link].str;
     }
 
-    auto make_linker()
+    auto connector()
     {
         if (nodes_.empty())
             nodes_.emplace_back();  // root
         return [this, last = nodes()](Size link) mutable {
             if (last < nodes() && last != link)
-                nodes_[last++].link = link;
+                nodes_[last++].shortcut = link;
         };
     }
 

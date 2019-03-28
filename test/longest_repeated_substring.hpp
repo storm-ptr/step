@@ -15,7 +15,7 @@ TEST_CASE("longest_repeated_substring_hello_world")
     CHECK("string " == std::string(range.first, range.second));
 }
 
-TEST_CASE("longest_repeated_substring")
+TEST_CASE("longest_repeated_substring_find")
 {
     struct {
         std::string_view str;

@@ -38,10 +38,10 @@ TEST_CASE("longest_increasing_subsequence_partition")
     std::vector perm{1, 1, 2, 2, 3, 3, 4, 4};
     do {
         std::vector lis(perm);
-        auto end_of_lis = partition(lis);
+        auto last = partition(lis);
         CHECK(std::is_permutation(lis.begin(), lis.end(), perm.begin()));
-        CHECK(std::is_sorted(lis.begin(), end_of_lis));
-        CHECK(std::distance(lis.begin(), end_of_lis) >= 2);
+        CHECK(std::is_sorted(lis.begin(), last));
+        CHECK(std::distance(lis.begin(), last) >= 2);
     } while (std::next_permutation(perm.begin(), perm.end()));
 }
 

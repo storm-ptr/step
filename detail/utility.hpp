@@ -3,6 +3,7 @@
 #ifndef STEP_UTILITY_HPP
 #define STEP_UTILITY_HPP
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <iterator>

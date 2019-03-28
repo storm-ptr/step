@@ -3,7 +3,6 @@
 #ifndef STEP_EDIT_DISTANCE_HPP
 #define STEP_EDIT_DISTANCE_HPP
 
-#include <algorithm>
 #include <optional>
 #include <step/detail/hirschberg.hpp>
 
