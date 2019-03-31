@@ -87,21 +87,4 @@ Data structures:
   ```
   </p></details>
 
-Examples of utilities:
-- <details><summary>diff</summary><p>
-
-  [wiki](https://en.wikipedia.org/wiki/Diff)
-  ```
-  diff.exe code.cpp code2.cpp
-  --- code.cpp
-  +++ code2.cpp
-  @@ -6,0 +6,5 @@
-  +void functhreehalves()
-  +{
-  +    x += 1.5
-  +}
-  +
-  ```
-  </p></details>
-
 to be continued
