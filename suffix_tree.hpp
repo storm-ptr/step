@@ -52,7 +52,7 @@ public:
     /// Basic exception guarantee.
     void push_back(T val) try {
         str_.push_back(val);
-        for (auto connect = connector(); reminder(pos_);) {
+        for (auto connect = connector(); reminder();) {
             if (auto& edge = nodes_[link_].edges[str_[pos_]]) {
                 if (walk_down(edge))
                     continue;
@@ -145,7 +145,7 @@ private:
     Size link_ = 0;            // active node
 
     static Size inverse(Size n) { return std::numeric_limits<Size>::max() - n; }
-    Size reminder(Size pos) const { return size() - pos; }
+    Size reminder() const { return size() - pos_; }
     auto nodes() const { return (Size)nodes_.size(); }
     bool leaf(Size link) const { return link >= nodes(); }
 
@@ -167,7 +167,7 @@ private:
     bool walk_down(Size link)
     {
         auto len = size(substr(link));
-        if (reminder(pos_) <= len)
+        if (reminder() <= len)
             return false;
         pos_ += len;
         link_ = link;
@@ -177,7 +177,7 @@ private:
     bool split(Size& edge)
     {
         auto str = substr(edge);
-        auto head = substring{str.first, str.first + reminder(pos_) - 1};
+        auto head = substring{str.first, str.first + reminder() - 1};
         auto tail = substring{head.second, str.second};
         if (eq_(str_[tail.first], str_.back()))
             return false;
