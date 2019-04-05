@@ -39,8 +39,8 @@ public:
     {
         str_.clear();
         nodes_.clear();
-        pos_ = 0;
-        link_ = 0;
+        active_char_ = 0;
+        active_node_ = 0;
     }
 
     void reserve(Size len)
@@ -53,21 +53,21 @@ public:
     void push_back(T val) try {
         str_.push_back(val);
         for (auto connect = connector(); reminder();) {
-            if (auto& edge = nodes_[link_].edges[str_[pos_]]) {
+            if (auto& edge = nodes_[active_node_].edges[str_[active_char_]]) {
                 if (walk_down(edge))
                     continue;
                 if (!split(edge))
-                    return connect(link_);
+                    return connect(active_node_);
                 connect(nodes() - 1);
             }
             else {
-                edge = inverse(pos_);
-                connect(link_);
+                edge = flip(active_char_);
+                connect(active_node_);
             }
-            if (link_)  // not root
-                link_ = nodes_[link_].shortcut;
+            if (active_node_)  // not root
+                active_node_ = nodes_[active_node_].link;
             else
-                ++pos_;
+                ++active_char_;
         }
     }
     catch (...) {
@@ -83,7 +83,7 @@ public:
     Size find(InputIt first, InputIt last) const
     {
         auto way = find_path(first, last);
-        return way ? substr(way->link).second - way->len : size();
+        return way ? substr(way->node).second - way->len : size();
     }
 
     template <class InputRng>
@@ -133,44 +133,44 @@ public:
 private:
     inline static const auto eq_ = key_equal_or_equivalence_t<Map<T, Size>>{};
 
-    struct node {
+    struct internal_node {
         Map<T, Size> edges;
         substring str;
-        Size shortcut;  // suffix link
+        Size link;
     };
 
     std::vector<T> str_;
-    std::vector<node> nodes_;  // internal nodes
-    Size pos_ = 0;             // active edge character
-    Size link_ = 0;            // active node
+    std::vector<internal_node> nodes_;
+    Size active_char_ = 0;
+    Size active_node_ = 0;
 
-    static Size inverse(Size n) { return std::numeric_limits<Size>::max() - n; }
-    Size reminder() const { return size() - pos_; }
+    static Size flip(Size n) { return std::numeric_limits<Size>::max() - n; }
+    Size reminder() const { return size() - active_char_; }
     auto nodes() const { return (Size)nodes_.size(); }
-    bool leaf(Size link) const { return link >= nodes(); }
+    bool leaf(Size node) const { return node >= nodes(); }
 
-    auto substr(Size link) const
+    auto substr(Size node) const
     {
-        return leaf(link) ? substring{inverse(link), size()} : nodes_[link].str;
+        return leaf(node) ? substring{flip(node), size()} : nodes_[node].str;
     }
 
     auto connector()
     {
         if (nodes_.empty())
             nodes_.emplace_back();  // root
-        return [this, last = nodes()](Size link) mutable {
-            if (last < nodes() && last != link)
-                nodes_[last++].shortcut = link;
+        return [this, last = nodes()](Size node) mutable {
+            if (last < nodes() && last != node)
+                nodes_[last++].link = node;
         };
     }
 
-    bool walk_down(Size link)
+    bool walk_down(Size node)
     {
-        auto len = size(substr(link));
+        auto len = size(substr(node));
         if (reminder() <= len)
             return false;
-        pos_ += len;
-        link_ = link;
+        active_char_ += len;
+        active_node_ = node;
         return true;
     }
 
@@ -181,21 +181,21 @@ private:
         auto tail = substring{head.second, str.second};
         if (eq_(str_[tail.first], str_.back()))
             return false;
-        Size link = edge;
+        Size node = edge;
         edge = nodes();
-        nodes_.push_back({{{str_.back(), inverse(size() - 1)}}, head});
-        if (leaf(link))
-            nodes_.back().edges[str_[tail.first]] = inverse(tail.first);
+        nodes_.push_back({{{str_.back(), flip(size() - 1)}}, head});
+        if (leaf(node))
+            nodes_.back().edges[str_[tail.first]] = flip(tail.first);
         else {
-            nodes_.back().edges[str_[tail.first]] = link;
-            nodes_[link].str = tail;
+            nodes_.back().edges[str_[tail.first]] = node;
+            nodes_[node].str = tail;
         }
         return true;
     }
 
     struct path {
-        Size link;
-        Size parent_link;
+        Size node;
+        Size parent;
         Size len;
         bool visited;
     };
@@ -207,28 +207,28 @@ private:
             return std::nullopt;
         path result{};  // root
         while (true) {
-            auto str = substr(result.link);
+            auto str = substr(result.node);
             result.len += size(str);
             auto diff = std::mismatch(first, last, begin(str), end(str), eq_);
             if (diff.first == last)
                 return result;
-            if (diff.second != end(str) || leaf(result.link))
+            if (diff.second != end(str) || leaf(result.node))
                 return std::nullopt;
-            auto& edges = nodes_[result.link].edges;
+            auto& edges = nodes_[result.node].edges;
             auto it = edges.find(*diff.first);
             if (it == edges.end())
                 return std::nullopt;
             first = diff.first;
-            result.parent_link = result.link;
-            result.link = it->second;
+            result.parent = result.node;
+            result.node = it->second;
         }
     }
 
     void push_edges(std::stack<path>& dest, const path& src) const
     {
         std::stack<path> reverse;
-        for (auto& [key, edge] : nodes_[src.link].edges)
-            reverse.push({edge, src.link, Size(src.len + size(substr(edge)))});
+        for (auto& [key, edge] : nodes_[src.node].edges)
+            reverse.push({edge, src.node, Size(src.len + size(substr(edge)))});
         for (; !reverse.empty(); reverse.pop())
             dest.push(reverse.top());
     }
@@ -238,13 +238,13 @@ private:
     {
         for (std::stack<path> stack{{way}}; !stack.empty();)
             if (auto& top = stack.top(); top.visited) {
-                post(substr(top.link), substr(top.parent_link), top.len);
+                post(substr(top.node), substr(top.parent), top.len);
                 stack.pop();
             }
             else {
-                pre(substr(top.link), substr(top.parent_link), top.len);
+                pre(substr(top.node), substr(top.parent), top.len);
                 top.visited = true;
-                if (!leaf(top.link))
+                if (!leaf(top.node))
                     push_edges(stack, top);
             }
     }
