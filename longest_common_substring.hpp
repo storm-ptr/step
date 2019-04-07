@@ -24,14 +24,14 @@ struct suffix_array_searcher {
         auto arr = suffix_array<value_t, Size, Compare>{std::move(str)};
         auto lcp = std::vector<Size>(arr.size());
         arr.longest_common_prefix_array(lcp.begin());
-        auto size1 = (Size)std::distance(rng1.first, rng1.second);
+        auto size1 = (Size)size(rng1);
         for (Size i = 1; i < arr.size(); ++i) {
             auto prev = arr.nth_element(i - 1);
             auto cur = arr.nth_element(i);
             if ((prev < size1) != (cur < size1)) {
                 auto pos = std::min<Size>(prev, cur);
                 auto len = std::min<Size>(lcp[i - 1], size1 - pos);
-                if (len > (Size)std::distance(result.first, result.second)) {
+                if (len > (Size)size(result)) {
                     result.first = rng1.first + pos;
                     result.second = result.first + len;
                 }
@@ -55,26 +55,26 @@ struct suffix_tree_searcher {
         auto tree = suffix_tree<iter_value_t<RandomIt1>, Size, Map>{};
         append(tree, rng1, rng2);
         auto flags = std::unordered_map<Size, uint8_t>{};
-        auto size1 = (Size)std::distance(rng1.first, rng1.second);
-        tree.visit([](auto&&...) {},
-                   [&](const auto& node_str, const auto& parent_str, auto len) {
-                       if (!tree.suffix(node_str))
-                           flags[parent_str.first] |= flags[node_str.first];
-                       else if ((node_str.second - len) < size1)
-                           flags[parent_str.first] |= left_flag;
-                       else
-                           flags[parent_str.first] |= right_flag;
-                   });
-        tree.visit(
-            [&](const auto& node_str, const auto&, auto len) {
-                if (!tree.suffix(node_str) &&
-                    flags[node_str.first] == (left_flag | right_flag) &&
-                    len > (Size)std::distance(result.first, result.second)) {
-                    result.second = rng1.first + node_str.second;
-                    result.first = result.second - len;
-                }
-            },
-            [](auto&&...) {});
+        auto size1 = (Size)size(rng1);
+        tree.visit([&](const auto& edge) {
+            if (!edge.visited)
+                return;
+            else if (!tree.leaf(edge.child))
+                flags[edge.parent] |= flags[edge.child];
+            else if (tree.path(edge).first < size1)
+                flags[edge.parent] |= left_flag;
+            else
+                flags[edge.parent] |= right_flag;
+        });
+        tree.visit([&](const auto& edge) {
+            if (!edge.visited && !tree.leaf(edge.child) &&
+                flags[edge.child] == (left_flag | right_flag) &&
+                edge.path_len > (Size)size(result)) {
+                auto str = tree.path(edge);
+                result.first = rng1.first + str.first;
+                result.second = rng1.first + str.second;
+            }
+        });
         return result;
     }
 };

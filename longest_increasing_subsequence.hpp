@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
+// @see https://en.wikipedia.org/wiki/Longest_increasing_subsequence
 namespace step::longest_increasing_subsequence {
 namespace detail {
 
@@ -25,8 +26,7 @@ public:
     template <class RandomIt, class Compare>
     increasing_subsequences(RandomIt first, RandomIt last, Compare cmp)
     {
-        size_t size = std::distance(first, last);
-        for (size_t i = 0; i < size; ++i) {
+        for (size_t i = 0, size = std::distance(first, last); i < size; ++i) {
             auto tail = std::upper_bound(
                 tails_.begin(), tails_.end(), i, [&](size_t lhs, size_t rhs) {
                     return cmp(first[lhs], first[rhs]);
@@ -64,9 +64,8 @@ public:
  * Reorders the elements in such a way that all elements for the subsequence
  * precede the others.
  * @return iterator to the end of the subsequence.
- * Time complexity O(N*log(N)), space complexity O(N),
- * where N = std::distance(first, last).
- * @see https://en.wikipedia.org/wiki/Longest_increasing_subsequence
+ * Time complexity O(N*log(N)), space complexity O(N), where:
+ * N = std::distance(first, last).
  */
 template <class RandomIt, class Compare>
 auto partition(RandomIt first, RandomIt last, Compare cmp)

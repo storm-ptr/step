@@ -12,8 +12,8 @@ namespace step {
 
 /**
  * Ukkonen's online algorithm for constructing suffix tree.
- * Time complexity O(N*log(N)), space complexity O(N),
- * where N is length of text.
+ * Time complexity O(N*log(N)), space complexity O(N), where:
+ * N is length of text.
  * @param T - type of the characters;
  * @param Size - to specify the maximum number of characters;
  * @param Map - to associate characters with edges, its key_type shall be T.
@@ -28,19 +28,36 @@ public:
     using size_type = Size;
     using substring = std::pair<Size, Size>;  // half-open position range
 
+    struct visited_edge {
+        Size parent;
+        Size child;
+        Size path_len;  // number of characters from the root to the child node
+        bool visited;   // pre/post-order traversal
+    };
+
     auto size() const { return (Size)str_.size(); }
     auto data() const { return str_.data(); }
-    static Size size(const substring& str) { return str.second - str.first; }
     auto begin(const substring& str) const { return data() + str.first; }
     auto end(const substring& str) const { return data() + str.second; }
-    bool suffix(const substring& str) const { return str.second == size(); }
+    bool leaf(Size node) const { return node >= nodes(); }
+
+    substring substr(Size node) const
+    {
+        return leaf(node) ? substring{flip(node), size()} : nodes_[node].str;
+    }
+
+    substring path(const visited_edge& edge) const
+    {
+        auto str = substr(edge.child);
+        return substring{Size(str.second - edge.path_len), str.second};
+    }
 
     void clear() noexcept
     {
         str_.clear();
         nodes_.clear();
-        active_char_ = 0;
-        active_node_ = 0;
+        char_ = 0;
+        node_ = 0;
     }
 
     void reserve(Size len)
@@ -53,21 +70,21 @@ public:
     void push_back(T val) try {
         str_.push_back(val);
         for (auto connect = connector(); reminder();) {
-            if (auto& edge = nodes_[active_node_].edges[str_[active_char_]]) {
-                if (walk_down(edge))
+            if (auto& child = nodes_[node_].children[str_[char_]]) {
+                if (descend(child))
                     continue;
-                if (!split(edge))
-                    return connect(active_node_);
+                if (!split(child))
+                    return connect(node_);
                 connect(nodes() - 1);
             }
             else {
-                edge = flip(active_char_);
-                connect(active_node_);
+                child = flip(char_);
+                connect(node_);
             }
-            if (active_node_)  // not root
-                active_node_ = nodes_[active_node_].link;
+            if (node_)  // not root
+                node_ = nodes_[node_].link;
             else
-                ++active_char_;
+                ++char_;
         }
     }
     catch (...) {
@@ -82,8 +99,8 @@ public:
     template <class InputIt>
     Size find(InputIt first, InputIt last) const
     {
-        auto way = find_path(first, last);
-        return way ? substr(way->node).second - way->len : size();
+        auto origin = find_edge(first, last);
+        return origin ? path(*origin).first : size();
     }
 
     template <class InputRng>
@@ -99,13 +116,11 @@ public:
     template <class InputIt, class OutputIt>
     OutputIt find_all(InputIt first, InputIt last, OutputIt result) const
     {
-        if (auto way = find_path(first, last))
-            dfs(*way,
-                [&](const auto& node_str, const auto&, auto len) {
-                    if (suffix(node_str))
-                        *result++ = node_str.second - len;
-                },
-                [](auto&&...) {});
+        if (auto origin = find_edge(first, last))
+            dfs(*origin, [&](const auto& edge) {
+                if (!edge.visited && leaf(edge.child))
+                    *result++ = path(edge).first;
+            });
         return result;
     }
 
@@ -116,43 +131,32 @@ public:
     }
 
     /**
-     * Depth-first traversal of the nodes.
-     * @param pre and @param post visitors have signature:
-     * @param node_str - substring of the node;
-     * @param parent_str - substring of the parent node;
-     * @param len - number of characters on the path from the root to the node.
+     * Depth-first traversal of the tree.
+     * Pre/post-order @param visitor has @param visited_edge.
      */
-    template <class PreVisitor, class PostVisitor>
-    void visit(PreVisitor&& pre, PostVisitor&& post) const
+    template <class Visitor>
+    void visit(Visitor&& visitor) const
     {
-        if (nodes_.empty())
-            return;
-        dfs({}, std::forward<PreVisitor>(pre), std::forward<PostVisitor>(post));
+        if (!nodes_.empty())
+            dfs({}, std::forward<Visitor>(visitor));
     }
 
 private:
     inline static const auto eq_ = key_equal_or_equivalence_t<Map<T, Size>>{};
 
     struct internal_node {
-        Map<T, Size> edges;
+        Map<T, Size> children;
         substring str;
         Size link;
     };
 
     std::vector<T> str_;
     std::vector<internal_node> nodes_;
-    Size active_char_ = 0;
-    Size active_node_ = 0;
+    Size char_ = 0;  // active edge character
+    Size node_ = 0;  // active node
 
-    static Size flip(Size n) { return std::numeric_limits<Size>::max() - n; }
-    Size reminder() const { return size() - active_char_; }
+    Size reminder() const { return size() - char_; }
     auto nodes() const { return (Size)nodes_.size(); }
-    bool leaf(Size node) const { return node >= nodes(); }
-
-    auto substr(Size node) const
-    {
-        return leaf(node) ? substring{flip(node), size()} : nodes_[node].str;
-    }
 
     auto connector()
     {
@@ -164,89 +168,82 @@ private:
         };
     }
 
-    bool walk_down(Size node)
+    bool descend(Size node)
     {
-        auto len = size(substr(node));
+        auto len = step::size(substr(node));
         if (reminder() <= len)
             return false;
-        active_char_ += len;
-        active_node_ = node;
+        char_ += len;
+        node_ = node;
         return true;
     }
 
-    bool split(Size& edge)
+    bool split(Size& child)
     {
-        auto str = substr(edge);
-        auto head = substring{str.first, str.first + reminder() - 1};
+        auto str = substr(child);
+        auto head = substring{str.first, Size(str.first + reminder() - 1)};
         auto tail = substring{head.second, str.second};
         if (eq_(str_[tail.first], str_.back()))
             return false;
-        Size node = edge;
-        edge = nodes();
-        nodes_.push_back({{{str_.back(), flip(size() - 1)}}, head});
-        if (leaf(node))
-            nodes_.back().edges[str_[tail.first]] = flip(tail.first);
+        auto old = std::exchange(child, nodes());
+        nodes_.push_back({{{str_.back(), flip<Size>(size() - 1)}}, head});
+        if (leaf(old))
+            nodes_.back().children[str_[tail.first]] = flip(tail.first);
         else {
-            nodes_.back().edges[str_[tail.first]] = node;
-            nodes_[node].str = tail;
+            nodes_.back().children[str_[tail.first]] = old;
+            nodes_[old].str = tail;
         }
         return true;
     }
 
-    struct path {
-        Size node;
-        Size parent;
-        Size len;
-        bool visited;
-    };
-
     template <class InputIt>
-    std::optional<path> find_path(InputIt first, InputIt last) const
+    std::optional<visited_edge> find_edge(InputIt first, InputIt last) const
     {
         if (nodes_.empty())
             return std::nullopt;
-        path result{};  // root
+        visited_edge result{};  // root
         while (true) {
-            auto str = substr(result.node);
-            result.len += size(str);
+            auto str = substr(result.child);
+            result.path_len += step::size(str);
             auto diff = std::mismatch(first, last, begin(str), end(str), eq_);
             if (diff.first == last)
                 return result;
-            if (diff.second != end(str) || leaf(result.node))
+            if (diff.second != end(str) || leaf(result.child))
                 return std::nullopt;
-            auto& edges = nodes_[result.node].edges;
-            auto it = edges.find(*diff.first);
-            if (it == edges.end())
+            auto& children = nodes_[result.child].children;
+            auto it = children.find(*diff.first);
+            if (it == children.end())
                 return std::nullopt;
             first = diff.first;
-            result.parent = result.node;
-            result.node = it->second;
+            result.parent = std::exchange(result.child, it->second);
         }
     }
 
-    void push_edges(std::stack<path>& dest, const path& src) const
+    void spread(std::stack<visited_edge>& dest, const visited_edge& src) const
     {
-        std::stack<path> reverse;
-        for (auto& [key, edge] : nodes_[src.node].edges)
-            reverse.push({edge, src.node, Size(src.len + size(substr(edge)))});
+        std::stack<visited_edge> reverse;
+        for (auto& [key, grandchild] : nodes_[src.child].children)
+            reverse.push({src.child,
+                          grandchild,
+                          Size(src.path_len + step::size(substr(grandchild)))});
         for (; !reverse.empty(); reverse.pop())
             dest.push(reverse.top());
     }
 
-    template <class PreVisitor, class PostVisitor>
-    void dfs(const path& way, PreVisitor pre, PostVisitor post) const
+    template <class Visitor>
+    void dfs(const visited_edge& edge, Visitor visitor) const
     {
-        for (std::stack<path> stack{{way}}; !stack.empty();)
-            if (auto& top = stack.top(); top.visited) {
-                post(substr(top.node), substr(top.parent), top.len);
+        for (std::stack<visited_edge> stack{{edge}}; !stack.empty();) {
+            auto& top = stack.top();
+            visitor(static_cast<const visited_edge&>(top));
+            if (top.visited)
                 stack.pop();
-            }
             else {
-                pre(substr(top.node), substr(top.parent), top.len);
                 top.visited = true;
-                if (!leaf(top.node))
-                    push_edges(stack, top);
+                if (!leaf(top.child))
+                    spread(stack, top);
             }
+        }
     }
 };
 

@@ -9,8 +9,8 @@ namespace step {
 
 /**
  * Manber's algorithm for constructing suffix array.
- * Time complexity O(N*log(N)*log(N)), space complexity O(N),
- * where N is length of text.
+ * Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
+ * N is length of text.
  * @param T - type of the characters;
  * @param Size - to specify the maximum number of characters;
  * @param Compare - to determine the order of characters.
@@ -61,7 +61,7 @@ public:
 
     /**
      * Find all occurrences of the pattern as substring in O(M*log(N)) time,
-     * where M is length of the pattern, N is length of text.
+     * where: M is length of the pattern, N is length of text.
      * @return pair of iterators.
      */
     template <class InputIt>
@@ -100,7 +100,7 @@ public:
 
     /**
      * Kasai's algorithm for constructing longest common prefix array.
-     * Time and space complexity O(N), where N is length of text.
+     * Time and space complexity O(N), where: N is length of text.
      * @see https://en.wikipedia.org/wiki/LCP_array
      */
     template <class RandomIt>

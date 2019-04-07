@@ -38,15 +38,14 @@ struct suffix_tree_searcher {
         auto result = std::make_pair(rng.second, rng.second);
         auto tree = suffix_tree<iter_value_t<RandomIt>, Size, Map>{};
         append(tree, rng);
-        tree.visit(
-            [&](const auto& node_str, const auto&, auto len) {
-                if (!tree.suffix(node_str) &&
-                    len > (Size)std::distance(result.first, result.second)) {
-                    result.second = rng.first + node_str.second;
-                    result.first = result.second - len;
-                }
-            },
-            [](auto&&...) {});
+        tree.visit([&](const auto& edge) {
+            if (!edge.visited && !tree.leaf(edge.child) &&
+                edge.path_len > (Size)size(result)) {
+                auto str = tree.path(edge);
+                result.first = rng.first + str.first;
+                result.second = rng.first + str.second;
+            }
+        });
         return result;
     }
 };
@@ -55,8 +54,8 @@ struct suffix_tree_searcher {
 
 /**
  * Find the longest substring of a string that occurs at least twice.
- * Time complexity O(N*log(N)*log(N)), space complexity O(N),
- * where N = std::distance(first, last).
+ * Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
+ * N = std::distance(first, last).
  * A suffix array with optional parameter is used under the hood:
  * @param Compare - to determine the order of characters.
  * @return a pair of iterators defining the wanted substring.
@@ -78,8 +77,8 @@ auto find_with_suffix_array(const RandomRng& rng)
 /**
  * Find the longest substring of a string (padded with unique string terminator)
  * that occurs at least twice.
- * Time complexity O(N*log(N)), space complexity O(N),
- * where N = std::distance(first, last).
+ * Time complexity O(N*log(N)), space complexity O(N), where:
+ * N = std::distance(first, last).
  * A suffix tree with optional parameter is used under the hood:
  * @param Map - to associate characters with edges.
  * @return a pair of iterators defining the wanted substring.

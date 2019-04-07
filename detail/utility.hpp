@@ -83,19 +83,30 @@ using key_equal_or_equivalence_t =
                                 key_equal<T>,
                                 key_equivalence<T>>::type;
 
+template <class T>
+std::enable_if_t<std::is_unsigned_v<T>, T> flip(T n)
+{
+    return std::numeric_limits<T>::max() - n;
+}
+
+template <class T>
+auto size(const std::pair<T, T>& pair)
+{
+    return pair.second - pair.first;
+}
+
 template <class T, class... It>
 void append(T&& dest, std::pair<It, It>... src)
 {
     using size_type = decltype(dest.size());
-    dest.reserve(dest.size() +
-                 ((size_type)std::distance(src.first, src.second) + ...));
+    dest.reserve(dest.size() + ((size_type)size(src) + ...));
     (std::copy(src.first, src.second, std::back_inserter(dest)), ...);
 }
 
 template <class F, class... It>
 auto invoke(F&& f, std::pair<It, It>... args)
 {
-    auto count = (std::distance(args.first, args.second) + ...);
+    auto count = (size(args) + ...);
     if (count < std::numeric_limits<int8_t>::max())
         return f((uint8_t)count, args...);
     else if (count < std::numeric_limits<int16_t>::max())

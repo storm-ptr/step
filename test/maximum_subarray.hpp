@@ -41,8 +41,8 @@ TEST_CASE("maximum_subarray_kahan")
     v.insert(v.end(), 10000000, 0.0000001f);
     auto rng = find(v);
     auto kahan_rng = find(v, step::kahan::plus{}, std::less{});
-    CHECK((size_t)std::distance(rng.first, rng.second) < v.size());
-    CHECK(std::distance(kahan_rng.first, kahan_rng.second) == v.size());
+    CHECK((size_t)step::size(rng) < v.size());
+    CHECK((size_t)step::size(kahan_rng) == v.size());
 }
 
 #endif  // STEP_TEST_MAXIMUM_SUBARRAY_HPP

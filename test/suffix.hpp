@@ -32,15 +32,16 @@ template <class Tree>
 std::string tree_topology(const Tree& tree)
 {
     std::ostringstream os;
-    tree.visit(
-        [&](const auto& node_str, const auto&, auto len) {
-            os << std::setw(len) << std::setfill(' ')
-               << std::string_view{tree.begin(node_str), tree.size(node_str)};
-            if (tree.suffix(node_str))
-                os << " [" << node_str.second - len << "]";
-            os << "\n";
-        },
-        [](auto&&...) {});
+    tree.visit([&](const auto& edge) {
+        if (edge.visited)
+            return;
+        auto str = tree.substr(edge.child);
+        os << std::setw(edge.path_len) << std::setfill(' ')
+           << std::string_view{tree.begin(str), step::size(str)};
+        if (tree.leaf(edge.child))
+            os << " [" << tree.path(edge).first << "]";
+        os << "\n";
+    });
     return os.str();
 }
 
@@ -49,12 +50,10 @@ auto tree_order(const Tree& tree)
 {
     std::vector<typename Tree::size_type> res;
     res.reserve(tree.size());
-    tree.visit(
-        [&](const auto& node_str, const auto&, auto len) {
-            if (tree.suffix(node_str))
-                res.push_back(node_str.second - len);
-        },
-        [](auto&&...) {});
+    tree.visit([&](const auto& edge) {
+        if (!edge.visited && tree.leaf(edge.child))
+            res.push_back(tree.path(edge).first);
+    });
     return res;
 }
 
@@ -259,7 +258,7 @@ void print(const Rng& rng, size_t width)
 {
     for (auto& item : rng)
         std::cout << "| " << std::setw(width) << item << " ";
-    std::cout << " |\n";
+    std::cout << "|\n";
 }
 
 inline void benchmark(std::string str, size_t width)
