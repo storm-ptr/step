@@ -5,6 +5,7 @@
 
 #include <step/detail/utility.hpp>
 
+/// @see https://en.wikipedia.org/wiki/Hirschberg's_algorithm
 namespace step::hirschberg {
 
 template <class RandomIt1, class RandomIt2, class DynamicProg, class BinaryOp>
@@ -12,7 +13,7 @@ auto partition_point(RandomIt1 first1,
                      RandomIt1 last1,
                      RandomIt2 first2,
                      RandomIt2 last2,
-                     DynamicProg dp,
+                     const DynamicProg& dp,
                      BinaryOp op)
 {
     auto split1 = first1 + std::distance(first1, last1) / 2;
@@ -29,14 +30,13 @@ auto partition_point(RandomIt1 first1,
     return op(split1, split2);
 }
 
-/// @see https://en.wikipedia.org/wiki/Hirschberg's_algorithm
 template <class RandomIt1, class RandomIt2, class OutputIt, class DynamicProg>
 OutputIt trace(RandomIt1 first1,
                RandomIt1 last1,
                RandomIt2 first2,
                RandomIt2 last2,
                OutputIt result,
-               DynamicProg dp)
+               const DynamicProg& dp)
 {
     auto size1 = std::distance(first1, last1);
     auto size2 = std::distance(first2, last2);

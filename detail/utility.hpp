@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <iterator>
 #include <limits>
+#include <stack>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -130,6 +131,13 @@ public:
 
     auto& operator[](size_t row) { return rows_[row % N]; }
 };
+
+template <class T>
+void reverse(std::stack<T>& src, std::stack<T>& dest)
+{
+    for (; !src.empty(); src.pop())
+        dest.push(src.top());
+}
 
 }  // namespace step
 

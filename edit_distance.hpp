@@ -22,11 +22,10 @@ auto join_on_equal_or_tail(ForwardIt first,
         auto next = std::next(first);
         if (!done && (equal(*first, value) || next == last)) {
             done = true;
-            *result = op(*first, value);
+            *result++ = op(*first, value);
         }
         else
-            *result = op(*first, std::nullopt);
-        ++result;
+            *result++ = op(*first, std::nullopt);
         first = next;
     }
     return result;
@@ -105,14 +104,15 @@ OutputIt join(RandomIt1 first1,
               RandomIt2 first2,
               RandomIt2 last2,
               OutputIt result,
-              Equal equal)
+              Equal&& equal)
 {
-    return hirschberg::trace(first1,
-                             last1,
-                             first2,
-                             last2,
-                             result,
-                             detail::dynamic_programming<Equal>{equal});
+    return hirschberg::trace(
+        first1,
+        last1,
+        first2,
+        last2,
+        result,
+        detail::dynamic_programming<Equal>{std::forward<Equal>(equal)});
 }
 
 template <class RandomIt1, class RandomIt2, class OutputIt>
@@ -130,14 +130,14 @@ template <class RandomRng1, class RandomRng2, class OutputIt, class Equal>
 OutputIt join(const RandomRng1& rng1,
               const RandomRng2& rng2,
               OutputIt result,
-              Equal equal)
+              Equal&& equal)
 {
     return edit_distance::join(std::begin(rng1),
                                std::end(rng1),
                                std::begin(rng2),
                                std::end(rng2),
                                result,
-                               equal);
+                               std::forward<Equal>(equal));
 }
 
 template <class RandomRng1, class RandomRng2, class OutputIt>

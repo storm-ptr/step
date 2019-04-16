@@ -141,7 +141,7 @@ private:
     std::vector<Size> idx_;
 
     template <class SuffixIt, class Cmp>
-    static void fill_first_rank(SuffixIt first, SuffixIt last, const Cmp& cmp)
+    static void fill_first_rank(SuffixIt first, SuffixIt last, Cmp cmp)
     {
         if (first == last)
             return;

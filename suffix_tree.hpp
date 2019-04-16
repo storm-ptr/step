@@ -4,7 +4,6 @@
 #define STEP_SUFFIX_TREE_HPP
 
 #include <optional>
-#include <stack>
 #include <step/detail/utility.hpp>
 #include <unordered_map>
 
@@ -99,8 +98,8 @@ public:
     template <class InputIt>
     Size find(InputIt first, InputIt last) const
     {
-        auto origin = find_edge(first, last);
-        return origin ? path(*origin).first : size();
+        auto edge = find_edge(first, last);
+        return edge ? path(*edge).first : size();
     }
 
     template <class InputRng>
@@ -118,7 +117,7 @@ public:
     {
         if (auto origin = find_edge(first, last))
             dfs(*origin, [&](const auto& edge) {
-                if (!edge.visited && leaf(edge.child))
+                if (leaf(edge.child))
                     *result++ = path(edge).first;
             });
         return result;
@@ -199,49 +198,45 @@ private:
     template <class InputIt>
     std::optional<visited_edge> find_edge(InputIt first, InputIt last) const
     {
-        if (nodes_.empty())
-            return std::nullopt;
-        visited_edge result{};  // root
-        while (true) {
-            auto str = substr(result.child);
-            result.path_len += step::size(str);
+        for (visited_edge edge{}; !nodes_.empty();) {
+            auto str = substr(edge.child);
+            edge.path_len += step::size(str);
             auto diff = std::mismatch(first, last, begin(str), end(str), eq_);
             if (diff.first == last)
-                return result;
-            if (diff.second != end(str) || leaf(result.child))
-                return std::nullopt;
-            auto& children = nodes_[result.child].children;
+                return edge;
+            if (diff.second != end(str) || leaf(edge.child))
+                break;
+            auto& children = nodes_[edge.child].children;
             auto it = children.find(*diff.first);
             if (it == children.end())
-                return std::nullopt;
+                break;
             first = diff.first;
-            result.parent = std::exchange(result.child, it->second);
+            edge.parent = std::exchange(edge.child, it->second);
         }
+        return std::nullopt;
     }
 
-    void spread(std::stack<visited_edge>& dest, const visited_edge& src) const
+    auto spread(const visited_edge& src, std::stack<visited_edge>& dest) const
     {
-        std::stack<visited_edge> reverse;
         for (auto& [key, grandchild] : nodes_[src.child].children)
-            reverse.push({src.child,
-                          grandchild,
-                          Size(src.path_len + step::size(substr(grandchild)))});
-        for (; !reverse.empty(); reverse.pop())
-            dest.push(reverse.top());
+            dest.push({src.child,
+                       grandchild,
+                       Size(src.path_len + step::size(substr(grandchild)))});
     }
 
     template <class Visitor>
-    void dfs(const visited_edge& edge, Visitor visitor) const
+    void dfs(const visited_edge& origin, Visitor visitor) const
     {
-        for (std::stack<visited_edge> stack{{edge}}; !stack.empty();) {
+        for (std::stack<visited_edge> stack{{origin}}; !stack.empty();) {
             auto& top = stack.top();
             visitor(static_cast<const visited_edge&>(top));
-            if (top.visited)
+            if (top.visited || leaf(top.child))
                 stack.pop();
             else {
                 top.visited = true;
-                if (!leaf(top.child))
-                    spread(stack, top);
+                std::stack<visited_edge> edges;
+                spread(top, edges);
+                reverse(edges, stack);
             }
         }
     }

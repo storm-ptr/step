@@ -62,9 +62,12 @@ auto find(ForwardIt first, ForwardIt last)
 }
 
 template <class ForwardRng, class BinaryOp, class Compare>
-auto find(const ForwardRng& rng, BinaryOp op, Compare cmp)
+auto find(const ForwardRng& rng, BinaryOp&& op, Compare&& cmp)
 {
-    return maximum_subarray::find(std::begin(rng), std::end(rng), op, cmp);
+    return maximum_subarray::find(std::begin(rng),
+                                  std::end(rng),
+                                  std::forward<BinaryOp>(op),
+                                  std::forward<Compare>(cmp));
 }
 
 template <class ForwardRng>

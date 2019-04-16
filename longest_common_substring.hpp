@@ -57,9 +57,7 @@ struct suffix_tree_searcher {
         auto flags = std::unordered_map<Size, uint8_t>{};
         auto size1 = (Size)size(rng1);
         tree.visit([&](const auto& edge) {
-            if (!edge.visited)
-                return;
-            else if (!tree.leaf(edge.child))
+            if (!tree.leaf(edge.child))
                 flags[edge.parent] |= flags[edge.child];
             else if (tree.path(edge).first < size1)
                 flags[edge.parent] |= left_flag;

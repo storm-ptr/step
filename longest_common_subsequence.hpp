@@ -40,10 +40,8 @@ struct dynamic_programming {
                            OutputIt result) const
     {
         auto it = std::find_first_of(first1, last1, first2, last2, equal);
-        if (it != last1) {
-            *result = *it;
-            ++result;
-        }
+        if (it != last1)
+            *result++ = *it;
         return result;
     }
 };
@@ -64,14 +62,15 @@ OutputIt intersection(RandomIt1 first1,
                       RandomIt2 first2,
                       RandomIt2 last2,
                       OutputIt result,
-                      Equal equal)
+                      Equal&& equal)
 {
-    return hirschberg::trace(first1,
-                             last1,
-                             first2,
-                             last2,
-                             result,
-                             detail::dynamic_programming<Equal>{equal});
+    return hirschberg::trace(
+        first1,
+        last1,
+        first2,
+        last2,
+        result,
+        detail::dynamic_programming<Equal>{std::forward<Equal>(equal)});
 }
 
 template <class RandomIt1, class RandomIt2, class OutputIt>
@@ -89,14 +88,14 @@ template <class RandomRng1, class RandomRng2, class OutputIt, class Equal>
 OutputIt intersection(const RandomRng1& rng1,
                       const RandomRng2& rng2,
                       OutputIt result,
-                      Equal equal)
+                      Equal&& equal)
 {
     return longest_common_subsequence::intersection(std::begin(rng1),
                                                     std::end(rng1),
                                                     std::begin(rng2),
                                                     std::end(rng2),
                                                     result,
-                                                    equal);
+                                                    std::forward<Equal>(equal));
 }
 
 template <class RandomRng1, class RandomRng2, class OutputIt>
