@@ -105,7 +105,7 @@ void append(T&& dest, std::pair<It, It>... src)
 }
 
 template <class F, class... It>
-auto invoke(F&& f, std::pair<It, It>... args)
+auto invoke(F f, std::pair<It, It>... args)
 {
     auto count = (size(args) + ...);
     if (count < std::numeric_limits<int8_t>::max())
