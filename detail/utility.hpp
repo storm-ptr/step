@@ -97,7 +97,7 @@ auto size(const std::pair<T, T>& pair)
 }
 
 template <class T, class... It>
-void append(T&& dest, std::pair<It, It>... src)
+void append(T& dest, std::pair<It, It>... src)
 {
     using size_type = decltype(dest.size());
     dest.reserve(dest.size() + ((size_type)size(src) + ...));
