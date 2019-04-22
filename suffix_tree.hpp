@@ -116,7 +116,7 @@ public:
     OutputIt find_all(InputIt first, InputIt last, OutputIt result) const
     {
         if (auto origin = find_edge(first, last))
-            dfs(*origin, [&](const auto& edge) {
+            dfs(*origin, [&](auto& edge) {
                 if (leaf(edge.child))
                     *result++ = path(edge).first;
             });
@@ -218,10 +218,10 @@ private:
 
     auto spread(const visited_edge& src, std::stack<visited_edge>& dest) const
     {
-        for (auto& [key, grandchild] : nodes_[src.child].children)
+        for (auto& pair : nodes_[src.child].children)
             dest.push({src.child,
-                       grandchild,
-                       Size(src.path_len + step::size(substr(grandchild)))});
+                       pair.second,
+                       Size(src.path_len + step::size(substr(pair.second)))});
     }
 
     template <class Visitor>
