@@ -133,10 +133,10 @@ public:
 };
 
 template <class T>
-void reverse(std::stack<T>& src, std::stack<T>& dest)
+void move_backward(std::stack<T>& src, std::stack<T>& dest)
 {
     for (; !src.empty(); src.pop())
-        dest.push(src.top());
+        dest.push(std::move(src.top()));
 }
 
 }  // namespace step

@@ -68,21 +68,21 @@ public:
     /// Basic exception guarantee.
     void push_back(T val) try {
         str_.push_back(val);
-        for (auto connect = connector(); reminder();) {
+        for (auto link = linker(); reminder();) {
             if (auto& child = nodes_[node_].children[str_[char_]]) {
                 if (descend(child))
                     continue;
                 if (!split(child))
-                    return connect(node_);
-                connect(nodes() - 1);
+                    return link(node_);
+                link(nodes() - 1);
             }
             else {
                 child = flip(char_);
-                connect(node_);
+                link(node_);
             }
-            if (node_)  // not root
+            if (node_)
                 node_ = nodes_[node_].link;
-            else
+            else  // root
                 ++char_;
         }
     }
@@ -157,7 +157,7 @@ private:
     Size reminder() const { return size() - char_; }
     auto nodes() const { return (Size)nodes_.size(); }
 
-    auto connector()
+    auto linker()
     {
         if (nodes_.empty())
             nodes_.emplace_back();  // root
@@ -236,7 +236,7 @@ private:
                 top.visited = true;
                 std::stack<visited_edge> edges;
                 spread(top, edges);
-                reverse(edges, stack);
+                move_backward(edges, stack);
             }
         }
     }
