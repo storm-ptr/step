@@ -15,6 +15,7 @@
 
 namespace step {
 
+/// @see https://en.cppreference.com/w/cpp/utility/variant/visit
 template <class... Ts>
 struct overloaded : Ts... {
     using Ts::operator()...;
@@ -23,30 +24,30 @@ struct overloaded : Ts... {
 template <class... Ts>
 overloaded(Ts...)->overloaded<Ts...>;
 
+/// @see https://en.cppreference.com/w/cpp/iterator/iter_t
 template <class It>
 using iter_value_t = typename std::iterator_traits<It>::value_type;
 
+/// @see https://en.cppreference.com/w/cpp/ranges/iterator_t
 template <class Rng>
-using iterator_t = decltype(std::begin(std::declval<Rng>()));
+using iterator_t = decltype(std::begin(std::declval<Rng&>()));
 
 template <class Rng>
 using range_value_t = iter_value_t<iterator_t<Rng>>;
 
-struct make_pair {
-    template <class Lhs, class Rhs>
-    constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
-    {
-        return std::make_pair(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
-    }
+/// @see https://en.cppreference.com/w/cpp/experimental/is_detected
+template <class Default, class, template <class...> class Op, class... Args>
+struct detector {
+    using type = Default;
 };
 
-struct make_reverse_pair {
-    template <class Lhs, class Rhs>
-    constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
-    {
-        return std::make_pair(std::forward<Rhs>(rhs), std::forward<Lhs>(lhs));
-    }
+template <class Default, template <class...> class Op, class... Args>
+struct detector<Default, std::void_t<Op<Args...>>, Op, Args...> {
+    using type = Op<Args...>;
 };
+
+template <class Default, template <class...> class Op, class... Args>
+using detected_or_t = typename detector<Default, void, Op, Args...>::type;
 
 template <class Compare>
 class equivalence {
@@ -60,29 +61,12 @@ public:
     }
 };
 
-template <class, class = std::void_t<>>
-struct has_key_equal : std::false_type {
-};
-
 template <class T>
-struct has_key_equal<T, std::void_t<typename T::key_equal>> : std::true_type {
-};
-
-template <class T>
-struct key_equal {
-    using type = typename T::key_equal;
-};
-
-template <class T>
-struct key_equivalence {
-    using type = equivalence<typename T::key_compare>;
-};
+using key_equal_t = typename T::key_equal;
 
 template <class T>
 using key_equal_or_equivalence_t =
-    typename std::conditional_t<has_key_equal<T>::value,
-                                key_equal<T>,
-                                key_equivalence<T>>::type;
+    detected_or_t<equivalence<typename T::key_compare>, key_equal_t, T>;
 
 template <class T>
 std::enable_if_t<std::is_unsigned_v<T>, T> flip(T n)
@@ -118,6 +102,29 @@ auto invoke(F f, std::pair<It, It>... args)
         return f((size_t)count, args...);
 }
 
+template <class T>
+void move_backward(std::stack<T>& src, std::stack<T>& dest)
+{
+    for (; !src.empty(); src.pop())
+        dest.push(std::move(src.top()));
+}
+
+struct make_pair {
+    template <class Lhs, class Rhs>
+    constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
+    {
+        return std::make_pair(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
+    }
+};
+
+struct make_reverse_pair {
+    template <class Lhs, class Rhs>
+    constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
+    {
+        return std::make_pair(std::forward<Rhs>(rhs), std::forward<Lhs>(lhs));
+    }
+};
+
 template <class T, size_t N>
 class ring_table {
     std::array<std::vector<T>, N> rows_;
@@ -131,13 +138,6 @@ public:
 
     auto& operator[](size_t row) { return rows_[row % N]; }
 };
-
-template <class T>
-void move_backward(std::stack<T>& src, std::stack<T>& dest)
-{
-    for (; !src.empty(); src.pop())
-        dest.push(std::move(src.top()));
-}
 
 }  // namespace step
 

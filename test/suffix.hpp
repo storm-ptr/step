@@ -3,7 +3,6 @@
 #ifndef STEP_TEST_SUFFIX_HPP
 #define STEP_TEST_SUFFIX_HPP
 
-#include <chrono>
 #include <map>
 #include <random>
 #include <step/suffix_array.hpp>
@@ -11,7 +10,6 @@
 #include <string_view>
 
 using namespace std::literals;
-using namespace std::chrono;
 
 TEST_CASE("suffix_array_hello_world")
 {
@@ -223,75 +221,48 @@ TEST_CASE("suffix_array_n_tree_cross_check")
 }
 /*
 #include <boost/container/flat_map.hpp>
-#include <boost/container/small_vector.hpp>
 
 template <class Key, class T>
-using custom_map = boost::container::flat_map<
-    Key,
-    T,
-    std::less<>,
-    boost::container::small_vector<std::pair<Key, T>, 8>>;
+using custom_map_t = boost::container::flat_map<Key, T>;
 */
 template <class Key, class T>
-using custom_map = std::unordered_map<Key, T, std::hash<Key>, std::equal_to<>>;
+using custom_map_t =
+    std::unordered_map<Key, T, std::hash<Key>, std::equal_to<>>;
 
-inline size_t benchmark_tree(std::string_view str)
+TEST_CASE("suffix_array_n_tree_benchmark")
 {
-    step::suffix_tree<char, uint32_t, custom_map> tree{};
-    tree.reserve((uint32_t)str.size());
-    auto start = high_resolution_clock::now();
-    std::copy(str.begin(), str.end(), std::back_inserter(tree));
-    return duration_cast<milliseconds>(high_resolution_clock::now() - start)
-        .count();
-}
+    for (size_t i = 17; i < 21; ++i) {
+        auto str = make_random_string(std::exp2(i));
+        auto str2 = str;
+        auto mid = str2.begin() + str2.size() / 2;
+        std::copy(str2.begin(), mid, mid);
+        str.back() = str2.back() = '$';
+        auto size = std::to_string(str.size());
 
-inline size_t benchmark_array(std::string_view str)
-{
-    auto start = high_resolution_clock::now();
-    step::suffix_array<char, uint32_t> arr{str};
-    return duration_cast<milliseconds>(high_resolution_clock::now() - start)
-        .count();
-}
+        BENCHMARK("suffix array " + size)
+        {
+            step::suffix_array<char, uint32_t> arr{str};
+        }
 
-template <class Rng>
-void print(const Rng& rng, size_t width)
-{
-    for (auto& item : rng)
-        std::cout << "| " << std::setw(width) << item << " ";
-    std::cout << "|\n";
-}
+        BENCHMARK("suffix tree  " + size)
+        {
+            step::suffix_tree<char, uint32_t, custom_map_t> tree{};
+            tree.reserve((uint32_t)str.size());
+            std::copy(str.begin(), str.end(), std::back_inserter(tree));
+        }
 
-inline void benchmark(std::string str, size_t width)
-{
-    auto str2 = str;
-    auto mid = str2.begin() + str2.size() / 2;
-    std::copy(str2.begin(), mid, mid);
+        BENCHMARK("half copy SA " + size)
+        {
+            step::suffix_array<char, uint32_t> arr{str2};
+        }
 
-    str.back() = '$';
-    str2.back() = '$';
-
-    print(std::vector{str.size(),
-                      benchmark_array(str),
-                      benchmark_tree(str),
-                      benchmark_array(str2),
-                      benchmark_tree(str2)},
-          width);
-}
-
-TEST_CASE("suffix_array_n_tree_complexity")
-{
-    std::string_view cols[] = {"text (chars)",
-                               "suffix array (ms)",
-                               "suffix tree (ms)",
-                               "half copy SA (ms)",
-                               "half copy ST (ms)"};
-    auto max = std::max_element(
-        std::begin(cols), std::end(cols), [](auto lhs, auto rhs) {
-            return lhs.size() < rhs.size();
-        });
-    print(cols, max->size());
-    for (size_t i = 17; i < 21; ++i)
-        benchmark(make_random_string((size_t)std::exp2(i)), max->size());
+        BENCHMARK("half copy ST " + size)
+        {
+            step::suffix_tree<char, uint32_t, custom_map_t> tree{};
+            tree.reserve((uint32_t)str2.size());
+            std::copy(str2.begin(), str2.end(), std::back_inserter(tree));
+        }
+    }
 }
 
 #endif  // STEP_TEST_SUFFIX_HPP
