@@ -35,20 +35,6 @@ using iterator_t = decltype(std::begin(std::declval<Rng&>()));
 template <class Rng>
 using range_value_t = iter_value_t<iterator_t<Rng>>;
 
-/// @see https://en.cppreference.com/w/cpp/experimental/is_detected
-template <class Default, class, template <class...> class Op, class... Args>
-struct detector {
-    using type = Default;
-};
-
-template <class Default, template <class...> class Op, class... Args>
-struct detector<Default, std::void_t<Op<Args...>>, Op, Args...> {
-    using type = Op<Args...>;
-};
-
-template <class Default, template <class...> class Op, class... Args>
-using detected_or_t = typename detector<Default, void, Op, Args...>::type;
-
 template <class Compare>
 class equivalence {
     Compare cmp_;
@@ -61,12 +47,29 @@ public:
     }
 };
 
+template <class, class = std::void_t<>>
+struct has_key_equal : std::false_type {
+};
+
 template <class T>
-using key_equal_t = typename T::key_equal;
+struct has_key_equal<T, std::void_t<typename T::key_equal>> : std::true_type {
+};
+
+template <class T>
+struct key_equal {
+    using type = typename T::key_equal;
+};
+
+template <class T>
+struct key_equivalence {
+    using type = equivalence<typename T::key_compare>;
+};
 
 template <class T>
 using key_equal_or_equivalence_t =
-    detected_or_t<equivalence<typename T::key_compare>, key_equal_t, T>;
+    typename std::conditional_t<has_key_equal<T>::value,
+                                key_equal<T>,
+                                key_equivalence<T>>::type;
 
 template <class T>
 std::enable_if_t<std::is_unsigned_v<T>, T> flip(T n)

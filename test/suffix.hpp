@@ -232,7 +232,7 @@ using custom_map_t =
 TEST_CASE("suffix_array_n_tree_benchmark")
 {
     for (size_t i = 17; i < 21; ++i) {
-        auto str = make_random_string(std::exp2(i));
+        auto str = make_random_string((size_t)std::exp2(i));
         auto str2 = str;
         auto mid = str2.begin() + str2.size() / 2;
         std::copy(str2.begin(), mid, mid);
