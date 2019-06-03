@@ -38,12 +38,12 @@ struct suffix_tree_searcher {
         auto result = std::make_pair(rng.second, rng.second);
         auto tree = suffix_tree<iter_value_t<RandomIt>, Size, Map>{};
         append(tree, rng);
-        tree.visit([&](const auto& edge) {
+        tree.visit([&](auto& edge) {
             if (!edge.visited && !tree.leaf(edge.child) &&
-                edge.path_len > (Size)size(result)) {
-                auto str = tree.path(edge);
-                result.first = rng.first + str.first;
-                result.second = rng.first + str.second;
+                edge.path > (Size)size(result)) {
+                auto [first, last] = tree.path(edge);
+                result.first = rng.first + first;
+                result.second = rng.first + last;
             }
         });
         return result;

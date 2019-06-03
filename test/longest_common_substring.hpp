@@ -12,7 +12,7 @@ TEST_CASE("longest_common_substring_hello_world")
 {
     auto range = step::longest_common_substring::find_with_suffix_tree(
         "the longest string that is #", "a substring of two strings $");
-    CHECK(" string" == std::string(range.first, range.second));
+    CHECK("string " == std::string(range.first, range.second));
 }
 
 TEST_CASE("longest_common_substring_find")
@@ -45,9 +45,9 @@ TEST_CASE("longest_common_substring_case_insensitive")
 {
     using namespace std::literals;
 
-    const auto str1 = "geeksforGeeks#"sv;
-    const auto str2 = "GEEKSQUIZ$"sv;
-    const auto expect = "geeks"s;
+    auto str1 = "geeksforGeeks#"sv;
+    auto str2 = "GEEKSQUIZ$"sv;
+    auto expect = "geeks"s;
 
     auto arr_rng = step::longest_common_substring::find_with_suffix_array<
         step::case_insensitive::less>(str1, str2);

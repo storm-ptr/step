@@ -12,7 +12,7 @@ namespace step {
  * Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
  * N is length of text.
  * @param T - type of the characters;
- * @param Size - to specify the maximum number of characters;
+ * @param Size - to specify the maximum number / offset of characters;
  * @param Compare - to determine the order of characters.
  * @see https://en.wikipedia.org/wiki/Suffix_array
  */
@@ -33,35 +33,35 @@ public:
     }
 
     template <class InputRng>
-    suffix_array(const InputRng& rng)
+    explicit suffix_array(const InputRng& rng)
         : suffix_array(std::begin(rng), std::end(rng))
     {
     }
 
-    suffix_array(std::vector<T>&& str) : str_(std::move(str)), idx_(size())
+    explicit suffix_array(std::vector<T>&& str)
+        : str_(std::move(str)), idx_(size())
     {
-        auto gen = [i = Size{}]() mutable { return suffix{i++}; };
-        auto pos = [](auto& sfx) { return sfx.pos; };
-        auto by_rank = [](auto& lhs, auto& rhs) { return lhs.rank < rhs.rank; };
-        auto by_char = [this](auto& lhs, auto& rhs) {
-            return cmp_(str_[lhs.pos], str_[rhs.pos]);
-        };
+        auto generator = [i = Size{}]() mutable { return suffix{i++}; };
+        auto pos = [](auto& suf) { return suf.pos; };
+        auto val = [&](auto& suf) { return str_[suf.pos]; };
+        auto by_rank = [](auto& l, auto& r) { return l.rank < r.rank; };
+        auto by_val = [&](auto& l, auto& r) { return cmp_(val(l), val(r)); };
 
-        std::vector<suffix> sfxs(size());
-        std::generate(sfxs.begin(), sfxs.end(), gen);
-        std::sort(sfxs.begin(), sfxs.end(), by_char);
-        fill_first_rank(sfxs.begin(), sfxs.end(), by_char);
-        for (Size shift = 1; !is_sorted(sfxs.begin(), sfxs.end()); shift *= 2) {
-            fill_second_rank(sfxs.begin(), sfxs.end(), shift);
-            std::sort(sfxs.begin(), sfxs.end(), by_rank);
-            fill_first_rank(sfxs.begin(), sfxs.end(), by_rank);
+        std::vector<suffix> sufs(size());
+        std::generate(sufs.begin(), sufs.end(), generator);
+        std::sort(sufs.begin(), sufs.end(), by_val);
+        fill_first_rank(sufs, by_val);
+        for (Size shift = 1; !sorted(sufs); shift *= 2) {
+            fill_second_rank(sufs, shift);
+            std::sort(sufs.begin(), sufs.end(), by_rank);
+            fill_first_rank(sufs, by_rank);
         }
-        std::transform(sfxs.begin(), sfxs.end(), idx_.begin(), pos);
+        std::transform(sufs.begin(), sufs.end(), idx_.begin(), pos);
     }
 
     /**
-     * Find all occurrences of the pattern as substring in O(M*log(N)) time,
-     * where: M is length of the pattern, N is length of text.
+     * Find all occurrences of the substring in O(M*log(N)) time,
+     * where: M is length of the substring, N is length of text.
      * @return pair of iterators.
      */
     template <class InputIt>
@@ -70,10 +70,13 @@ public:
         auto result = std::make_pair(idx_.begin(), idx_.end());
         auto shift = Size{};
         std::for_each(first, last, [&](T val) {
-            result = std::equal_range(result.first,
-                                      result.second,
-                                      size(),
-                                      compare_with(val, shift++));
+            auto at = [=](Size pos) {
+                pos += shift;
+                return pos < size() ? str_[pos] : val;
+            };
+            auto cmp = [=](Size l, Size r) { return cmp_(at(l), at(r)); };
+            result = std::equal_range(result.first, result.second, size(), cmp);
+            ++shift;
         });
         return result;
     }
@@ -84,12 +87,12 @@ public:
         return find_all(std::begin(rng), std::end(rng));
     }
 
-    /// @return position of the pattern as substring
+    /// @return offset of the substring
     template <class InputIt>
     Size find(InputIt first, InputIt last) const
     {
         auto rng = find_all(first, last);
-        return rng.first == rng.second ? size() : *rng.first;
+        return step::size(rng) ? *rng.first : size();
     }
 
     template <class InputRng>
@@ -132,57 +135,42 @@ private:
     inline static const auto cmp_ = Compare{};
     inline static const auto eq_ = equivalence<Compare>{};
 
+    std::vector<T> str_;
+    std::vector<Size> idx_;
+
     struct suffix {
         Size pos;
         std::pair<Size, Size> rank;
     };
 
-    std::vector<T> str_;
-    std::vector<Size> idx_;
-
-    template <class SuffixIt, class Cmp>
-    static void fill_first_rank(SuffixIt first, SuffixIt last, Cmp cmp)
+    template <class Cmp>
+    static void fill_first_rank(std::vector<suffix>& sufs, Cmp cmp)
     {
-        if (first == last)
-            return;
-        Size i{1};
-        for (auto next = std::next(first); next != last; ++next, ++first) {
-            bool less = cmp(*first, *next);
-            first->rank.first = i;
+        Size uniq = 1;
+        for (size_t i = 1; i < sufs.size(); ++i) {
+            bool less = cmp(sufs[i - 1], sufs[i]);
+            sufs[i - 1].rank.first = uniq;
             if (less)
-                ++i;
+                ++uniq;
         }
-        first->rank.first = i;
+        if (!sufs.empty())
+            sufs.back().rank.first = uniq;
     }
 
-    template <class SuffixIt>
-    static void fill_second_rank(SuffixIt first, SuffixIt last, Size shift)
+    static void fill_second_rank(std::vector<suffix>& sufs, Size shift)
     {
-        std::vector<Size> inverse(std::distance(first, last));
-        std::for_each(
-            first, last, [&](auto& sfx) { inverse[sfx.pos] = sfx.rank.first; });
-        std::for_each(first, last, [&](auto& sfx) {
-            Size pos = sfx.pos + shift;
-            sfx.rank.second = pos < inverse.size() ? inverse[pos] : 0;
-        });
+        std::vector<Size> ranks(sufs.size());
+        for (auto& suf : sufs)
+            ranks[suf.pos] = suf.rank.first;
+        for (auto& suf : sufs) {
+            Size pos = suf.pos + shift;
+            suf.rank.second = pos < ranks.size() ? ranks[pos] : 0;
+        }
     }
 
-    template <class SuffixIt>
-    static bool is_sorted(SuffixIt first, SuffixIt last)
+    static bool sorted(const std::vector<suffix>& sufs)
     {
-        return first == last ||
-               std::prev(last)->rank.first == (Size)std::distance(first, last);
-    }
-
-    auto compare_with(T val, Size shift) const
-    {
-        return [=](Size lhs, Size rhs) {
-            bool lefty = lhs < size();
-            Size pos = (lefty ? lhs : rhs) + shift;
-            return pos < size()
-                       ? (lefty ? cmp_(str_[pos], val) : cmp_(val, str_[pos]))
-                       : lefty;
-        };
+        return sufs.empty() || sufs.back().rank.first == (Size)sufs.size();
     }
 };
 

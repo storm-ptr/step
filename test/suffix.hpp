@@ -3,6 +3,7 @@
 #ifndef STEP_TEST_SUFFIX_HPP
 #define STEP_TEST_SUFFIX_HPP
 
+//#include <boost/container/flat_map.hpp>
 #include <map>
 #include <random>
 #include <step/suffix_array.hpp>
@@ -10,6 +11,9 @@
 #include <string_view>
 
 using namespace std::literals;
+
+template <class Key, class T>
+using reverse_ordered_map = std::map<Key, T, std::greater<>>;
 
 TEST_CASE("suffix_array_hello_world")
 {
@@ -30,12 +34,12 @@ template <class Tree>
 std::string tree_topology(const Tree& tree)
 {
     std::ostringstream os;
-    tree.visit([&](const auto& edge) {
+    tree.visit([&](auto& edge) {
         if (edge.visited)
             return;
-        auto str = tree.substr(edge.child);
-        os << std::setw(edge.path_len) << std::setfill(' ')
-           << std::string_view{tree.begin(str), step::size(str)};
+        auto rng = tree.label(edge.child);
+        os << std::setw(edge.path) << std::setfill(' ')
+           << std::string_view{tree.begin(rng), step::size(rng)};
         if (tree.leaf(edge.child))
             os << " [" << tree.path(edge).first << "]";
         os << "\n";
@@ -48,8 +52,8 @@ auto tree_order(const Tree& tree)
 {
     std::vector<typename Tree::size_type> res;
     res.reserve(tree.size());
-    tree.visit([&](const auto& edge) {
-        if (!edge.visited && tree.leaf(edge.child))
+    tree.visit([&](auto& edge) {
+        if (tree.leaf(edge.child))
             res.push_back(tree.path(edge).first);
     });
     return res;
@@ -136,7 +140,7 @@ w
     };
 
     for (auto& [str, expect] : tests) {
-        step::suffix_tree<char, size_t, std::map> tree{};
+        step::suffix_tree<char, size_t, reverse_ordered_map> tree{};
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
         CHECK(tree_topology(tree) == expect);
     }
@@ -201,7 +205,7 @@ TEST_CASE("suffix_array_n_tree_cross_check")
         str.back() = '$';
 
         step::suffix_array<char, uint16_t> arr{str};
-        step::suffix_tree<char, uint16_t, std::map> tree{};
+        step::suffix_tree<char, uint16_t, reverse_ordered_map> tree{};
         tree.reserve((uint16_t)str.size());
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
 
@@ -219,48 +223,38 @@ TEST_CASE("suffix_array_n_tree_cross_check")
         }
     }
 }
-/*
-#include <boost/container/flat_map.hpp>
-
-template <class Key, class T>
-using custom_map_t = boost::container::flat_map<Key, T>;
-*/
-template <class Key, class T>
-using custom_map_t =
-    std::unordered_map<Key, T, std::hash<Key>, std::equal_to<>>;
 
 TEST_CASE("suffix_array_n_tree_benchmark")
 {
-    for (size_t i = 17; i < 21; ++i) {
-        auto str = make_random_string((size_t)std::exp2(i));
-        auto str2 = str;
-        auto mid = str2.begin() + str2.size() / 2;
-        std::copy(str2.begin(), mid, mid);
-        str.back() = str2.back() = '$';
-        auto size = std::to_string(str.size());
+    for (size_t exp = 17; exp < 21; ++exp) {
+        auto str = make_random_string((size_t)std::exp2(exp));
+        auto repeat = make_random_string((size_t)std::exp2(exp) / 2);
+        repeat += repeat;
+        str.back() = repeat.back() = '$';
+        auto size = "2^" + std::to_string(exp);
 
-        BENCHMARK("suffix array " + size)
+        BENCHMARK(size + " suffix array")
         {
             step::suffix_array<char, uint32_t> arr{str};
         }
 
-        BENCHMARK("suffix tree  " + size)
+        BENCHMARK(size + " suffix array (repeat)")
         {
-            step::suffix_tree<char, uint32_t, custom_map_t> tree{};
+            step::suffix_array<char, uint32_t> arr{repeat};
+        }
+
+        BENCHMARK(size + " suffix tree")
+        {
+            step::suffix_tree<char, uint32_t> tree{};
             tree.reserve((uint32_t)str.size());
             std::copy(str.begin(), str.end(), std::back_inserter(tree));
         }
 
-        BENCHMARK("half copy SA " + size)
+        BENCHMARK(size + " suffix tree (repeat)")
         {
-            step::suffix_array<char, uint32_t> arr{str2};
-        }
-
-        BENCHMARK("half copy ST " + size)
-        {
-            step::suffix_tree<char, uint32_t, custom_map_t> tree{};
-            tree.reserve((uint32_t)str2.size());
-            std::copy(str2.begin(), str2.end(), std::back_inserter(tree));
+            step::suffix_tree<char, uint32_t> tree{};
+            tree.reserve((uint32_t)repeat.size());
+            std::copy(repeat.begin(), repeat.end(), std::back_inserter(tree));
         }
     }
 }

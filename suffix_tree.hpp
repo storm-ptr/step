@@ -14,7 +14,7 @@ namespace step {
  * Time complexity O(N*log(N)), space complexity O(N), where:
  * N is length of text.
  * @param T - type of the characters;
- * @param Size - to specify the maximum number of characters;
+ * @param Size - to specify the maximum number / offset of characters;
  * @param Map - to associate characters with edges, its key_type shall be T.
  * @see https://en.wikipedia.org/wiki/Suffix_tree
  */
@@ -25,38 +25,18 @@ class suffix_tree {
 public:
     using value_type = T;
     using size_type = Size;
-    using substring = std::pair<Size, Size>;  // half-open position range
+    using range = std::pair<Size, Size>;  // half-open offset range
 
-    struct visited_edge {
-        Size parent;
-        Size child;
-        Size path_len;  // number of characters from the root to the child node
-        bool visited;   // pre/post-order traversal
-    };
-
-    auto size() const { return (Size)str_.size(); }
     auto data() const { return str_.data(); }
-    auto begin(const substring& str) const { return data() + str.first; }
-    auto end(const substring& str) const { return data() + str.second; }
-    bool leaf(Size node) const { return node >= nodes(); }
-
-    substring substr(Size node) const
-    {
-        return leaf(node) ? substring{flip(node), size()} : nodes_[node].str;
-    }
-
-    substring path(const visited_edge& edge) const
-    {
-        auto str = substr(edge.child);
-        return substring{Size(str.second - edge.path_len), str.second};
-    }
+    auto size() const { return (Size)str_.size(); }
+    auto begin(const range& rng) const { return data() + rng.first; }
+    auto end(const range& rng) const { return data() + rng.second; }
 
     void clear() noexcept
     {
         str_.clear();
         nodes_.clear();
-        char_ = 0;
-        node_ = 0;
+        char_ = node_ = 0;
     }
 
     void reserve(Size len)
@@ -92,8 +72,8 @@ public:
     }
 
     /**
-     * Find position of the first occurrence of the pattern as substring
-     * in O(M) time, where M is length of the pattern.
+     * Find offset of the first occurrence of the substring
+     * in O(M) time, where M is length of the substring.
      */
     template <class InputIt>
     Size find(InputIt first, InputIt last) const
@@ -109,14 +89,14 @@ public:
     }
 
     /**
-     * Find all occurrences of the pattern for explicit suffix tree
-     * (padded with a terminal symbol not seen in the string).
+     * Find all occurrences of the substring for explicit suffix tree
+     * (padded with a terminal symbol not seen in the text).
      */
     template <class InputIt, class OutputIt>
     OutputIt find_all(InputIt first, InputIt last, OutputIt result) const
     {
-        if (auto origin = find_edge(first, last))
-            dfs(*origin, [&](auto& edge) {
+        if (auto src = find_edge(first, last))
+            dfs(*src, [&](auto& edge) {
                 if (leaf(edge.child))
                     *result++ = path(edge).first;
             });
@@ -129,10 +109,15 @@ public:
         return find_all(std::begin(rng), std::end(rng), result);
     }
 
-    /**
-     * Depth-first traversal of the tree.
-     * Pre/post-order @param visitor has @param visited_edge.
-     */
+    /// Depth-first tree traversal parameter.
+    struct visited_edge {
+        Size parent;   // parent node
+        Size child;    // child node
+        Size path;     // number of characters from the root
+        bool visited;  // pre/post-order
+    };
+
+    /// @code tree.visit([](const visited_edge&) {}); @endcode
     template <class Visitor>
     void visit(Visitor&& visitor) const
     {
@@ -140,19 +125,32 @@ public:
             dfs({}, std::forward<Visitor>(visitor));
     }
 
+    bool leaf(Size node) const { return node >= nodes(); }
+
+    range label(Size node) const
+    {
+        return leaf(node) ? range{flip(node), size()} : nodes_[node].label;
+    }
+
+    range path(const visited_edge& edge) const
+    {
+        auto last = label(edge.child).second;
+        return {Size(last - edge.path), last};
+    }
+
 private:
     inline static const auto eq_ = key_equal_or_equivalence_t<Map<T, Size>>{};
 
     struct internal_node {
         Map<T, Size> children;
-        substring str;
+        range label;
         Size link;
     };
 
     std::vector<T> str_;
     std::vector<internal_node> nodes_;
-    Size char_ = 0;  // active edge character
-    Size node_ = 0;  // active node
+    Size char_{};  // active edge character
+    Size node_{};  // active node
 
     Size reminder() const { return size() - char_; }
     auto nodes() const { return (Size)nodes_.size(); }
@@ -169,7 +167,7 @@ private:
 
     bool descend(Size node)
     {
-        auto len = step::size(substr(node));
+        auto len = step::size(label(node));
         if (reminder() <= len)
             return false;
         char_ += len;
@@ -179,19 +177,17 @@ private:
 
     bool split(Size& child)
     {
-        auto str = substr(child);
-        auto head = substring{str.first, Size(str.first + reminder() - 1)};
-        auto tail = substring{head.second, str.second};
-        if (eq_(str_[tail.first], str_.back()))
+        auto rng = label(child);
+        Size split = rng.first + reminder() - 1;
+        Size back = size() - 1;
+        if (eq_(str_[back], str_[split]))
             return false;
-        auto old = std::exchange(child, nodes());
-        nodes_.push_back({{{str_.back(), flip<Size>(size() - 1)}}, head});
-        if (leaf(old))
-            nodes_.back().children[str_[tail.first]] = flip(tail.first);
-        else {
-            nodes_.back().children[str_[tail.first]] = old;
-            nodes_[old].str = tail;
-        }
+        Size old = std::exchange(child, nodes());
+        nodes_.push_back({{{str_[back], flip(back)},
+                           {str_[split], leaf(old) ? flip(split) : old}},
+                          {rng.first, split}});
+        if (!leaf(old))
+            nodes_[old].label = {split, rng.second};
         return true;
     }
 
@@ -199,16 +195,15 @@ private:
     std::optional<visited_edge> find_edge(InputIt first, InputIt last) const
     {
         for (visited_edge edge{}; !nodes_.empty();) {
-            auto str = substr(edge.child);
-            edge.path_len += step::size(str);
-            auto diff = std::mismatch(first, last, begin(str), end(str), eq_);
+            auto rng = label(edge.child);
+            edge.path += step::size(rng);
+            auto diff = std::mismatch(first, last, begin(rng), end(rng), eq_);
             if (diff.first == last)
                 return edge;
-            if (diff.second != end(str) || leaf(edge.child))
+            if (diff.second != end(rng) || leaf(edge.child))
                 break;
-            auto& children = nodes_[edge.child].children;
-            auto it = children.find(*diff.first);
-            if (it == children.end())
+            auto it = nodes_[edge.child].children.find(*diff.first);
+            if (it == nodes_[edge.child].children.end())
                 break;
             first = diff.first;
             edge.parent = std::exchange(edge.child, it->second);
@@ -216,28 +211,24 @@ private:
         return std::nullopt;
     }
 
-    auto spread(const visited_edge& src, std::stack<visited_edge>& dest) const
+    auto spawn(visited_edge src, std::stack<visited_edge>& dest) const
     {
         for (auto& pair : nodes_[src.child].children)
             dest.push({src.child,
                        pair.second,
-                       Size(src.path_len + step::size(substr(pair.second)))});
+                       Size(src.path + step::size(label(pair.second)))});
     }
 
     template <class Visitor>
-    void dfs(const visited_edge& origin, Visitor visitor) const
+    void dfs(const visited_edge& src, Visitor visitor) const
     {
-        for (std::stack<visited_edge> stack{{origin}}; !stack.empty();) {
+        for (std::stack<visited_edge> stack{{src}}; !stack.empty();) {
             auto& top = stack.top();
-            visitor(static_cast<const visited_edge&>(top));
-            if (top.visited || leaf(top.child))
+            visitor(std::as_const(top));
+            if (leaf(top.child) || std::exchange(top.visited, true))
                 stack.pop();
-            else {
-                top.visited = true;
-                std::stack<visited_edge> edges;
-                spread(top, edges);
-                move_backward(edges, stack);
-            }
+            else
+                spawn(top, stack);
         }
     }
 };

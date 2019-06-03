@@ -56,7 +56,7 @@ struct suffix_tree_searcher {
         append(tree, rng1, rng2);
         auto flags = std::unordered_map<Size, uint8_t>{};
         auto size1 = (Size)size(rng1);
-        tree.visit([&](const auto& edge) {
+        tree.visit([&](auto& edge) {
             if (!tree.leaf(edge.child))
                 flags[edge.parent] |= flags[edge.child];
             else if (tree.path(edge).first < size1)
@@ -64,13 +64,13 @@ struct suffix_tree_searcher {
             else
                 flags[edge.parent] |= right_flag;
         });
-        tree.visit([&](const auto& edge) {
+        tree.visit([&](auto& edge) {
             if (!edge.visited && !tree.leaf(edge.child) &&
                 flags[edge.child] == (left_flag | right_flag) &&
-                edge.path_len > (Size)size(result)) {
-                auto str = tree.path(edge);
-                result.first = rng1.first + str.first;
-                result.second = rng1.first + str.second;
+                edge.path > (Size)size(result)) {
+                auto [first, last] = tree.path(edge);
+                result.first = rng1.first + first;
+                result.second = rng1.first + last;
             }
         });
         return result;

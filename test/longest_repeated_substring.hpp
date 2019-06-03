@@ -27,8 +27,6 @@ TEST_CASE("longest_repeated_substring_find")
         {"ABABABA$", "ABABA"},
         {"ATCGATCGA$", "ATCGA"},
         {"banana$", "ana"},
-        {"abcpqrabpqpq$", "ab"},
-        {"pqrpqpqabab$", "ab"},
         {"ATCGATCGA$", "ATCGA"},
         {"mississippi$", "issi"},
         {"abcabcaacb$", "abca"},

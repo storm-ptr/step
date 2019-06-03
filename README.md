@@ -33,7 +33,7 @@ Algorithms:
   ```C++
   auto range = step::longest_common_substring::find_with_suffix_tree(
       "the longest string that is #", "a substring of two strings $");
-  CHECK(" string" == std::string(range.first, range.second));
+  CHECK("string " == std::string(range.first, range.second));
   ```
   </p></details>
 * <details><summary>longest increasing subsequence</summary><p>
@@ -86,5 +86,3 @@ Data structures:
   CHECK(tree.find("quick"sv) == 8);
   ```
   </p></details>
-
-to be continued

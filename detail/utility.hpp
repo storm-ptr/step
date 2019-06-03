@@ -71,6 +71,36 @@ using key_equal_or_equivalence_t =
                                 key_equal<T>,
                                 key_equivalence<T>>::type;
 
+struct make_pair {
+    template <class Lhs, class Rhs>
+    constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
+    {
+        return std::make_pair(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
+    }
+};
+
+struct make_reverse_pair {
+    template <class Lhs, class Rhs>
+    constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
+    {
+        return std::make_pair(std::forward<Rhs>(rhs), std::forward<Lhs>(lhs));
+    }
+};
+
+template <class T, size_t N>
+class ring_table {
+    std::array<std::vector<T>, N> rows_;
+
+public:
+    explicit ring_table(size_t cols)
+    {
+        for (auto& row : rows_)
+            row.resize(cols);
+    }
+
+    auto& operator[](size_t row) { return rows_[row % N]; }
+};
+
 template <class T>
 std::enable_if_t<std::is_unsigned_v<T>, T> flip(T n)
 {
@@ -104,43 +134,6 @@ auto invoke(F f, std::pair<It, It>... args)
     else
         return f((size_t)count, args...);
 }
-
-template <class T>
-void move_backward(std::stack<T>& src, std::stack<T>& dest)
-{
-    for (; !src.empty(); src.pop())
-        dest.push(std::move(src.top()));
-}
-
-struct make_pair {
-    template <class Lhs, class Rhs>
-    constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
-    {
-        return std::make_pair(std::forward<Lhs>(lhs), std::forward<Rhs>(rhs));
-    }
-};
-
-struct make_reverse_pair {
-    template <class Lhs, class Rhs>
-    constexpr auto operator()(Lhs&& lhs, Rhs&& rhs) const
-    {
-        return std::make_pair(std::forward<Rhs>(rhs), std::forward<Lhs>(lhs));
-    }
-};
-
-template <class T, size_t N>
-class ring_table {
-    std::array<std::vector<T>, N> rows_;
-
-public:
-    explicit ring_table(size_t cols)
-    {
-        for (auto& row : rows_)
-            row.resize(cols);
-    }
-
-    auto& operator[](size_t row) { return rows_[row % N]; }
-};
 
 }  // namespace step
 
