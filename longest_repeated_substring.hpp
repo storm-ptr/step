@@ -39,8 +39,7 @@ struct suffix_tree_searcher {
         auto tree = suffix_tree<iter_value_t<RandomIt>, Size, Map>{};
         append(tree, rng);
         tree.visit([&](auto& edge) {
-            if (!edge.visited && !tree.leaf(edge.child) &&
-                edge.path > (Size)size(result)) {
+            if (edge.visited && edge.path > (Size)size(result)) {
                 auto [first, last] = tree.path(edge);
                 result.first = rng.first + first;
                 result.second = rng.first + last;
@@ -53,7 +52,7 @@ struct suffix_tree_searcher {
 }  // namespace detail
 
 /**
- * Find the longest substring of a string that occurs at least twice.
+ * Find the longest substring of text that occurs at least twice.
  * Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
  * N = std::distance(first, last).
  * A suffix array with optional parameter is used under the hood:
@@ -75,7 +74,7 @@ auto find_with_suffix_array(const RandomRng& rng)
 }
 
 /**
- * Find the longest substring of a string (padded with unique string terminator)
+ * Find the longest substring of text (padded with unique string terminator)
  * that occurs at least twice.
  * Time complexity O(N*log(N)), space complexity O(N), where:
  * N = std::distance(first, last).

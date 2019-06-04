@@ -68,15 +68,13 @@ public:
     auto find_all(InputIt first, InputIt last) const
     {
         auto result = std::make_pair(idx_.begin(), idx_.end());
-        auto shift = Size{};
+        auto i = Size{};
         std::for_each(first, last, [&](T val) {
-            auto at = [=](Size pos) {
-                pos += shift;
-                return pos < size() ? str_[pos] : val;
-            };
-            auto cmp = [=](Size l, Size r) { return cmp_(at(l), at(r)); };
-            result = std::equal_range(result.first, result.second, size(), cmp);
-            ++shift;
+            auto at = shift_or(i++, val);
+            result = std::equal_range(
+                result.first, result.second, size(), [&](Size l, Size r) {
+                    return cmp_(at(str_, l), at(str_, r));
+                });
         });
         return result;
     }
@@ -162,10 +160,9 @@ private:
         std::vector<Size> ranks(sufs.size());
         for (auto& suf : sufs)
             ranks[suf.pos] = suf.rank.first;
-        for (auto& suf : sufs) {
-            Size pos = suf.pos + shift;
-            suf.rank.second = pos < ranks.size() ? ranks[pos] : 0;
-        }
+        auto at = shift_or(shift, Size{});
+        for (auto& suf : sufs)
+            suf.rank.second = at(ranks, suf.pos);
     }
 
     static bool sorted(const std::vector<suffix>& sufs)

@@ -65,8 +65,7 @@ struct suffix_tree_searcher {
                 flags[edge.parent] |= right_flag;
         });
         tree.visit([&](auto& edge) {
-            if (!edge.visited && !tree.leaf(edge.child) &&
-                flags[edge.child] == (left_flag | right_flag) &&
+            if (edge.visited && flags[edge.child] == (left_flag | right_flag) &&
                 edge.path > (Size)size(result)) {
                 auto [first, last] = tree.path(edge);
                 result.first = rng1.first + first;

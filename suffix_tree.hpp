@@ -4,6 +4,7 @@
 #define STEP_SUFFIX_TREE_HPP
 
 #include <optional>
+#include <stack>
 #include <step/detail/utility.hpp>
 #include <unordered_map>
 
@@ -119,10 +120,10 @@ public:
 
     /// @code tree.visit([](const visited_edge&) {}); @endcode
     template <class Visitor>
-    void visit(Visitor&& visitor) const
+    void visit(Visitor&& viz) const
     {
         if (!nodes_.empty())
-            dfs({}, std::forward<Visitor>(visitor));
+            dfs({}, std::forward<Visitor>(viz));
     }
 
     bool leaf(Size node) const { return node >= nodes(); }
@@ -149,7 +150,7 @@ private:
 
     std::vector<T> str_;
     std::vector<internal_node> nodes_;
-    Size char_{};  // active edge character
+    Size char_{};  // active character
     Size node_{};  // active node
 
     Size reminder() const { return size() - char_; }
@@ -159,9 +160,9 @@ private:
     {
         if (nodes_.empty())
             nodes_.emplace_back();  // root
-        return [this, last = nodes()](Size node) mutable {
-            if (last < nodes() && last != node)
-                nodes_[last++].link = node;
+        return [this, i = nodes()](Size node) mutable {
+            if (i < nodes() && i != node)
+                nodes_[i++].link = node;
         };
     }
 
@@ -208,7 +209,7 @@ private:
             first = diff.first;
             edge.parent = std::exchange(edge.child, it->second);
         }
-        return std::nullopt;
+        return {};
     }
 
     auto spawn(visited_edge src, std::stack<visited_edge>& dest) const
@@ -220,11 +221,11 @@ private:
     }
 
     template <class Visitor>
-    void dfs(const visited_edge& src, Visitor visitor) const
+    void dfs(const visited_edge& src, Visitor viz) const
     {
         for (std::stack<visited_edge> stack{{src}}; !stack.empty();) {
             auto& top = stack.top();
-            visitor(std::as_const(top));
+            viz(std::as_const(top));
             if (leaf(top.child) || std::exchange(top.visited, true))
                 stack.pop();
             else

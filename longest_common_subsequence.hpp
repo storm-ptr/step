@@ -10,7 +10,7 @@ namespace detail {
 
 template <class Equal>
 struct dynamic_programming {
-    Equal equal;
+    Equal eq;
 
     /// @see https://www.geeksforgeeks.org/longest-common-subsequence/
     template <class RandomIt1, class RandomIt2>
@@ -24,7 +24,7 @@ struct dynamic_programming {
         ring_table<size_t, 2> tbl(size2 + 1);
         for (size_t l = 1; l <= size1; ++l)
             for (size_t r = 1; r <= size2; ++r)
-                tbl[l][r] = equal(first1[l - 1], first2[r - 1])
+                tbl[l][r] = eq(first1[l - 1], first2[r - 1])
                                 ? tbl[l - 1][r - 1] + 1
                                 : std::max(tbl[l - 1][r], tbl[l][r - 1]);
         return std::move(tbl[size1]);
@@ -39,7 +39,7 @@ struct dynamic_programming {
                            RandomIt2 last2,
                            OutputIt result) const
     {
-        auto it = std::find_first_of(first1, last1, first2, last2, equal);
+        auto it = std::find_first_of(first1, last1, first2, last2, eq);
         if (it != last1)
             *result++ = *it;
         return result;
@@ -62,7 +62,7 @@ OutputIt intersection(RandomIt1 first1,
                       RandomIt2 first2,
                       RandomIt2 last2,
                       OutputIt result,
-                      Equal&& equal)
+                      Equal&& eq)
 {
     return hirschberg::trace(
         first1,
@@ -70,7 +70,7 @@ OutputIt intersection(RandomIt1 first1,
         first2,
         last2,
         result,
-        detail::dynamic_programming<Equal>{std::forward<Equal>(equal)});
+        detail::dynamic_programming<Equal>{std::forward<Equal>(eq)});
 }
 
 template <class RandomIt1, class RandomIt2, class OutputIt>
@@ -88,14 +88,14 @@ template <class RandomRng1, class RandomRng2, class OutputIt, class Equal>
 OutputIt intersection(const RandomRng1& rng1,
                       const RandomRng2& rng2,
                       OutputIt result,
-                      Equal&& equal)
+                      Equal&& eq)
 {
     return longest_common_subsequence::intersection(std::begin(rng1),
                                                     std::end(rng1),
                                                     std::begin(rng2),
                                                     std::end(rng2),
                                                     result,
-                                                    std::forward<Equal>(equal));
+                                                    std::forward<Equal>(eq));
 }
 
 template <class RandomRng1, class RandomRng2, class OutputIt>

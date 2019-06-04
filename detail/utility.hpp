@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <iterator>
 #include <limits>
-#include <stack>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -111,6 +110,15 @@ template <class T>
 auto size(const std::pair<T, T>& pair)
 {
     return pair.second - pair.first;
+}
+
+template <class T>
+auto shift_or(size_t shift, T default_value)
+{
+    return [=](const auto& rng, size_t pos) {
+        pos += shift;
+        return pos < std::size(rng) ? rng[pos] : default_value;
+    };
 }
 
 template <class T, class... It>

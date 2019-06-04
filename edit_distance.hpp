@@ -14,13 +14,13 @@ auto join_on_equal_or_tail(ForwardIt first,
                            ForwardIt last,
                            const T& value,
                            OutputIt result,
-                           Equal equal,
+                           Equal eq,
                            BinaryOp op)
 {
     bool done = false;
     while (first != last) {
         auto next = std::next(first);
-        if (!done && (equal(*first, value) || next == last)) {
+        if (!done && (eq(*first, value) || next == last)) {
             done = true;
             *result++ = op(*first, value);
         }
@@ -33,7 +33,7 @@ auto join_on_equal_or_tail(ForwardIt first,
 
 template <class Equal>
 struct dynamic_programming {
-    Equal equal;
+    Equal eq;
 
     /// @see https://en.wikipedia.org/wiki/Wagner–Fischer_algorithm
     template <class RandomIt1, class RandomIt2>
@@ -51,7 +51,7 @@ struct dynamic_programming {
                     tbl[l][r] = r;
                 else if (r == 0)
                     tbl[l][r] = l;
-                else if (equal(first1[l - 1], first2[r - 1]))
+                else if (eq(first1[l - 1], first2[r - 1]))
                     tbl[l][r] = tbl[l - 1][r - 1];
                 else
                     tbl[l][r] = 1 + std::min({tbl[l][r - 1],        // insert
@@ -80,10 +80,10 @@ struct dynamic_programming {
             });
         else if (std::next(first1) == last1)
             return join_on_equal_or_tail(
-                first2, last2, *first1, result, equal, make_reverse_pair{});
+                first2, last2, *first1, result, eq, make_reverse_pair{});
         else  // std::next(first2) == last2
             return join_on_equal_or_tail(
-                first1, last1, *first2, result, equal, make_pair{});
+                first1, last1, *first2, result, eq, make_pair{});
     }
 };
 
@@ -104,7 +104,7 @@ OutputIt join(RandomIt1 first1,
               RandomIt2 first2,
               RandomIt2 last2,
               OutputIt result,
-              Equal&& equal)
+              Equal&& eq)
 {
     return hirschberg::trace(
         first1,
@@ -112,7 +112,7 @@ OutputIt join(RandomIt1 first1,
         first2,
         last2,
         result,
-        detail::dynamic_programming<Equal>{std::forward<Equal>(equal)});
+        detail::dynamic_programming<Equal>{std::forward<Equal>(eq)});
 }
 
 template <class RandomIt1, class RandomIt2, class OutputIt>
@@ -130,14 +130,14 @@ template <class RandomRng1, class RandomRng2, class OutputIt, class Equal>
 OutputIt join(const RandomRng1& rng1,
               const RandomRng2& rng2,
               OutputIt result,
-              Equal&& equal)
+              Equal&& eq)
 {
     return edit_distance::join(std::begin(rng1),
                                std::end(rng1),
                                std::begin(rng2),
                                std::end(rng2),
                                result,
-                               std::forward<Equal>(equal));
+                               std::forward<Equal>(eq));
 }
 
 template <class RandomRng1, class RandomRng2, class OutputIt>
