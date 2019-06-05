@@ -13,6 +13,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-8
+        - doxygen
   - env: COMPILER=clang++-7
     addons:
       apt:
@@ -22,6 +23,7 @@ matrix:
         packages:
         - g++-8
         - clang-7
+        - doxygen
 script:
 - wget -P $TRAVIS_BUILD_DIR/.. https://github.com/catchorg/Catch2/releases/download/v2.7.1/catch.hpp
 - cd $TRAVIS_BUILD_DIR/test
@@ -30,3 +32,11 @@ script:
 - cd $TRAVIS_BUILD_DIR/example/diff
 - make -f ./makefile.ubuntu CXX=$COMPILER
 - make -f ./makefile.ubuntu clean
+- doxygen Doxyfile
+deploy:
+  provider: pages
+  skip_cleanup: true
+  local_dir: html
+  github_token: $GH_REPO_TOKEN
+  on:
+    branch: master
