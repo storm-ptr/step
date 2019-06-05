@@ -137,12 +137,12 @@ private:
         std::pair<Size, Size> rank;
     };
 
-    template <class Compare>
-    static void fill_first_rank(std::vector<suffix>& sufs, Compare cmp)
+    template <class Predicate>
+    static void fill_first_rank(std::vector<suffix>& sufs, Predicate p)
     {
         Size uniq = 1;
         for (size_t i = 1; i < sufs.size(); ++i) {
-            bool less = cmp(sufs[i - 1], sufs[i]);
+            bool less = p(sufs[i - 1], sufs[i]);
             sufs[i - 1].rank.first = uniq;
             if (less)
                 ++uniq;
