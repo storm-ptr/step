@@ -6,7 +6,6 @@
 #include <iterator>
 #include <utility>
 
-// @see https://en.wikipedia.org/wiki/Maximum_subarray_problem
 namespace step::maximum_subarray {
 namespace detail {
 
@@ -25,19 +24,19 @@ auto make_weighted_range(ForwardIt it)
 
 }  // namespace detail
 
-/**
- * Find the bounds of the contiguous subrange which has the largest sum.
- * Time complexity O(N), space complexity O(1), where:
- * N = std::distance(first, last).
- * @return a pair of iterators defining the wanted subarray.
- */
+/// Kadane's algorithm
+
+/// Find the bounds of the contiguous subrange which has the largest sum.
+/// Time complexity O(N), space complexity O(1), where:
+/// N = std::distance(first, last).
+/// @return a pair of iterators defining the wanted subarray.
+/// @see https://en.wikipedia.org/wiki/Maximum_subarray_problem
 template <class ForwardIt, class BinaryOp, class Compare>
 std::pair<ForwardIt, ForwardIt> find(ForwardIt first,
                                      ForwardIt last,
                                      BinaryOp op,
                                      Compare cmp)
 {
-    // Kadane's algorithm
     using weight_t = decltype(op(*first, *first));
     if (first == last)
         return {first, last};

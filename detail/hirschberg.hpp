@@ -5,7 +5,6 @@
 
 #include <step/detail/utility.hpp>
 
-/// @see https://en.wikipedia.org/wiki/Hirschberg's_algorithm
 namespace step::hirschberg {
 
 template <class RandomIt1, class RandomIt2, class DynamicProg, class BinaryOp>
@@ -30,6 +29,7 @@ auto partition_point(RandomIt1 first1,
     return op(split1, split2);
 }
 
+/// @see https://en.wikipedia.org/wiki/Hirschberg's_algorithm
 template <class RandomIt1, class RandomIt2, class OutputIt, class DynamicProg>
 OutputIt trace(RandomIt1 first1,
                RandomIt1 last1,

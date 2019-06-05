@@ -7,15 +7,14 @@
 
 namespace step {
 
-/**
- * Manber's algorithm for constructing suffix array.
- * Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
- * N is length of text.
- * @param T - type of the characters;
- * @param Size - to specify the maximum number / offset of characters;
- * @param Compare - to determine the order of characters.
- * @see https://en.wikipedia.org/wiki/Suffix_array
- */
+/// Manber's algorithm for constructing suffix array.
+
+/// Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
+/// N is length of text.
+/// @param T - type of the characters;
+/// @param Size - to specify the maximum number / offset of characters;
+/// @param Compare - to determine the order of characters.
+/// @see https://en.wikipedia.org/wiki/Suffix_array
 template <class T = char, class Size = size_t, class Compare = std::less<>>
 class suffix_array {
 public:
@@ -59,11 +58,9 @@ public:
         std::transform(sufs.begin(), sufs.end(), idx_.begin(), pos);
     }
 
-    /**
-     * Find all occurrences of the substring in O(M*log(N)) time,
-     * where: M is length of the substring, N is length of text.
-     * @return pair of iterators.
-     */
+    /// Find all occurrences of the substring in O(M*log(N)) time,
+    /// where: M is length of the substring, N is length of text.
+    /// @return pair of iterators.
     template <class InputIt>
     auto find_all(InputIt first, InputIt last) const
     {
@@ -99,11 +96,10 @@ public:
         return find(std::begin(rng), std::end(rng));
     }
 
-    /**
-     * Kasai's algorithm for constructing longest common prefix array.
-     * Time and space complexity O(N), where: N is length of text.
-     * @see https://en.wikipedia.org/wiki/LCP_array
-     */
+    /// Kasai's algorithm for constructing longest common prefix array.
+
+    /// Time and space complexity O(N), where: N is length of text.
+    /// @see https://en.wikipedia.org/wiki/LCP_array
     template <class RandomIt>
     void longest_common_prefix_array(RandomIt result) const
     {
@@ -141,8 +137,8 @@ private:
         std::pair<Size, Size> rank;
     };
 
-    template <class Cmp>
-    static void fill_first_rank(std::vector<suffix>& sufs, Cmp cmp)
+    template <class Compare>
+    static void fill_first_rank(std::vector<suffix>& sufs, Compare cmp)
     {
         Size uniq = 1;
         for (size_t i = 1; i < sufs.size(); ++i) {

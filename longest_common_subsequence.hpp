@@ -12,7 +12,6 @@ template <class Equal>
 struct dynamic_programming {
     Equal eq;
 
-    /// @see https://www.geeksforgeeks.org/longest-common-subsequence/
     template <class RandomIt1, class RandomIt2>
     auto make_last_row(RandomIt1 first1,
                        RandomIt1 last1,
@@ -48,14 +47,14 @@ struct dynamic_programming {
 
 }  // namespace detail
 
-/**
- * Find the longest subsequence present in two sequences. A subsequence is a
- * sequence that appears in the same relative order, but not necessarily
- * contiguous.
- * Time complexity O(N*M), space complexity O(min(N,M)), where:
- * N = std::distance(first1, last1), M = std::distance(first2, last2).
- * @see https://en.wikipedia.org/wiki/Longest_common_subsequence_problem
- */
+/// Find the longest subsequence present in two sequences.
+
+/// A subsequence is a sequence that appears in the same relative order,
+/// but not necessarily contiguous.
+/// Time complexity O(N*M), space complexity O(min(N,M)), where:
+/// N = std::distance(first1, last1), M = std::distance(first2, last2).
+/// @see https://en.wikipedia.org/wiki/Longest_common_subsequence_problem
+/// @see https://www.geeksforgeeks.org/longest-common-subsequence/
 template <class RandomIt1, class RandomIt2, class OutputIt, class Equal>
 OutputIt intersection(RandomIt1 first1,
                       RandomIt1 last1,

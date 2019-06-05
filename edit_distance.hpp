@@ -35,7 +35,6 @@ template <class Equal>
 struct dynamic_programming {
     Equal eq;
 
-    /// @see https://en.wikipedia.org/wiki/Wagner–Fischer_algorithm
     template <class RandomIt1, class RandomIt2>
     auto make_last_row(RandomIt1 first1,
                        RandomIt1 last1,
@@ -89,15 +88,16 @@ struct dynamic_programming {
 
 }  // namespace detail
 
-/**
- * Find the optimal sequence alignment between two strings. Optimality is
- * measured with the Levenshtein distance, defined to be the sum of the costs of
- * insertions, replacements, deletions, and null actions needed to change one
- * string into the other.
- * Time complexity O(N*M), space complexity O(min(N,M)), where:
- * N = std::distance(first1, last1), M = std::distance(first2, last2).
- * @see https://en.wikipedia.org/wiki/Levenshtein_distance
- */
+/// Find the optimal sequence alignment between two strings.
+
+/// Optimality is measured with the Levenshtein distance,
+/// defined to be the sum of the costs of
+/// insertions, replacements, deletions, and null actions needed
+/// to change one string into the other.
+/// Time complexity O(N*M), space complexity O(min(N,M)), where:
+/// N = std::distance(first1, last1), M = std::distance(first2, last2).
+/// @see https://en.wikipedia.org/wiki/Levenshtein_distance
+/// @see https://en.wikipedia.org/wiki/Wagner%E2%80%93Fischer_algorithm
 template <class RandomIt1, class RandomIt2, class OutputIt, class Equal>
 OutputIt join(RandomIt1 first1,
               RandomIt1 last1,

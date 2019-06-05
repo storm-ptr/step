@@ -7,11 +7,9 @@
 
 namespace step::kahan {
 
-/**
- * Reduces the numerical error in the total obtained by adding a sequence of
- * floating point numbers. (What about complex numbers?)
- * @see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
- */
+/// Reduces the numerical error in the total obtained by adding a sequence of
+/// floating point numbers. (What about complex numbers?)
+/// @see https://en.wikipedia.org/wiki/Kahan_summation_algorithm
 template <class T>
 class floating_point {
     T value_{};

@@ -6,7 +6,6 @@
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
 
-/// @see https://en.wikipedia.org/wiki/Longest_common_substring_problem
 namespace step::longest_common_substring {
 namespace detail {
 
@@ -78,14 +77,14 @@ struct suffix_tree_searcher {
 
 }  // namespace detail
 
-/**
- * Find the longest string that is a substring of two strings.
- * Time complexity O((N+M)*log(N+M)*log(N+M)), space complexity O(N+M), where:
- * N = std::distance(first1, last1) and M = std::distance(first2, last2).
- * A suffix array with optional parameter is used under the hood:
- * @param Compare - to determine the order of characters.
- * @return a pair of iterators defining the wanted substring.
- */
+/// Find the longest string that is a substring of two strings.
+
+/// Time complexity O((N+M)*log(N+M)*log(N+M)), space complexity O(N+M), where:
+/// N = std::distance(first1, last1) and M = std::distance(first2, last2).
+/// A suffix array with optional parameter is used under the hood:
+/// @tparam Compare - to determine the order of characters.
+/// @return a pair of iterators defining the wanted substring.
+/// @see https://en.wikipedia.org/wiki/Longest_common_substring_problem
 template <class Compare = std::less<>, class RandomIt1, class RandomIt2>
 auto find_with_suffix_array(RandomIt1 first1,
                             RandomIt1 last1,
@@ -104,15 +103,13 @@ auto find_with_suffix_array(const RandomRng1& rng1, const RandomRng2& rng2)
         std::begin(rng1), std::end(rng1), std::begin(rng2), std::end(rng2));
 }
 
-/**
- * Find the longest string that is a substring of two strings,
- * padded with unique string terminators.
- * Time complexity O((N+M)*log(N+M)), space complexity O(N+M), where:
- * N = std::distance(first1, last1) and M = std::distance(first2, last2).
- * A suffix tree with optional parameter is used under the hood:
- * @param Map - to associate characters with edges.
- * @return a pair of iterators defining the wanted substring.
- */
+/// Find the longest string that is a substring of two strings,
+/// padded with unique string terminators.
+/// Time complexity O((N+M)*log(N+M)), space complexity O(N+M), where:
+/// N = std::distance(first1, last1) and M = std::distance(first2, last2).
+/// A suffix tree with optional parameter is used under the hood:
+/// @tparam Map - to associate characters with edges.
+/// @return a pair of iterators defining the wanted substring.
 template <template <class...> class Map = std::unordered_map,
           class RandomIt1,
           class RandomIt2>

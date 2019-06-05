@@ -10,14 +10,9 @@
 #include <unordered_map>
 #include <vector>
 
-// @see https://en.wikipedia.org/wiki/Longest_increasing_subsequence
 namespace step::longest_increasing_subsequence {
 namespace detail {
 
-/*
- * @see
- * https://www.geeksforgeeks.org/longest-monotonically-increasing-subsequence-size-n-log-n/
- */
 class increasing_subsequences {
     std::vector<size_t> tails_;
     std::unordered_map<size_t, std::optional<size_t>> prevs_;
@@ -57,25 +52,28 @@ public:
 
 }  // namespace detail
 
-/**
- * Finds a subsequence of a given sequence in which the subsequence's elements
- * are in sorted order, lowest to highest, and in which the subsequence is as
- * long as possible. This subsequence is not necessarily contiguous, or unique.
- * Reorders the elements in such a way that all elements for the subsequence
- * precede the others.
- * @return iterator to the end of the subsequence.
- * Time complexity O(N*log(N)), space complexity O(N), where:
- * N = std::distance(first, last).
- */
+/// Find longest increasing subsequence (LIS) in the array.
+
+/// The subsequence's elements are in sorted order, lowest to highest.
+/// This subsequence is not necessarily contiguous, or unique.
+/// Reorders the elements in such a way that all elements for the subsequence
+/// precede the others.
+/// @return iterator to the end of the subsequence.
+/// Time complexity O(N*log(N)), space complexity O(N), where:
+/// N = std::distance(first, last).
+/// @see https://en.wikipedia.org/wiki/Longest_increasing_subsequence
+/// @see
+/// https://www.geeksforgeeks.org/longest-monotonically-increasing-subsequence-size-n-log-n/
 template <class RandomIt, class Compare>
-auto partition(RandomIt first, RandomIt last, Compare cmp)
+auto partition(RandomIt first, RandomIt last, Compare&& cmp)
 {
     using std::swap;
     auto it = first;
-    for (auto i : detail::increasing_subsequences{first, last, cmp}.longest()) {
-        swap(first[i], *it);
-        ++it;
-    }
+    for (auto i :
+         detail::increasing_subsequences{
+             first, last, std::forward<Compare>(cmp)}
+             .longest())
+        swap(first[i], *it++);
     return it;
 }
 
@@ -86,10 +84,10 @@ auto partition(RandomIt first, RandomIt last)
 }
 
 template <class RandomRng, class Compare>
-auto partition(RandomRng& rng, Compare cmp)
+auto partition(RandomRng& rng, Compare&& cmp)
 {
     return longest_increasing_subsequence::partition(
-        std::begin(rng), std::end(rng), cmp);
+        std::begin(rng), std::end(rng), std::forward<Compare>(cmp));
 }
 
 template <class RandomRng>

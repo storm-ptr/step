@@ -37,7 +37,7 @@ std::string tree_topology(const Tree& tree)
     tree.visit([&](auto& edge) {
         if (edge.visited)
             return;
-        auto rng = tree.label(edge.child);
+        auto rng = tree.substr(edge.child);
         os << std::setw(edge.path) << std::setfill(' ')
            << std::string_view{tree.begin(rng), step::size(rng)};
         if (tree.leaf(edge.child))

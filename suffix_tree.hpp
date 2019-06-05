@@ -10,15 +10,14 @@
 
 namespace step {
 
-/**
- * Ukkonen's online algorithm for constructing suffix tree.
- * Time complexity O(N*log(N)), space complexity O(N), where:
- * N is length of text.
- * @param T - type of the characters;
- * @param Size - to specify the maximum number / offset of characters;
- * @param Map - to associate characters with edges, its key_type shall be T.
- * @see https://en.wikipedia.org/wiki/Suffix_tree
- */
+/// Ukkonen's online algorithm for constructing suffix tree.
+
+/// Time complexity O(N*log(N)), space complexity O(N), where:
+/// N is length of text.
+/// @param T - type of the characters;
+/// @param Size - to specify the maximum number / offset of characters;
+/// @param Map - to associate characters with edges, its key_type shall be T.
+/// @see https://en.wikipedia.org/wiki/Suffix_tree
 template <class T = char,
           class Size = size_t,
           template <class...> class Map = std::unordered_map>
@@ -26,12 +25,12 @@ class suffix_tree {
 public:
     using value_type = T;
     using size_type = Size;
-    using range = std::pair<Size, Size>;  // half-open offset range
+    using substring = std::pair<Size, Size>;  ///< half-open offset range
 
     auto data() const { return str_.data(); }
     auto size() const { return (Size)str_.size(); }
-    auto begin(const range& rng) const { return data() + rng.first; }
-    auto end(const range& rng) const { return data() + rng.second; }
+    auto begin(const substring& rng) const { return data() + rng.first; }
+    auto end(const substring& rng) const { return data() + rng.second; }
 
     void clear() noexcept
     {
@@ -72,10 +71,8 @@ public:
         throw;
     }
 
-    /**
-     * Find offset of the first occurrence of the substring
-     * in O(M) time, where M is length of the substring.
-     */
+    /// Find offset of the first occurrence of the substring
+    /// in O(M) time, where M is length of the substring.
     template <class InputIt>
     Size find(InputIt first, InputIt last) const
     {
@@ -89,10 +86,8 @@ public:
         return find(std::begin(rng), std::end(rng));
     }
 
-    /**
-     * Find all occurrences of the substring for explicit suffix tree
-     * (padded with a terminal symbol not seen in the text).
-     */
+    /// Find all occurrences of the substring for explicit suffix tree
+    /// (padded with a terminal symbol not seen in the text).
     template <class InputIt, class OutputIt>
     OutputIt find_all(InputIt first, InputIt last, OutputIt result) const
     {
@@ -110,13 +105,15 @@ public:
         return find_all(std::begin(rng), std::end(rng), result);
     }
 
-    /// Depth-first tree traversal parameter.
+    /// Callback parameter.
     struct visited_edge {
-        Size parent;   // parent node
-        Size child;    // child node
-        Size path;     // number of characters from the root
-        bool visited;  // pre/post-order
+        Size parent;   ///< parent node
+        Size child;    ///< child node
+        Size path;     ///< number of characters from the root
+        bool visited;  ///< pre/post-order
     };
+
+    /// Depth-first tree traversal.
 
     /// @code tree.visit([](const visited_edge&) {}); @endcode
     template <class Visitor>
@@ -128,14 +125,14 @@ public:
 
     bool leaf(Size node) const { return node >= nodes(); }
 
-    range label(Size node) const
+    substring substr(Size node) const
     {
-        return leaf(node) ? range{flip(node), size()} : nodes_[node].label;
+        return leaf(node) ? substring{flip(node), size()} : nodes_[node].rng;
     }
 
-    range path(const visited_edge& edge) const
+    substring path(const visited_edge& edge) const
     {
-        auto last = label(edge.child).second;
+        auto last = substr(edge.child).second;
         return {Size(last - edge.path), last};
     }
 
@@ -144,14 +141,13 @@ private:
 
     struct internal_node {
         Map<T, Size> children;
-        range label;
+        substring rng;
         Size link;
     };
 
     std::vector<T> str_;
     std::vector<internal_node> nodes_;
-    Size char_{};  // active character
-    Size node_{};  // active node
+    Size char_{}, node_{};  // active
 
     Size reminder() const { return size() - char_; }
     auto nodes() const { return (Size)nodes_.size(); }
@@ -168,7 +164,7 @@ private:
 
     bool descend(Size node)
     {
-        auto len = step::size(label(node));
+        auto len = step::size(substr(node));
         if (reminder() <= len)
             return false;
         char_ += len;
@@ -178,7 +174,7 @@ private:
 
     bool split(Size& child)
     {
-        auto rng = label(child);
+        auto rng = substr(child);
         Size split = rng.first + reminder() - 1;
         Size back = size() - 1;
         if (eq_(str_[back], str_[split]))
@@ -188,7 +184,7 @@ private:
                            {str_[split], leaf(old) ? flip(split) : old}},
                           {rng.first, split}});
         if (!leaf(old))
-            nodes_[old].label = {split, rng.second};
+            nodes_[old].rng = {split, rng.second};
         return true;
     }
 
@@ -196,7 +192,7 @@ private:
     std::optional<visited_edge> find_edge(InputIt first, InputIt last) const
     {
         for (visited_edge edge{}; !nodes_.empty();) {
-            auto rng = label(edge.child);
+            auto rng = substr(edge.child);
             edge.path += step::size(rng);
             auto diff = std::mismatch(first, last, begin(rng), end(rng), eq_);
             if (diff.first == last)
@@ -217,7 +213,7 @@ private:
         for (auto& pair : nodes_[src.child].children)
             dest.push({src.child,
                        pair.second,
-                       Size(src.path + step::size(label(pair.second)))});
+                       Size(src.path + step::size(substr(pair.second)))});
     }
 
     template <class Visitor>

@@ -6,7 +6,6 @@
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
 
-/// @see https://en.wikipedia.org/wiki/Longest_repeated_substring_problem
 namespace step::longest_repeated_substring {
 namespace detail {
 
@@ -51,14 +50,14 @@ struct suffix_tree_searcher {
 
 }  // namespace detail
 
-/**
- * Find the longest substring of text that occurs at least twice.
- * Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
- * N = std::distance(first, last).
- * A suffix array with optional parameter is used under the hood:
- * @param Compare - to determine the order of characters.
- * @return a pair of iterators defining the wanted substring.
- */
+/// Find the longest substring of text that occurs at least twice.
+
+/// Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
+/// N = std::distance(first, last).
+/// A suffix array with optional parameter is used under the hood:
+/// @tparam Compare - to determine the order of characters.
+/// @return a pair of iterators defining the wanted substring.
+/// @see https://en.wikipedia.org/wiki/Longest_repeated_substring_problem
 template <class Compare = std::less<>, class RandomIt>
 auto find_with_suffix_array(RandomIt first, RandomIt last)
 {
@@ -73,15 +72,13 @@ auto find_with_suffix_array(const RandomRng& rng)
         std::begin(rng), std::end(rng));
 }
 
-/**
- * Find the longest substring of text (padded with unique string terminator)
- * that occurs at least twice.
- * Time complexity O(N*log(N)), space complexity O(N), where:
- * N = std::distance(first, last).
- * A suffix tree with optional parameter is used under the hood:
- * @param Map - to associate characters with edges.
- * @return a pair of iterators defining the wanted substring.
- */
+/// Find the longest substring of text (padded with unique string terminator)
+/// that occurs at least twice.
+/// Time complexity O(N*log(N)), space complexity O(N), where:
+/// N = std::distance(first, last).
+/// A suffix tree with optional parameter is used under the hood:
+/// @tparam Map - to associate characters with edges.
+/// @return a pair of iterators defining the wanted substring.
 template <template <class...> class Map = std::unordered_map, class RandomIt>
 auto find_with_suffix_tree(RandomIt first, RandomIt last)
 {
