@@ -113,7 +113,7 @@ auto size(const std::pair<T, T>& pair)
 }
 
 template <class T>
-auto shift_or(size_t shift, T default_value)
+auto shifted_value_or(size_t shift, T default_value)
 {
     return [=](const auto& rng, size_t pos) {
         pos += shift;

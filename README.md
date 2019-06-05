@@ -11,9 +11,10 @@ Step is a C++17, header-only library of STL-like algorithms and data structures.
 
 ### Documentation
 
-[doxygen](https://storm-ptr.github.io/step/)
+* [doxygen](https://storm-ptr.github.io/step/)
 
-### Algorithms:
+### Wiki
+
 * [edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)
   ([snippet](https://github.com/storm-ptr/step/blob/67a1d62642c24bb0a86e4f27150db9b544c4043d/test/edit_distance.hpp#L16-L19))
 * [longest common subsequence</summary>](https://en.wikipedia.org/wiki/Longest_common_subsequence_problem)
@@ -27,8 +28,6 @@ Step is a C++17, header-only library of STL-like algorithms and data structures.
   ([snippet](https://github.com/storm-ptr/step/blob/67a1d62642c24bb0a86e4f27150db9b544c4043d/test/longest_repeated_substring.hpp#L13-L15))
 * [maximum subarray](https://en.wikipedia.org/wiki/Maximum_subarray_problem)
   ([snippet](https://github.com/storm-ptr/step/blob/67a1d62642c24bb0a86e4f27150db9b544c4043d/test/maximum_subarray.hpp#L13-L16))
-
-### Data structures:
 * [suffix array](https://en.wikipedia.org/wiki/Suffix_array)
   ([snippet](https://github.com/storm-ptr/step/blob/67a1d62642c24bb0a86e4f27150db9b544c4043d/test/suffix.hpp#L20-L22))
 * [suffix tree](https://en.wikipedia.org/wiki/Suffix_tree)

@@ -67,7 +67,7 @@ public:
         auto result = std::make_pair(idx_.begin(), idx_.end());
         auto i = Size{};
         std::for_each(first, last, [&](T val) {
-            auto at = shift_or(i++, val);
+            auto at = shifted_value_or(i++, val);
             result = std::equal_range(
                 result.first, result.second, size(), [&](Size l, Size r) {
                     return cmp_(at(str_, l), at(str_, r));
@@ -137,12 +137,12 @@ private:
         std::pair<Size, Size> rank;
     };
 
-    template <class Predicate>
-    static void fill_first_rank(std::vector<suffix>& sufs, Predicate p)
+    template <class Cmp>
+    static void fill_first_rank(std::vector<suffix>& sufs, Cmp cmp)
     {
         Size uniq = 1;
         for (size_t i = 1; i < sufs.size(); ++i) {
-            bool less = p(sufs[i - 1], sufs[i]);
+            bool less = cmp(sufs[i - 1], sufs[i]);
             sufs[i - 1].rank.first = uniq;
             if (less)
                 ++uniq;
@@ -156,7 +156,7 @@ private:
         std::vector<Size> ranks(sufs.size());
         for (auto& suf : sufs)
             ranks[suf.pos] = suf.rank.first;
-        auto at = shift_or(shift, Size{});
+        auto at = shifted_value_or(shift, Size{});
         for (auto& suf : sufs)
             suf.rank.second = at(ranks, suf.pos);
     }
