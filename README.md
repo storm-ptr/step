@@ -3,7 +3,15 @@
 [![Build Status](https://travis-ci.org/storm-ptr/step.svg?branch=master)](https://travis-ci.org/storm-ptr/step)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/storm-ptr/step?svg=true&branch=master)](https://ci.appveyor.com/project/storm-ptr/step/branch/master)
 
-Step is a C++17, header-only library of STL-like algorithms and data structures ([doxygen](https://storm-ptr.github.io/step/)).
+Step is a C++17, header-only library of STL-like algorithms and data structures.
+
+### Installation
+
+    git clone --depth 1 https://github.com/storm-ptr/step.git
+
+### Documentation
+
+[doxygen](https://storm-ptr.github.io/step/)
 
 ### Algorithms:
 * [edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance)
