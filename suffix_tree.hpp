@@ -205,7 +205,7 @@ private:
             first = diff.first;
             edge.parent = std::exchange(edge.child, it->second);
         }
-        return {};
+        return std::nullopt;
     }
 
     auto spawn(visited_edge src, std::stack<visited_edge>& dest) const
