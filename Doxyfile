@@ -148,10 +148,12 @@ FILE_PATTERNS          = *.c \
                          *.ucf \
                          *.qsf \
                          *.ice
-RECURSIVE              = NO
+RECURSIVE              = YES
 EXCLUDE                =
 EXCLUDE_SYMLINKS       = NO
-EXCLUDE_PATTERNS       =
+EXCLUDE_PATTERNS       = */detail/* \
+                         */test/* \
+                         */example/*
 EXCLUDE_SYMBOLS        = detail
 EXAMPLE_PATH           =
 EXAMPLE_PATTERNS       = *
