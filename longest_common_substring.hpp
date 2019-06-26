@@ -104,6 +104,7 @@ auto find_with_suffix_array(const RandomRng1& rng1, const RandomRng2& rng2)
 }
 
 /// Find the longest string that is a substring of two strings,
+
 /// padded with unique string terminators.
 /// Time complexity O((N+M)*log(N+M)), space complexity O(N+M), where:
 /// N = std::distance(first1, last1) and M = std::distance(first2, last2).

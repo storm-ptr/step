@@ -45,7 +45,7 @@ public:
         nodes_.reserve(len);
     }
 
-    /// Basic exception guarantee.
+    /// Basic exception guarantee
     void push_back(T val) try {
         str_.push_back(val);
         for (auto link = linker(); reminder();) {
@@ -71,8 +71,9 @@ public:
         throw;
     }
 
-    /// Find offset of the first occurrence of the substring
-    /// in O(M) time, where M is length of the substring.
+    /// Find offset of the first occurrence of the substring.
+
+    /// Time complexity O(M), where: M is length of the substring.
     template <class InputIt>
     Size find(InputIt first, InputIt last) const
     {
@@ -86,8 +87,9 @@ public:
         return find(std::begin(rng), std::end(rng));
     }
 
-    /// Find all occurrences of the substring for explicit suffix tree
-    /// (padded with a terminal symbol not seen in the text).
+    /// Find all occurrences of the substring for explicit suffix tree,
+
+    /// padded with a terminal symbol not seen in the text.
     template <class InputIt, class OutputIt>
     OutputIt find_all(InputIt first, InputIt last, OutputIt result) const
     {
@@ -105,7 +107,7 @@ public:
         return find_all(std::begin(rng), std::end(rng), result);
     }
 
-    /// Callback parameter.
+    /// Callback parameter
     struct visited_edge {
         Size parent;   ///< parent node
         Size child;    ///< child node

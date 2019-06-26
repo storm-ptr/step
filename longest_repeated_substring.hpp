@@ -50,7 +50,7 @@ struct suffix_tree_searcher {
 
 }  // namespace detail
 
-/// Find the longest substring of text that occurs at least twice.
+/// Find the longest substring that occurs at least twice in the text.
 
 /// Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
 /// N = std::distance(first, last).
@@ -72,8 +72,9 @@ auto find_with_suffix_array(const RandomRng& rng)
         std::begin(rng), std::end(rng));
 }
 
-/// Find the longest substring of text (padded with unique string terminator)
-/// that occurs at least twice.
+/// Find the longest substring that occurs at least twice in the text,
+
+/// padded with unique string terminators.
 /// Time complexity O(N*log(N)), space complexity O(N), where:
 /// N = std::distance(first, last).
 /// A suffix tree with optional parameter is used under the hood:

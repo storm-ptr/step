@@ -24,7 +24,7 @@ auto make_weighted_range(ForwardIt it)
 
 }  // namespace detail
 
-/// Kadane's algorithm
+/// Kadane's algorithm.
 
 /// Find the bounds of the contiguous subrange which has the largest sum.
 /// Time complexity O(N), space complexity O(1), where:

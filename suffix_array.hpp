@@ -23,6 +23,8 @@ public:
 
     auto size() const { return (Size)str_.size(); }
     auto data() const { return str_.data(); }
+
+    /// Returns offset of the n-th suffix in lexicographical order
     Size nth_element(Size nth) const { return idx_[nth]; }
 
     template <class InputIt>
@@ -58,8 +60,10 @@ public:
         std::transform(sufs.begin(), sufs.end(), idx_.begin(), pos);
     }
 
-    /// Find all occurrences of the substring in O(M*log(N)) time,
-    /// where: M is length of the substring, N is length of text.
+    /// Find all occurrences of the substring.
+
+    /// Time complexity O(M*log(N)), where:
+    /// M is length of the substring, N is length of text.
     /// @return pair of iterators.
     template <class InputIt>
     auto find_all(InputIt first, InputIt last) const
@@ -82,7 +86,7 @@ public:
         return find_all(std::begin(rng), std::end(rng));
     }
 
-    /// @return offset of the substring
+    /// Find offset of the substring
     template <class InputIt>
     Size find(InputIt first, InputIt last) const
     {
