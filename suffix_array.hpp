@@ -64,7 +64,7 @@ public:
 
     /// Time complexity O(M*log(N)), where:
     /// M is length of the substring, N is length of text.
-    /// @return pair of iterators.
+    /// @return pair of offset iterators.
     template <class InputIt>
     auto find_all(InputIt first, InputIt last) const
     {

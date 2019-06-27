@@ -72,9 +72,9 @@ auto find_with_suffix_array(const RandomRng& rng)
         std::begin(rng), std::end(rng));
 }
 
-/// Find the longest substring that occurs at least twice in the text,
+/// Find the longest substring that occurs at least twice in the text.
 
-/// padded with unique string terminators.
+/// The text is padded with unique terminator.
 /// Time complexity O(N*log(N)), space complexity O(N), where:
 /// N = std::distance(first, last).
 /// A suffix tree with optional parameter is used under the hood:

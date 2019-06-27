@@ -87,9 +87,9 @@ public:
         return find(std::begin(rng), std::end(rng));
     }
 
-    /// Find all occurrences of the substring for explicit suffix tree,
+    /// Find all occurrences of the substring for explicit suffix tree.
 
-    /// padded with a terminal symbol not seen in the text.
+    /// Explicit means padded with a terminal symbol not seen in the text.
     template <class InputIt, class OutputIt>
     OutputIt find_all(InputIt first, InputIt last, OutputIt result) const
     {
