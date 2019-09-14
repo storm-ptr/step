@@ -4,16 +4,13 @@
 #define STEP_TEST_SUFFIX_HPP
 
 //#include <boost/container/flat_map.hpp>
-#include <map>
 #include <random>
+#include <step/example/suffix_tree_viz/graphviz.hpp>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
 #include <string_view>
 
 using namespace std::literals;
-
-template <class Key, class T>
-using reverse_ordered_map = std::map<Key, T, std::greater<>>;
 
 TEST_CASE("suffix_array_hello_world")
 {
@@ -28,23 +25,6 @@ TEST_CASE("suffix_tree_hello_world")
     step::suffix_tree tree{};
     std::copy(str.begin(), str.end(), std::back_inserter(tree));
     CHECK(tree.find("quick"sv) == 8);
-}
-
-template <class Tree>
-std::string tree_topology(const Tree& tree)
-{
-    std::ostringstream os;
-    tree.visit([&](auto& edge) {
-        if (edge.visited)
-            return;
-        auto rng = tree.substr(edge.child);
-        os << std::setw(edge.path) << std::setfill(' ')
-           << std::string_view{tree.begin(rng), step::size(rng)};
-        if (tree.leaf(edge.child))
-            os << " [" << tree.path(edge).first << "]";
-        os << "\n";
-    });
-    return os.str();
 }
 
 template <class Tree>
@@ -69,80 +49,111 @@ auto array_order(const Array& arr)
     return res;
 }
 
-TEST_CASE("suffix_tree_topology")
+TEST_CASE("suffix_tree_graphviz")
 {
     struct {
         std::string_view str;
         std::string_view expect;
     } tests[] = {
 
-        {"", ""},
-
         {"abcabxabcd$", R"(
-$ [10]
-ab
-  c
-   abxabcd$ [0]
-   d$ [6]
-  xabcd$ [3]
-b
- c
-  abxabcd$ [1]
-  d$ [7]
- xabcd$ [4]
-c
- abxabcd$ [2]
- d$ [8]
-d$ [9]
-xabcd$ [5]
+digraph "abcabxabcd$" {
+node_0 [shape=point]
+10 [shape=plaintext]
+node_0->10 [label="$"]
+node_1 [shape=point]
+node_0->node_1 [label="ab"]
+node_3 [shape=point]
+node_1->node_3 [label="c"]
+0 [shape=plaintext]
+node_3->0 [label="abxabcd$"]
+6 [shape=plaintext]
+node_3->6 [label="d$"]
+3 [shape=plaintext]
+node_1->3 [label="xabcd$"]
+node_2 [shape=point]
+node_0->node_2 [label="b"]
+node_4 [shape=point]
+node_2->node_4 [label="c"]
+1 [shape=plaintext]
+node_4->1 [label="abxabcd$"]
+7 [shape=plaintext]
+node_4->7 [label="d$"]
+4 [shape=plaintext]
+node_2->4 [label="xabcd$"]
+node_5 [shape=point]
+node_0->node_5 [label="c"]
+2 [shape=plaintext]
+node_5->2 [label="abxabcd$"]
+8 [shape=plaintext]
+node_5->8 [label="d$"]
+9 [shape=plaintext]
+node_0->9 [label="d$"]
+5 [shape=plaintext]
+node_0->5 [label="xabcd$"]
+node_3->node_4 [style=dashed,arrowhead=otriangle]
+node_1->node_2 [style=dashed,arrowhead=otriangle]
+node_4->node_5 [style=dashed,arrowhead=otriangle]
+}
 )"},
 
         {"BANANA$", R"(
-$ [6]
-A
- $ [5]
- NA
-   $ [3]
-   NA$ [1]
-BANANA$ [0]
-NA
-  $ [4]
-  NA$ [2]
+digraph "BANANA$" {
+node_0 [shape=point]
+6 [shape=plaintext]
+node_0->6 [label="$"]
+node_3 [shape=point]
+node_0->node_3 [label="A"]
+5 [shape=plaintext]
+node_3->5 [label="$"]
+node_1 [shape=point]
+node_3->node_1 [label="NA"]
+3 [shape=plaintext]
+node_1->3 [label="$"]
+1 [shape=plaintext]
+node_1->1 [label="NA$"]
+0 [shape=plaintext]
+node_0->0 [label="BANANA$"]
+node_2 [shape=point]
+node_0->node_2 [label="NA"]
+4 [shape=plaintext]
+node_2->4 [label="$"]
+2 [shape=plaintext]
+node_2->2 [label="NA$"]
+node_1->node_2 [style=dashed,arrowhead=otriangle]
+node_2->node_3 [style=dashed,arrowhead=otriangle]
+}
 )"},
 
-        {"VVuVVVOm$", R"(
-$ [8]
-Om$ [6]
-V
- Om$ [5]
- V
-  Om$ [4]
-  VOm$ [3]
-  uVVVOm$ [0]
- uVVVOm$ [1]
-m$ [7]
-uVVVOm$ [2]
+        {"xabxa$", R"(
+digraph "xabxa$" {
+node_0 [shape=point]
+5 [shape=plaintext]
+node_0->5 [label="$"]
+node_2 [shape=point]
+node_0->node_2 [label="a"]
+4 [shape=plaintext]
+node_2->4 [label="$"]
+1 [shape=plaintext]
+node_2->1 [label="bxa$"]
+2 [shape=plaintext]
+node_0->2 [label="bxa$"]
+node_1 [shape=point]
+node_0->node_1 [label="xa"]
+3 [shape=plaintext]
+node_1->3 [label="$"]
+0 [shape=plaintext]
+node_1->0 [label="bxa$"]
+node_1->node_2 [style=dashed,arrowhead=otriangle]
+}
 )"},
 
-        {"wwwJwww$", R"(
-$ [7]
-Jwww$ [3]
-w
- $ [6]
- Jwww$ [2]
- w
-  $ [5]
-  Jwww$ [1]
-  w
-   $ [4]
-   Jwww$ [0]
-)"},
     };
 
     for (auto& [str, expect] : tests) {
-        step::suffix_tree<char, size_t, reverse_ordered_map> tree{};
-        std::copy(str.begin(), str.end(), std::back_inserter(tree));
-        CHECK(tree_topology(tree) == expect);
+        std::ostringstream os;
+        os << "\n" << graphviz{str};
+        CHECK(os.str() == expect);
     }
 }
 
@@ -204,9 +215,9 @@ TEST_CASE("suffix_array_n_tree_cross_check")
         str += str;
         str.back() = '$';
 
-        step::suffix_array<char, uint16_t> arr{str};
-        step::suffix_tree<char, uint16_t, reverse_ordered_map> tree{};
-        tree.reserve((uint16_t)str.size());
+        step::suffix_array arr{str};
+        ordered_suffix_tree tree{};
+        tree.reserve(str.size());
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
 
         CHECK(array_order(arr) == tree_order(tree));
@@ -214,7 +225,7 @@ TEST_CASE("suffix_array_n_tree_cross_check")
         for (size_t j = 2; j <= 4; ++j) {
             auto pattern = make_random_string(j);
             auto arr_all = arr.find_all(pattern);
-            std::vector<uint16_t> tree_all;
+            std::vector<size_t> tree_all;
             tree.find_all(pattern, std::back_inserter(tree_all));
             CHECK(std::is_permutation(arr_all.first,
                                       arr_all.second,

@@ -46,24 +46,28 @@ public:
     }
 
     /// Basic exception guarantee
-    void push_back(T val) try {
+    void push_back(T val)
+    try {
         str_.push_back(val);
-        for (auto link = linker(); reminder();) {
+        if (nodes_.empty())
+            nodes_.emplace_back();
+        auto tie = [src = nodes(), this](Size dest) mutable {
+            if (!leaf(src) && src != dest)
+                nodes_[src++].link = dest;
+        };
+        while (reminder()) {
             if (auto& child = nodes_[node_].children[str_[char_]]) {
                 if (descend(child))
                     continue;
                 if (!split(child))
-                    return link(node_);
-                link(nodes() - 1);
+                    return tie(node_);
+                tie(nodes() - 1);
             }
             else {
                 child = flip(char_);
-                link(node_);
+                tie(node_);
             }
-            if (node_)
-                node_ = nodes_[node_].link;
-            else  // root
-                ++char_;
+            node_ ? node_ = link(node_) : ++char_;
         }
     }
     catch (...) {
@@ -126,6 +130,7 @@ public:
     }
 
     bool leaf(Size node) const { return node >= nodes(); }
+    Size link(Size node) const { return nodes_[node].link; }
 
     substring substr(Size node) const
     {
@@ -141,28 +146,18 @@ public:
 private:
     inline static const auto eq_ = key_equal_or_equivalence_t<Map<T, Size>>{};
 
-    struct internal_node {
+    struct inner_node {
         Map<T, Size> children;
         substring rng;
         Size link;
     };
 
     std::vector<T> str_;
-    std::vector<internal_node> nodes_;
+    std::vector<inner_node> nodes_;
     Size char_{}, node_{};  // active
 
     Size reminder() const { return size() - char_; }
     auto nodes() const { return (Size)nodes_.size(); }
-
-    auto linker()
-    {
-        if (nodes_.empty())
-            nodes_.emplace_back();  // root
-        return [this, i = nodes()](Size node) mutable {
-            if (i < nodes() && i != node)
-                nodes_[i++].link = node;
-        };
-    }
 
     bool descend(Size node)
     {

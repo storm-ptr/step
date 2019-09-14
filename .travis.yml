@@ -32,6 +32,9 @@ script:
 - cd $TRAVIS_BUILD_DIR/example/diff
 - make -f ./makefile.ubuntu CXX=$COMPILER
 - make -f ./makefile.ubuntu clean
+- cd $TRAVIS_BUILD_DIR/example/suffix_tree_viz
+- make -f ./makefile.ubuntu CXX=$COMPILER
+- make -f ./makefile.ubuntu clean
 - cd $TRAVIS_BUILD_DIR
 - doxygen Doxyfile
 deploy:

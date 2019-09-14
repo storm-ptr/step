@@ -1,0 +1,17 @@
+CXXFLAGS+=-std=c++17 -O2 -Wall
+EXECUTABLE=suffix_tree_viz
+INCLUDEPATH=../../..
+INCFLAGS=$(foreach x, $(INCLUDEPATH), -I$x)
+OBJECTS=$(SOURCES:.cpp=.o)
+SOURCES=main.cpp
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) $(OBJECTS) -o $@
+
+.cpp.o:
+	$(CXX) -c $(CXXFLAGS) $(INCFLAGS) $< -o $@
+
+clean:
+	rm -rf *.o $(EXECUTABLE)

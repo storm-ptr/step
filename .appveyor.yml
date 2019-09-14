@@ -16,7 +16,15 @@ build_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%/example/diff
   - cmd: nmake /f makefile.windows
   - cmd: nmake /f makefile.windows clean
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%/example/suffix_tree_viz
+  - cmd: nmake /f makefile.windows
+  - cmd: nmake /f makefile.windows clean
   - sh: cd $APPVEYOR_BUILD_FOLDER/example/diff
+  - sh: make -f ./makefile.ubuntu CXX=g++
+  - sh: make -f ./makefile.ubuntu clean
+  - sh: make -f ./makefile.ubuntu CXX=clang++
+  - sh: make -f ./makefile.ubuntu clean
+  - sh: cd $APPVEYOR_BUILD_FOLDER/example/suffix_tree_viz
   - sh: make -f ./makefile.ubuntu CXX=g++
   - sh: make -f ./makefile.ubuntu clean
   - sh: make -f ./makefile.ubuntu CXX=clang++

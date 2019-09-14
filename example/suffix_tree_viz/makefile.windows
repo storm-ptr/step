@@ -1,0 +1,16 @@
+CXXFLAGS=/std:c++17 /EHsc /O2 /W3 $(CXXFLAGS)
+EXECUTABLE=suffix_tree_viz.exe
+INCLUDE=..\..\..;$(INCLUDE)
+OBJECTS=$(SOURCES:.cpp=.obj)
+SOURCES=main.cpp
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) /Fe:$(EXECUTABLE) $(OBJECTS) $(LIBS)
+
+.cpp.obj:
+	$(CXX) -c $(CXXFLAGS) $<
+
+clean:
+	del *.obj *.exp *.lib $(EXECUTABLE)
