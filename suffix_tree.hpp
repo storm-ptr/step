@@ -12,8 +12,8 @@ namespace step {
 
 /// Ukkonen's online algorithm for constructing suffix tree.
 
-/// Time complexity O(N*log(N)), space complexity O(N), where:
-/// N is length of text.
+/// Time complexity O(N*log(M)), space complexity O(N), where:
+/// N is length of text, M is alphabet size.
 /// @param T - type of the characters;
 /// @param Size - to specify the maximum number / offset of characters;
 /// @param Map - to associate characters with edges, its key_type shall be T.
@@ -29,8 +29,6 @@ public:
 
     auto data() const { return str_.data(); }
     auto size() const { return (Size)str_.size(); }
-    auto begin(const substring& rng) const { return data() + rng.first; }
-    auto end(const substring& rng) const { return data() + rng.second; }
 
     void clear() noexcept
     {
@@ -191,10 +189,11 @@ private:
         for (visited_edge edge{}; !nodes_.empty();) {
             auto rng = substr(edge.child);
             edge.path += step::size(rng);
-            auto diff = std::mismatch(first, last, begin(rng), end(rng), eq_);
+            auto diff = std::mismatch(
+                first, last, data() + rng.first, data() + rng.second, eq_);
             if (diff.first == last)
                 return edge;
-            if (diff.second != end(rng) || leaf(edge.child))
+            if (diff.second != data() + rng.second || leaf(edge.child))
                 break;
             auto it = nodes_[edge.child].children.find(*diff.first);
             if (it == nodes_[edge.child].children.end())

@@ -6,7 +6,6 @@
 #include <map>
 #include <ostream>
 #include <step/suffix_tree.hpp>
-#include <string>
 #include <string_view>
 
 template <class Key, class T>
@@ -46,7 +45,8 @@ struct graphviz {
                 auto rng = tree.substr(edge.child);
                 os << "node_" << edge.parent << "->" << child{tree, edge}
                    << " [label=\""
-                   << std::string_view{tree.begin(rng), rng.second - rng.first}
+                   << std::string_view{tree.data() + rng.first,
+                                       rng.second - rng.first}
                    << "\"]\n";
             }
         });
@@ -54,8 +54,7 @@ struct graphviz {
             if (!edge.visited)
                 return;
             if (auto link = tree.link(edge.child))
-                os << child{tree, edge} << "->"
-                   << "node_" << link
+                os << child{tree, edge} << "->node_" << link
                    << " [style=dashed,arrowhead=otriangle]\n";
         });
         return os << "}\n";

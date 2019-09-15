@@ -29,7 +29,7 @@ Step is a C++17, header-only library of STL-like algorithms and data structures.
 * [maximum subarray](https://en.wikipedia.org/wiki/Maximum_subarray_problem)
   ([snippet](https://github.com/storm-ptr/step/blob/master/test/maximum_subarray.hpp#L13-L16))
 * [suffix array](https://en.wikipedia.org/wiki/Suffix_array)
-  ([snippet](https://github.com/storm-ptr/step/blob/master/test/suffix.hpp#L17-L19))
+  ([snippet](https://github.com/storm-ptr/step/blob/master/test/suffix.hpp#L20-L22))
 * [suffix tree](https://en.wikipedia.org/wiki/Suffix_tree)
-  ([snippet](https://github.com/storm-ptr/step/blob/master/test/suffix.hpp#L24-L27),
-   [example](https://github.com/storm-ptr/step/blob/master/example/suffix_tree_viz/graphviz.hpp#L37-L60))
+  ([snippet](https://github.com/storm-ptr/step/blob/master/test/suffix.hpp#L27-L30),
+   [example](https://github.com/storm-ptr/step/blob/master/example/suffix_tree_viz/graphviz.hpp#L36-L59))

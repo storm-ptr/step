@@ -4,10 +4,13 @@
 #define STEP_TEST_SUFFIX_HPP
 
 //#include <boost/container/flat_map.hpp>
+#include <array>
+#include <fstream>
 #include <random>
 #include <step/example/suffix_tree_viz/graphviz.hpp>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
+#include <string>
 #include <string_view>
 
 using namespace std::literals;
@@ -25,28 +28,6 @@ TEST_CASE("suffix_tree_hello_world")
     step::suffix_tree tree{};
     std::copy(str.begin(), str.end(), std::back_inserter(tree));
     CHECK(tree.find("quick"sv) == 8);
-}
-
-template <class Tree>
-auto tree_order(const Tree& tree)
-{
-    std::vector<typename Tree::size_type> res;
-    res.reserve(tree.size());
-    tree.visit([&](auto& edge) {
-        if (tree.leaf(edge.child))
-            res.push_back(tree.path(edge).first);
-    });
-    return res;
-}
-
-template <class Array>
-auto array_order(const Array& arr)
-{
-    using size_type = typename Array::size_type;
-    std::vector<size_type> res(arr.size());
-    for (size_type i = 0; i < arr.size(); ++i)
-        res[i] = arr.nth_element(i);
-    return res;
 }
 
 TEST_CASE("suffix_tree_graphviz")
@@ -195,25 +176,63 @@ TEST_CASE("suffix_array_n_tree_find")
     }
 }
 
-inline std::string make_random_string(size_t len)
+inline std::string read_file(const char* file_name)
 {
-    static const char alphanum[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
+    using iterator_t = std::istreambuf_iterator<char>;
+    std::ifstream stream{file_name};
+    return {(iterator_t(stream)), iterator_t()};
+}
+
+inline std::string generate_text(size_t len)
+{
     static std::mt19937 gen{std::random_device{}()};
-    static std::uniform_int_distribution<size_t> dist{0, sizeof(alphanum) - 2};
-    std::string res(len, '\0');
-    std::generate(res.begin(), res.end(), [&] { return alphanum[dist(gen)]; });
+    static auto alpha = "abcdefghijklmnopqrstuvwxyz "sv;
+    static std::array files = {"../longest_common_substring.hpp",
+                               "../longest_repeated_substring.hpp",
+                               "../suffix_array.hpp",
+                               "../suffix_tree.hpp"};
+    static std::uniform_int_distribution<size_t> alpha_d{0, alpha.size() - 1};
+    static std::uniform_int_distribution<size_t> files_d{0, files.size() - 1};
+
+    std::string res;
+    while (res.size() < len) {
+        std::string rnd(1000, '\0');
+        std::generate(
+            rnd.begin(), rnd.end(), [&] { return alpha[alpha_d(gen)]; });
+        res += rnd;
+        res += read_file(files[files_d(gen)]);
+    }
+    res.resize(len);
+    return res;
+}
+
+template <class Tree>
+auto tree_order(const Tree& tree)
+{
+    std::vector<typename Tree::size_type> res;
+    res.reserve(tree.size());
+    tree.visit([&](auto& edge) {
+        if (tree.leaf(edge.child))
+            res.push_back(tree.path(edge).first);
+    });
+    return res;
+}
+
+template <class Array>
+auto array_order(const Array& arr)
+{
+    using size_type = typename Array::size_type;
+    std::vector<size_type> res(arr.size());
+    for (size_type i = 0; i < arr.size(); ++i)
+        res[i] = arr.nth_element(i);
     return res;
 }
 
 TEST_CASE("suffix_array_n_tree_cross_check")
 {
     for (size_t i = 0; i < 100; ++i) {
-        auto str = make_random_string(10000);
-        str += str;
-        str.back() = '$';
+        auto str = generate_text(20000);
+        str.back() = '\0';
 
         step::suffix_array arr{str};
         ordered_suffix_tree tree{};
@@ -223,7 +242,7 @@ TEST_CASE("suffix_array_n_tree_cross_check")
         CHECK(array_order(arr) == tree_order(tree));
 
         for (size_t j = 2; j <= 4; ++j) {
-            auto pattern = make_random_string(j);
+            auto pattern = generate_text(j);
             auto arr_all = arr.find_all(pattern);
             std::vector<size_t> tree_all;
             tree.find_all(pattern, std::back_inserter(tree_all));
@@ -237,35 +256,20 @@ TEST_CASE("suffix_array_n_tree_cross_check")
 
 TEST_CASE("suffix_array_n_tree_benchmark")
 {
-    for (size_t exp = 17; exp < 21; ++exp) {
-        auto str = make_random_string((size_t)std::exp2(exp));
-        auto repeat = make_random_string((size_t)std::exp2(exp) / 2);
-        repeat += repeat;
-        str.back() = repeat.back() = '$';
-        auto size = "2^" + std::to_string(exp);
+    for (size_t exp = 17; exp < 22; ++exp) {
+        auto str = generate_text((size_t)std::exp2(exp));
+        str.back() = '\0';
 
-        BENCHMARK(size + " suffix array")
+        BENCHMARK("2^" + std::to_string(exp) + " suffix array")
         {
             step::suffix_array<char, uint32_t> arr{str};
         }
 
-        BENCHMARK(size + " suffix array (repeat)")
-        {
-            step::suffix_array<char, uint32_t> arr{repeat};
-        }
-
-        BENCHMARK(size + " suffix tree")
+        BENCHMARK("2^" + std::to_string(exp) + " suffix tree")
         {
             step::suffix_tree<char, uint32_t> tree{};
             tree.reserve((uint32_t)str.size());
             std::copy(str.begin(), str.end(), std::back_inserter(tree));
-        }
-
-        BENCHMARK(size + " suffix tree (repeat)")
-        {
-            step::suffix_tree<char, uint32_t> tree{};
-            tree.reserve((uint32_t)repeat.size());
-            std::copy(repeat.begin(), repeat.end(), std::back_inserter(tree));
         }
     }
 }
