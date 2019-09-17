@@ -13,7 +13,7 @@ Step is a C++17, header-only library of STL-like algorithms and data structures.
 
 * [doxygen](https://storm-ptr.github.io/step/)
 
-### Table of Contents (wiki, example)
+### Table of Contents (wiki, examples)
 
 * [edit distance](https://en.wikipedia.org/wiki/Levenshtein_distance):
   [snippet](https://github.com/storm-ptr/step/blob/master/test/edit_distance.hpp#L16-L19)

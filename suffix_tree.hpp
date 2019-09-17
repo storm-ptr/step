@@ -12,8 +12,8 @@ namespace step {
 
 /// Ukkonen's online algorithm for constructing suffix tree.
 
-/// Time complexity O(N*log(M)), space complexity O(N), where:
-/// N is length of text, M is alphabet size.
+/// Time complexity O(N*log(K)), space complexity O(N), where:
+/// N - text length, K - alphabet size.
 /// @param T - type of the characters;
 /// @param Size - to specify the maximum number / offset of characters;
 /// @param Map - to associate characters with edges, its key_type shall be T.
@@ -75,7 +75,7 @@ public:
 
     /// Find offset of the first occurrence of the substring.
 
-    /// Time complexity O(M), where: M is length of the substring.
+    /// Time complexity O(M), where: M - substring length.
     template <class InputIt>
     Size find(InputIt first, InputIt last) const
     {

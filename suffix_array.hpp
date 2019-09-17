@@ -10,7 +10,7 @@ namespace step {
 /// Manber's algorithm for constructing suffix array.
 
 /// Time complexity O(N*log(N)*log(N)), space complexity O(N), where:
-/// N is length of text.
+/// N - text length.
 /// @param T - type of the characters;
 /// @param Size - to specify the maximum number / offset of characters;
 /// @param Compare - to determine the order of characters.
@@ -21,10 +21,10 @@ public:
     using value_type = T;
     using size_type = Size;
 
-    auto size() const { return (Size)str_.size(); }
     auto data() const { return str_.data(); }
+    auto size() const { return (Size)str_.size(); }
 
-    /// Returns offset of the n-th suffix in lexicographical order
+    /// Return offset of the n-th suffix in lexicographical order
     Size nth_element(Size nth) const { return idx_[nth]; }
 
     template <class InputIt>
@@ -63,7 +63,7 @@ public:
     /// Find all occurrences of the substring.
 
     /// Time complexity O(M*log(N)), where:
-    /// M is length of the substring, N is length of text.
+    /// M - substring length, N - text length.
     /// @return pair of offset iterators.
     template <class InputIt>
     auto find_all(InputIt first, InputIt last) const
@@ -102,7 +102,7 @@ public:
 
     /// Kasai's algorithm for constructing longest common prefix array.
 
-    /// Time and space complexity O(N), where: N is length of text.
+    /// Time and space complexity O(N), where: N - text length.
     /// @see https://en.wikipedia.org/wiki/LCP_array
     template <class RandomIt>
     void longest_common_prefix_array(RandomIt result) const

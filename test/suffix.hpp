@@ -127,10 +127,9 @@ node_1->3 [label="$"]
 node_1->0 [label="bxa$"]
 node_1->node_2 [style=dashed,arrowhead=otriangle]
 }
-)"},
+)"}
 
     };
-
     for (auto& [str, expect] : tests) {
         std::ostringstream os;
         os << "\n" << graphviz{str};
@@ -186,30 +185,24 @@ inline std::string read_file(const char* file_name)
 inline std::string generate_text(size_t len)
 {
     static std::mt19937 gen{std::random_device{}()};
-    static auto alpha = "abcdefghijklmnopqrstuvwxyz "sv;
     static std::array files = {"../longest_common_substring.hpp",
                                "../longest_repeated_substring.hpp",
                                "../suffix_array.hpp",
                                "../suffix_tree.hpp"};
-    static std::uniform_int_distribution<size_t> alpha_d{0, alpha.size() - 1};
-    static std::uniform_int_distribution<size_t> files_d{0, files.size() - 1};
+    static std::uniform_int_distribution<size_t> dist{0, files.size() - 1};
 
     std::string res;
     while (res.size() < len) {
-        std::string rnd(1000, '\0');
-        std::generate(
-            rnd.begin(), rnd.end(), [&] { return alpha[alpha_d(gen)]; });
-        res += rnd;
-        res += read_file(files[files_d(gen)]);
+        res += read_file(files[dist(gen)]);
     }
     res.resize(len);
+    res.back() = '\0';
     return res;
 }
 
-template <class Tree>
-auto tree_order(const Tree& tree)
+inline auto tree_order(const ordered_suffix_tree& tree)
 {
-    std::vector<typename Tree::size_type> res;
+    std::vector<size_t> res;
     res.reserve(tree.size());
     tree.visit([&](auto& edge) {
         if (tree.leaf(edge.child))
@@ -230,27 +223,13 @@ auto array_order(const Array& arr)
 
 TEST_CASE("suffix_array_n_tree_cross_check")
 {
-    for (size_t i = 0; i < 100; ++i) {
-        auto str = generate_text(20000);
-        str.back() = '\0';
-
+    for (size_t i = 1; i <= 4; ++i) {
+        auto str = generate_text(i * 10000);
         step::suffix_array arr{str};
         ordered_suffix_tree tree{};
         tree.reserve(str.size());
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
-
         CHECK(array_order(arr) == tree_order(tree));
-
-        for (size_t j = 2; j <= 4; ++j) {
-            auto pattern = generate_text(j);
-            auto arr_all = arr.find_all(pattern);
-            std::vector<size_t> tree_all;
-            tree.find_all(pattern, std::back_inserter(tree_all));
-            CHECK(std::is_permutation(arr_all.first,
-                                      arr_all.second,
-                                      tree_all.begin(),
-                                      tree_all.end()));
-        }
     }
 }
 
@@ -258,7 +237,6 @@ TEST_CASE("suffix_array_n_tree_benchmark")
 {
     for (size_t exp = 17; exp < 22; ++exp) {
         auto str = generate_text((size_t)std::exp2(exp));
-        str.back() = '\0';
 
         BENCHMARK("2^" + std::to_string(exp) + " suffix array")
         {
