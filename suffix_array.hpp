@@ -22,7 +22,7 @@ public:
     using size_type = Size;
 
     auto data() const { return str_.data(); }
-    auto size() const { return (Size)str_.size(); }
+    Size size() const { return (Size)str_.size(); }
 
     /// Return offset of the n-th suffix in lexicographical order
     Size nth_element(Size nth) const { return idx_[nth]; }
@@ -69,8 +69,7 @@ public:
     auto find_all(InputIt first, InputIt last) const
     {
         auto result = std::make_pair(idx_.begin(), idx_.end());
-        auto i = Size{};
-        std::for_each(first, last, [&](T val) {
+        std::for_each(first, last, [&, i = Size{}](T val) mutable {
             auto at = shifted_value_or(i++, val);
             result = std::equal_range(
                 result.first, result.second, size(), [&](Size l, Size r) {
@@ -111,8 +110,8 @@ public:
         for (Size i = 0; i < size(); ++i)
             inverse[idx_[i]] = i;
         for (Size pos = 0, lcp = 0; pos < size(); ++pos) {
-            auto cur = inverse[pos];
-            auto next = cur + 1;
+            Size cur = inverse[pos];
+            Size next = cur + 1;
             if (next < size()) {
                 auto diff = std::mismatch(str_.begin() + pos + lcp,
                                           str_.end(),

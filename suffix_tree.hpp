@@ -28,7 +28,7 @@ public:
     using substring = std::pair<Size, Size>;  ///< half-open offset range
 
     auto data() const { return str_.data(); }
-    auto size() const { return (Size)str_.size(); }
+    Size size() const { return (Size)str_.size(); }
 
     void clear() noexcept
     {
@@ -49,12 +49,12 @@ public:
         str_.push_back(val);
         if (nodes_.empty())
             nodes_.emplace_back();
-        auto tie = [src = nodes(), this](Size dest) mutable {
+        auto tie = [&, src = nodes()](Size dest) mutable {
             if (!leaf(src) && src != dest)
                 nodes_[src++].link = dest;
         };
         while (reminder()) {
-            if (auto& child = nodes_[node_].children[str_[char_]]) {
+            if (Size& child = nodes_[node_].children[str_[char_]]) {
                 if (descend(child))
                     continue;
                 if (!split(child))
@@ -137,7 +137,7 @@ public:
 
     substring path(const visited_edge& edge) const
     {
-        auto last = substr(edge.child).second;
+        Size last = substr(edge.child).second;
         return {Size(last - edge.path), last};
     }
 
@@ -155,11 +155,11 @@ private:
     Size char_{}, node_{};  // active
 
     Size reminder() const { return size() - char_; }
-    auto nodes() const { return (Size)nodes_.size(); }
+    Size nodes() const { return (Size)nodes_.size(); }
 
     bool descend(Size node)
     {
-        auto len = step::size(substr(node));
+        Size len = step::size(substr(node));
         if (reminder() <= len)
             return false;
         char_ += len;
@@ -170,16 +170,16 @@ private:
     bool split(Size& child)
     {
         auto rng = substr(child);
-        Size split = rng.first + reminder() - 1;
+        Size cut = rng.first + reminder() - 1;
         Size back = size() - 1;
-        if (eq_(str_[back], str_[split]))
+        if (eq_(str_[cut], str_[back]))
             return false;
         Size old = std::exchange(child, nodes());
-        nodes_.push_back({{{str_[back], flip(back)},
-                           {str_[split], leaf(old) ? flip(split) : old}},
-                          {rng.first, split}});
+        nodes_.push_back({{{str_[cut], leaf(old) ? flip(cut) : old},
+                           {str_[back], flip(back)}},
+                          {rng.first, cut}});
         if (!leaf(old))
-            nodes_[old].rng = {split, rng.second};
+            nodes_[old].rng = {cut, rng.second};
         return true;
     }
 
@@ -204,7 +204,7 @@ private:
         return std::nullopt;
     }
 
-    auto spawn(visited_edge src, std::stack<visited_edge>& dest) const
+    void spawn(visited_edge src, std::stack<visited_edge>& dest) const
     {
         for (auto& pair : nodes_[src.child].children)
             dest.push({src.child,

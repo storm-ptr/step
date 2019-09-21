@@ -28,33 +28,31 @@ struct child {
 };
 
 struct graphviz {
-    std::string_view str;
+    ordered_suffix_tree& tree;
 
     friend std::ostream& operator<<(std::ostream& os, const graphviz& me)
     {
-        os << "digraph \"" << me.str << "\" {\n";
-        ordered_suffix_tree tree{};
-        std::copy(me.str.begin(), me.str.end(), std::back_inserter(tree));
-        tree.visit([&](auto& edge) {
+        os << "digraph \"" << std::string_view{me.tree.data(), me.tree.size()}
+           << "\" {\n";
+        me.tree.visit([&](auto& edge) {
             if (edge.visited)
                 return;
-            os << child{tree, edge}
-               << " [shape=" << (tree.leaf(edge.child) ? "plaintext" : "point")
-               << "]\n";
+            os << child{me.tree, edge} << " [shape="
+               << (me.tree.leaf(edge.child) ? "plaintext" : "point") << "]\n";
             if (edge.child) {
-                auto rng = tree.substr(edge.child);
-                os << "node_" << edge.parent << "->" << child{tree, edge}
+                auto rng = me.tree.substr(edge.child);
+                os << "node_" << edge.parent << "->" << child{me.tree, edge}
                    << " [label=\""
-                   << std::string_view{tree.data() + rng.first,
+                   << std::string_view{me.tree.data() + rng.first,
                                        rng.second - rng.first}
                    << "\"]\n";
             }
         });
-        tree.visit([&](auto& edge) {
+        me.tree.visit([&](auto& edge) {
             if (!edge.visited)
                 return;
-            if (auto link = tree.link(edge.child))
-                os << child{tree, edge} << "->node_" << link
+            if (auto link = me.tree.link(edge.child))
+                os << child{me.tree, edge} << "->node_" << link
                    << " [style=dashed,arrowhead=otriangle]\n";
         });
         return os << "}\n";

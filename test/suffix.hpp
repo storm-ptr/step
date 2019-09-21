@@ -131,8 +131,10 @@ node_1->node_2 [style=dashed,arrowhead=otriangle]
 
     };
     for (auto& [str, expect] : tests) {
+        ordered_suffix_tree tree{};
+        std::copy(str.begin(), str.end(), std::back_inserter(tree));
         std::ostringstream os;
-        os << "\n" << graphviz{str};
+        os << "\n" << graphviz{tree};
         CHECK(os.str() == expect);
     }
 }
@@ -175,25 +177,21 @@ TEST_CASE("suffix_array_n_tree_find")
     }
 }
 
-inline std::string read_file(const char* file_name)
-{
-    using iterator_t = std::istreambuf_iterator<char>;
-    std::ifstream stream{file_name};
-    return {(iterator_t(stream)), iterator_t()};
-}
-
 inline std::string generate_text(size_t len)
 {
+    using iter_t = std::istreambuf_iterator<char>;
     static std::mt19937 gen{std::random_device{}()};
     static std::array files = {"../longest_common_substring.hpp",
                                "../longest_repeated_substring.hpp",
                                "../suffix_array.hpp",
-                               "../suffix_tree.hpp"};
+                               "../suffix_tree.hpp",
+                               "./suffix.hpp"};
     static std::uniform_int_distribution<size_t> dist{0, files.size() - 1};
 
     std::string res;
     while (res.size() < len) {
-        res += read_file(files[dist(gen)]);
+        std::ifstream is{files[dist(gen)]};
+        res.append((iter_t(is)), iter_t());
     }
     res.resize(len);
     res.back() = '\0';
@@ -223,11 +221,10 @@ auto array_order(const Array& arr)
 
 TEST_CASE("suffix_array_n_tree_cross_check")
 {
-    for (size_t i = 1; i <= 4; ++i) {
-        auto str = generate_text(i * 10000);
+    for (size_t i = 1; i <= 10; ++i) {
+        auto str = generate_text(i * 1000);
         step::suffix_array arr{str};
         ordered_suffix_tree tree{};
-        tree.reserve(str.size());
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
         CHECK(array_order(arr) == tree_order(tree));
     }
