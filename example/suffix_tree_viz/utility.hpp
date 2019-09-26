@@ -39,14 +39,14 @@ struct graphviz {
                 return;
             os << child{me.tree, edge} << " [shape="
                << (me.tree.leaf(edge.child) ? "plaintext" : "point") << "]\n";
-            if (edge.child) {
-                auto rng = me.tree.substr(edge.child);
-                os << "_" << edge.parent << "->" << child{me.tree, edge}
-                   << " [label=\""
-                   << std::string_view{me.tree.data() + rng.first,
-                                       rng.second - rng.first}
-                   << "\"]\n";
-            }
+            if (!edge.child)
+                return;
+            auto rng = me.tree.substr(edge.child);
+            os << "_" << edge.parent << "->" << child{me.tree, edge}
+               << " [label=\""
+               << std::string_view{me.tree.data() + rng.first,
+                                   rng.second - rng.first}
+               << "\"]\n";
         });
         return os << "}\n";
     }

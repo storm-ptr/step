@@ -177,8 +177,7 @@ static const auto TEXTS = [] {
     static std::array files = {"../longest_common_substring.hpp",
                                "../longest_repeated_substring.hpp",
                                "../suffix_array.hpp",
-                               "../suffix_tree.hpp",
-                               "./suffix.hpp"};
+                               "../suffix_tree.hpp"};
     static std::uniform_int_distribution<size_t> dist{0, files.size() - 1};
 
     std::vector<std::string> res;
@@ -198,7 +197,6 @@ static const auto TEXTS = [] {
 inline auto tree_order(const ordered_suffix_tree& tree)
 {
     std::vector<size_t> res;
-    res.reserve(tree.size());
     tree.visit([&](auto& edge) {
         if (tree.leaf(edge.child))
             res.push_back(tree.path(edge).first);
@@ -228,24 +226,22 @@ TEST_CASE("suffix_array_n_tree_cross_check")
 
 TEST_CASE("suffix_array_benchmark")
 {
-    for (auto& str : TEXTS) {
+    for (auto& str : TEXTS)
         BENCHMARK(std::to_string(str.size()) + " chars suffix array")
         {
             step::suffix_array<char, uint32_t> arr{str};
         };
-    }
 }
 
 TEST_CASE("suffix_tree_benchmark")
 {
-    for (auto& str : TEXTS) {
+    for (auto& str : TEXTS)
         BENCHMARK(std::to_string(str.size()) + " chars suffix tree")
         {
             step::suffix_tree<char, uint32_t> tree{};
             tree.reserve((uint32_t)str.size());
             std::copy(str.begin(), str.end(), std::back_inserter(tree));
         };
-    }
 }
 
 #endif  // STEP_TEST_SUFFIX_HPP
