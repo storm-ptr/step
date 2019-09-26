@@ -65,7 +65,7 @@ public:
                 child = flip(char_);
                 tie(node_);
             }
-            node_ ? node_ = link(node_) : ++char_;
+            node_ ? node_ = nodes_[node_].link : ++char_;
         }
     }
     catch (...) {
@@ -128,7 +128,6 @@ public:
     }
 
     bool leaf(Size node) const { return node >= nodes(); }
-    Size link(Size node) const { return nodes_[node].link; }
 
     substring substr(Size node) const
     {

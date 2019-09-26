@@ -4,7 +4,7 @@
 #define STEP_TEST_LONGEST_COMMON_SUBSEQUENCE_HPP
 
 #include <sstream>
-#include <step/example/diff/patience_diff.hpp>
+#include <step/example/diff/utility.hpp>
 #include <step/longest_common_subsequence.hpp>
 #include <step/test/case_insensitive.hpp>
 #include <string_view>

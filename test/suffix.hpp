@@ -7,7 +7,7 @@
 #include <array>
 #include <fstream>
 #include <random>
-#include <step/example/suffix_tree_viz/graphviz.hpp>
+#include <step/example/suffix_tree_viz/utility.hpp>
 #include <step/suffix_array.hpp>
 #include <step/suffix_tree.hpp>
 #include <string>
@@ -37,95 +37,89 @@ TEST_CASE("suffix_tree_graphviz")
         std::string_view expect;
     } tests[] = {
 
-        {"abcabxabcd$", R"(
-digraph "abcabxabcd$" {
-node_0 [shape=point]
+        {"abcabxabcd$", R"(digraph "abcabxabcd$" {
+rankdir=LR
+0_ [shape=point]
 10 [shape=plaintext]
-node_0->10 [label="$"]
-node_1 [shape=point]
-node_0->node_1 [label="ab"]
-node_3 [shape=point]
-node_1->node_3 [label="c"]
+0_->10 [label="$"]
+1_ [shape=point]
+0_->1_ [label="ab"]
+3_ [shape=point]
+1_->3_ [label="c"]
 0 [shape=plaintext]
-node_3->0 [label="abxabcd$"]
+3_->0 [label="abxabcd$"]
 6 [shape=plaintext]
-node_3->6 [label="d$"]
+3_->6 [label="d$"]
 3 [shape=plaintext]
-node_1->3 [label="xabcd$"]
-node_2 [shape=point]
-node_0->node_2 [label="b"]
-node_4 [shape=point]
-node_2->node_4 [label="c"]
+1_->3 [label="xabcd$"]
+2_ [shape=point]
+0_->2_ [label="b"]
+4_ [shape=point]
+2_->4_ [label="c"]
 1 [shape=plaintext]
-node_4->1 [label="abxabcd$"]
+4_->1 [label="abxabcd$"]
 7 [shape=plaintext]
-node_4->7 [label="d$"]
+4_->7 [label="d$"]
 4 [shape=plaintext]
-node_2->4 [label="xabcd$"]
-node_5 [shape=point]
-node_0->node_5 [label="c"]
+2_->4 [label="xabcd$"]
+5_ [shape=point]
+0_->5_ [label="c"]
 2 [shape=plaintext]
-node_5->2 [label="abxabcd$"]
+5_->2 [label="abxabcd$"]
 8 [shape=plaintext]
-node_5->8 [label="d$"]
+5_->8 [label="d$"]
 9 [shape=plaintext]
-node_0->9 [label="d$"]
+0_->9 [label="d$"]
 5 [shape=plaintext]
-node_0->5 [label="xabcd$"]
-node_3->node_4 [style=dashed,arrowhead=otriangle]
-node_1->node_2 [style=dashed,arrowhead=otriangle]
-node_4->node_5 [style=dashed,arrowhead=otriangle]
+0_->5 [label="xabcd$"]
 }
 )"},
 
-        {"BANANA$", R"(
-digraph "BANANA$" {
-node_0 [shape=point]
+        {"BANANA$", R"(digraph "BANANA$" {
+rankdir=LR
+0_ [shape=point]
 6 [shape=plaintext]
-node_0->6 [label="$"]
-node_3 [shape=point]
-node_0->node_3 [label="A"]
+0_->6 [label="$"]
+3_ [shape=point]
+0_->3_ [label="A"]
 5 [shape=plaintext]
-node_3->5 [label="$"]
-node_1 [shape=point]
-node_3->node_1 [label="NA"]
+3_->5 [label="$"]
+1_ [shape=point]
+3_->1_ [label="NA"]
 3 [shape=plaintext]
-node_1->3 [label="$"]
+1_->3 [label="$"]
 1 [shape=plaintext]
-node_1->1 [label="NA$"]
+1_->1 [label="NA$"]
 0 [shape=plaintext]
-node_0->0 [label="BANANA$"]
-node_2 [shape=point]
-node_0->node_2 [label="NA"]
+0_->0 [label="BANANA$"]
+2_ [shape=point]
+0_->2_ [label="NA"]
 4 [shape=plaintext]
-node_2->4 [label="$"]
+2_->4 [label="$"]
 2 [shape=plaintext]
-node_2->2 [label="NA$"]
-node_1->node_2 [style=dashed,arrowhead=otriangle]
-node_2->node_3 [style=dashed,arrowhead=otriangle]
+2_->2 [label="NA$"]
 }
 )"},
 
-        {"xabxa$", R"(
-digraph "xabxa$" {
-node_0 [shape=point]
+        {"xabxa$", R"(digraph "xabxa$" {
+rankdir=LR
+0_ [shape=point]
 5 [shape=plaintext]
-node_0->5 [label="$"]
-node_2 [shape=point]
-node_0->node_2 [label="a"]
+0_->5 [label="$"]
+2_ [shape=point]
+0_->2_ [label="a"]
 4 [shape=plaintext]
-node_2->4 [label="$"]
+2_->4 [label="$"]
 1 [shape=plaintext]
-node_2->1 [label="bxa$"]
+2_->1 [label="bxa$"]
 2 [shape=plaintext]
-node_0->2 [label="bxa$"]
-node_1 [shape=point]
-node_0->node_1 [label="xa"]
+0_->2 [label="bxa$"]
+1_ [shape=point]
+0_->1_ [label="xa"]
 3 [shape=plaintext]
-node_1->3 [label="$"]
+1_->3 [label="$"]
 0 [shape=plaintext]
-node_1->0 [label="bxa$"]
-node_1->node_2 [style=dashed,arrowhead=otriangle]
+1_->0 [label="bxa$"]
 }
 )"}
 
@@ -134,7 +128,7 @@ node_1->node_2 [style=dashed,arrowhead=otriangle]
         ordered_suffix_tree tree{};
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
         std::ostringstream os;
-        os << "\n" << graphviz{tree};
+        os << graphviz{tree};
         CHECK(os.str() == expect);
     }
 }
@@ -177,8 +171,7 @@ TEST_CASE("suffix_array_n_tree_find")
     }
 }
 
-inline std::string generate_text(size_t len)
-{
+static const auto TEXTS = [] {
     using iter_t = std::istreambuf_iterator<char>;
     static std::mt19937 gen{std::random_device{}()};
     static std::array files = {"../longest_common_substring.hpp",
@@ -188,15 +181,19 @@ inline std::string generate_text(size_t len)
                                "./suffix.hpp"};
     static std::uniform_int_distribution<size_t> dist{0, files.size() - 1};
 
-    std::string res;
-    while (res.size() < len) {
-        std::ifstream is{files[dist(gen)]};
-        res.append((iter_t(is)), iter_t());
+    std::vector<std::string> res;
+    for (size_t exp = 15; exp <= 17; ++exp) {
+        auto len = (size_t)std::exp2(exp);
+        auto& str = res.emplace_back();
+        while (str.size() < len) {
+            std::ifstream is{files[dist(gen)]};
+            str.append((iter_t(is)), iter_t());
+        }
+        str.resize(len);
+        str.back() = '\0';
     }
-    res.resize(len);
-    res.back() = '\0';
     return res;
-}
+}();
 
 inline auto tree_order(const ordered_suffix_tree& tree)
 {
@@ -221,8 +218,7 @@ auto array_order(const Array& arr)
 
 TEST_CASE("suffix_array_n_tree_cross_check")
 {
-    for (size_t i = 1; i <= 10; ++i) {
-        auto str = generate_text(i * 1000);
+    for (auto& str : TEXTS) {
         step::suffix_array arr{str};
         ordered_suffix_tree tree{};
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
@@ -230,22 +226,25 @@ TEST_CASE("suffix_array_n_tree_cross_check")
     }
 }
 
-TEST_CASE("suffix_array_n_tree_benchmark")
+TEST_CASE("suffix_array_benchmark")
 {
-    for (size_t exp = 17; exp < 22; ++exp) {
-        auto str = generate_text((size_t)std::exp2(exp));
-
-        BENCHMARK("2^" + std::to_string(exp) + " suffix array")
+    for (auto& str : TEXTS) {
+        BENCHMARK(std::to_string(str.size()) + " chars suffix array")
         {
             step::suffix_array<char, uint32_t> arr{str};
-        }
+        };
+    }
+}
 
-        BENCHMARK("2^" + std::to_string(exp) + " suffix tree")
+TEST_CASE("suffix_tree_benchmark")
+{
+    for (auto& str : TEXTS) {
+        BENCHMARK(std::to_string(str.size()) + " chars suffix tree")
         {
             step::suffix_tree<char, uint32_t> tree{};
             tree.reserve((uint32_t)str.size());
             std::copy(str.begin(), str.end(), std::back_inserter(tree));
-        }
+        };
     }
 }
 

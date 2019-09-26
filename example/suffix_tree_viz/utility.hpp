@@ -1,7 +1,7 @@
 // Andrew Naplavkov
 
-#ifndef STEP_EXAMPLE_SUFFIX_TREE_VIZ_GRAPHVIZ_HPP
-#define STEP_EXAMPLE_SUFFIX_TREE_VIZ_GRAPHVIZ_HPP
+#ifndef STEP_EXAMPLE_SUFFIX_TREE_VIZ_UTILITY_HPP
+#define STEP_EXAMPLE_SUFFIX_TREE_VIZ_UTILITY_HPP
 
 #include <map>
 #include <ostream>
@@ -23,7 +23,7 @@ struct child {
         if (me.tree.leaf(me.edge.child))
             return os << me.tree.path(me.edge).first;
         else
-            return os << "node_" << me.edge.child;
+            return os << me.edge.child << "_";
     }
 };
 
@@ -33,7 +33,7 @@ struct graphviz {
     friend std::ostream& operator<<(std::ostream& os, const graphviz& me)
     {
         os << "digraph \"" << std::string_view{me.tree.data(), me.tree.size()}
-           << "\" {\n";
+           << "\" {\nrankdir=LR\n";
         me.tree.visit([&](auto& edge) {
             if (edge.visited)
                 return;
@@ -41,22 +41,15 @@ struct graphviz {
                << (me.tree.leaf(edge.child) ? "plaintext" : "point") << "]\n";
             if (edge.child) {
                 auto rng = me.tree.substr(edge.child);
-                os << "node_" << edge.parent << "->" << child{me.tree, edge}
+                os << edge.parent << "_->" << child{me.tree, edge}
                    << " [label=\""
                    << std::string_view{me.tree.data() + rng.first,
                                        rng.second - rng.first}
                    << "\"]\n";
             }
         });
-        me.tree.visit([&](auto& edge) {
-            if (!edge.visited)
-                return;
-            if (auto link = me.tree.link(edge.child))
-                os << child{me.tree, edge} << "->node_" << link
-                   << " [style=dashed,arrowhead=otriangle]\n";
-        });
         return os << "}\n";
     }
 };
 
-#endif  // STEP_EXAMPLE_SUFFIX_TREE_VIZ_GRAPHVIZ_HPP
+#endif  // STEP_EXAMPLE_SUFFIX_TREE_VIZ_UTILITY_HPP

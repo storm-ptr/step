@@ -19,7 +19,7 @@ Step is a C++17, header-only library of STL-like algorithms and data structures.
   [snippet](https://github.com/storm-ptr/step/blob/master/test/edit_distance.hpp#L16-L19)
 * [longest common subsequence</summary>](https://en.wikipedia.org/wiki/Longest_common_subsequence_problem):
   [snippet](https://github.com/storm-ptr/step/blob/master/test/longest_common_subsequence.hpp#L15-L19),
-  [example](https://github.com/storm-ptr/step/blob/master/example/diff/patience_diff.hpp#L80-L88)
+  [example](https://github.com/storm-ptr/step/blob/master/example/diff/utility.hpp#L80-L88)
 * [longest common substring](https://en.wikipedia.org/wiki/Longest_common_substring_problem):
   [snippet](https://github.com/storm-ptr/step/blob/master/test/longest_common_substring.hpp#L13-L15)
 * [longest increasing subsequence](https://en.wikipedia.org/wiki/Longest_increasing_subsequence):
@@ -32,4 +32,4 @@ Step is a C++17, header-only library of STL-like algorithms and data structures.
   [snippet](https://github.com/storm-ptr/step/blob/master/test/suffix.hpp#L20-L22)
 * [suffix tree](https://en.wikipedia.org/wiki/Suffix_tree):
   [snippet](https://github.com/storm-ptr/step/blob/master/test/suffix.hpp#L27-L30),
-  [example](https://github.com/storm-ptr/step/blob/master/example/suffix_tree_viz/graphviz.hpp#L33-L59)
+  [example](https://github.com/storm-ptr/step/blob/master/example/suffix_tree_viz/utility.hpp#L33-L52)

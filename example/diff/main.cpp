@@ -2,14 +2,14 @@
 
 #include <fstream>
 #include <iostream>
-#include <step/example/diff/patience_diff.hpp>
+#include <step/example/diff/utility.hpp>
 #include <string>
 
 std::string read_file(const char* file_name)
 {
-    using iterator_t = std::istreambuf_iterator<char>;
+    using iter_t = std::istreambuf_iterator<char>;
     std::ifstream is{file_name};
-    return {(iterator_t(is)), iterator_t()};
+    return {(iter_t(is)), iter_t()};
 }
 
 int main(int argc, char* argv[])

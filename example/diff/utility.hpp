@@ -1,7 +1,7 @@
 // Andrew Naplavkov
 
-#ifndef STEP_EXAMPLE_DIFF_PATIENCE_DIFF_HPP
-#define STEP_EXAMPLE_DIFF_PATIENCE_DIFF_HPP
+#ifndef STEP_EXAMPLE_DIFF_UTILITY_HPP
+#define STEP_EXAMPLE_DIFF_UTILITY_HPP
 
 #include <ostream>
 #include <step/longest_common_subsequence.hpp>
@@ -97,4 +97,4 @@ void patience_diff(range lhs, range rhs, std::ostream& os)
     });
 }
 
-#endif  // STEP_EXAMPLE_DIFF_PATIENCE_DIFF_HPP
+#endif  // STEP_EXAMPLE_DIFF_UTILITY_HPP

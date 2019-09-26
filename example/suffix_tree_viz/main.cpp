@@ -1,7 +1,7 @@
 // Andrew Naplavkov
 
 #include <iostream>
-#include <step/example/suffix_tree_viz/graphviz.hpp>
+#include <step/example/suffix_tree_viz/utility.hpp>
 
 int main(int argc, char* argv[])
 {
