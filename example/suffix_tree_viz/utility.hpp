@@ -23,7 +23,7 @@ struct child {
         if (me.tree.leaf(me.edge.child))
             return os << me.tree.path(me.edge).first;
         else
-            return os << me.edge.child << "_";
+            return os << "_" << me.edge.child;
     }
 };
 
@@ -41,7 +41,7 @@ struct graphviz {
                << (me.tree.leaf(edge.child) ? "plaintext" : "point") << "]\n";
             if (edge.child) {
                 auto rng = me.tree.substr(edge.child);
-                os << edge.parent << "_->" << child{me.tree, edge}
+                os << "_" << edge.parent << "->" << child{me.tree, edge}
                    << " [label=\""
                    << std::string_view{me.tree.data() + rng.first,
                                        rng.second - rng.first}
