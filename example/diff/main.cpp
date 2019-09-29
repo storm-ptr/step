@@ -5,7 +5,7 @@
 #include <step/example/diff/utility.hpp>
 #include <string>
 
-std::string read_file(const char* file_name)
+static std::string read_file(const char* file_name)
 {
     using iter_t = std::istreambuf_iterator<char>;
     std::ifstream is{file_name};

@@ -12,7 +12,7 @@
 
 using lines_t = std::vector<std::string_view>;
 
-lines_t split(const std::string& str)
+inline lines_t split(const std::string& str)
 {
     lines_t result;
     auto first = str.data();
@@ -65,7 +65,7 @@ void join_subranges(range lhs,
 }
 
 /// @see https://en.wikipedia.org/wiki/Diff#Unified_format
-void print(range lhs, range rhs, std::ostream& os)
+inline void print(range lhs, range rhs, std::ostream& os)
 {
     if (!lhs.size() && !rhs.size())
         return;
@@ -77,7 +77,7 @@ void print(range lhs, range rhs, std::ostream& os)
         os << "+" << line << "\n";
 }
 
-void diff(range lhs, range rhs, std::ostream& os)
+inline void diff(range lhs, range rhs, std::ostream& os)
 {
     lines_t separators;
     step::longest_common_subsequence::intersection(
@@ -87,7 +87,7 @@ void diff(range lhs, range rhs, std::ostream& os)
     });
 }
 
-void patience_diff(range lhs, range rhs, std::ostream& os)
+inline void patience_diff(range lhs, range rhs, std::ostream& os)
 {
     lines_t separators;
     step::longest_common_subsequence::intersection(

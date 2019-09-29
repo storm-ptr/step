@@ -1,6 +1,8 @@
 // Andrew Naplavkov
 
 #include <step/edit_distance.hpp>
+#include <step/example/diff/utility.hpp>
+#include <step/example/suffix_tree_viz/utility.hpp>
 #include <step/kahan.hpp>
 #include <step/longest_common_subsequence.hpp>
 #include <step/longest_common_substring.hpp>
