@@ -1,5 +1,5 @@
 image:
-  - Visual Studio 2017
+  - Visual Studio 2019
   - Ubuntu1804
 
 platform: x64
@@ -10,7 +10,7 @@ clone_depth: 1
 
 install:
   - ps: Invoke-WebRequest -Uri https://github.com/catchorg/Catch2/releases/download/v2.9.2/catch.hpp -OutFile $env:APPVEYOR_BUILD_FOLDER\..\catch.hpp
-  - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+  - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
 build_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%/example/diff
