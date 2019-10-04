@@ -1,7 +1,7 @@
 language: cpp
 sudo: true
 os: linux
-dist: xenial
+dist: bionic
 git:
   depth: 1
 matrix:
@@ -9,8 +9,6 @@ matrix:
   - env: COMPILER=g++-8
     addons:
       apt:
-        sources:
-        - ubuntu-toolchain-r-test
         packages:
         - g++-8
         - doxygen
@@ -18,10 +16,8 @@ matrix:
     addons:
       apt:
         sources:
-        - ubuntu-toolchain-r-test
-        - llvm-toolchain-xenial-7
+        - llvm-toolchain-bionic-7
         packages:
-        - g++-8
         - clang-7
         - doxygen
 script:
