@@ -134,13 +134,13 @@ auto find(Searcher searcher, std::pair<It, It>... rngs)
 {
     auto count = (size(rngs) + ...);
     if (count < std::numeric_limits<int8_t>::max())
-        return searcher.find_with<uint8_t>(rngs...);
+        return searcher.template find_with<uint8_t>(rngs...);
     else if (count < std::numeric_limits<int16_t>::max())
-        return searcher.find_with<uint16_t>(rngs...);
+        return searcher.template find_with<uint16_t>(rngs...);
     else if (count < std::numeric_limits<int32_t>::max())
-        return searcher.find_with<uint32_t>(rngs...);
+        return searcher.template find_with<uint32_t>(rngs...);
     else
-        return searcher.find_with<size_t>(rngs...);
+        return searcher.template find_with<size_t>(rngs...);
 }
 
 }  // namespace step
