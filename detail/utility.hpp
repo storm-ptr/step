@@ -129,18 +129,18 @@ void append(T& dest, std::pair<It, It>... src)
     (std::copy(src.first, src.second, std::back_inserter(dest)), ...);
 }
 
-template <class F, class... It>
-auto invoke(F f, std::pair<It, It>... args)
+template <class Searcher, class... It>
+auto find(Searcher searcher, std::pair<It, It>... rngs)
 {
-    auto count = (size(args) + ...);
+    auto count = (size(rngs) + ...);
     if (count < std::numeric_limits<int8_t>::max())
-        return f((uint8_t)count, args...);
+        return searcher.find_with<uint8_t>(rngs...);
     else if (count < std::numeric_limits<int16_t>::max())
-        return f((uint16_t)count, args...);
+        return searcher.find_with<uint16_t>(rngs...);
     else if (count < std::numeric_limits<int32_t>::max())
-        return f((uint32_t)count, args...);
+        return searcher.find_with<uint32_t>(rngs...);
     else
-        return f((size_t)count, args...);
+        return searcher.find_with<size_t>(rngs...);
 }
 
 }  // namespace step

@@ -171,19 +171,18 @@ TEST_CASE("suffix_array_n_tree_find")
     }
 }
 
-static const auto TEXTS = [] {
+static const auto texts = [] {
     using iter_t = std::istreambuf_iterator<char>;
-    static std::mt19937 gen{std::random_device{}()};
-    static std::array files = {"../longest_common_substring.hpp",
-                               "../longest_repeated_substring.hpp",
-                               "../suffix_array.hpp",
-                               "../suffix_tree.hpp"};
-    static std::uniform_int_distribution<size_t> dist{0, files.size() - 1};
-
+    std::mt19937 gen{std::random_device{}()};
+    std::array files = {"../longest_common_substring.hpp",
+                        "../longest_repeated_substring.hpp",
+                        "../suffix_array.hpp",
+                        "../suffix_tree.hpp"};
+    std::uniform_int_distribution<size_t> dist{0, files.size() - 1};
     std::vector<std::string> res;
     for (size_t exp = 15; exp <= 17; ++exp) {
-        auto len = (size_t)std::exp2(exp);
         auto& str = res.emplace_back();
+        auto len = (size_t)std::exp2(exp);
         while (str.size() < len) {
             std::ifstream is{files[dist(gen)]};
             str.append((iter_t(is)), iter_t());
@@ -204,19 +203,17 @@ inline auto tree_order(const ordered_suffix_tree& tree)
     return res;
 }
 
-template <class Array>
-auto array_order(const Array& arr)
+inline auto array_order(const step::suffix_array<>& arr)
 {
-    using size_type = typename Array::size_type;
-    std::vector<size_type> res(arr.size());
-    for (size_type i = 0; i < arr.size(); ++i)
+    std::vector<size_t> res(arr.size());
+    for (size_t i = 0; i < arr.size(); ++i)
         res[i] = arr.nth_element(i);
     return res;
 }
 
 TEST_CASE("suffix_array_n_tree_cross_check")
 {
-    for (auto& str : TEXTS) {
+    for (auto& str : texts) {
         step::suffix_array arr{str};
         ordered_suffix_tree tree{};
         std::copy(str.begin(), str.end(), std::back_inserter(tree));
@@ -226,7 +223,7 @@ TEST_CASE("suffix_array_n_tree_cross_check")
 
 TEST_CASE("suffix_array_benchmark")
 {
-    for (auto& str : TEXTS)
+    for (auto& str : texts)
         BENCHMARK(std::to_string(str.size()) + " chars suffix array")
         {
             step::suffix_array<char, uint32_t> arr{str};
@@ -235,7 +232,7 @@ TEST_CASE("suffix_array_benchmark")
 
 TEST_CASE("suffix_tree_benchmark")
 {
-    for (auto& str : TEXTS)
+    for (auto& str : texts)
         BENCHMARK(std::to_string(str.size()) + " chars suffix tree")
         {
             step::suffix_tree<char, uint32_t> tree{};

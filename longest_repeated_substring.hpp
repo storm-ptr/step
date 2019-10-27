@@ -12,7 +12,7 @@ namespace detail {
 template <class Compare>
 struct suffix_array_searcher {
     template <class Size, class RandomIt>
-    auto operator()(Size, std::pair<RandomIt, RandomIt> rng) const
+    auto find_with(std::pair<RandomIt, RandomIt> rng) const
     {
         using value_t = iter_value_t<RandomIt>;
         auto result = std::make_pair(rng.second, rng.second);
@@ -32,7 +32,7 @@ struct suffix_array_searcher {
 template <template <class...> class Map>
 struct suffix_tree_searcher {
     template <class Size, class RandomIt>
-    auto operator()(Size, std::pair<RandomIt, RandomIt> rng) const
+    auto find_with(std::pair<RandomIt, RandomIt> rng) const
     {
         auto result = std::make_pair(rng.second, rng.second);
         auto tree = suffix_tree<iter_value_t<RandomIt>, Size, Map>{};
@@ -62,7 +62,7 @@ template <class Compare = std::less<>, class RandomIt>
 auto find_with_suffix_array(RandomIt first, RandomIt last)
 {
     auto searcher = detail::suffix_array_searcher<Compare>{};
-    return invoke(searcher, std::make_pair(first, last));
+    return find(searcher, std::make_pair(first, last));
 }
 
 template <class Compare = std::less<>, class RandomRng>
@@ -84,7 +84,7 @@ template <template <class...> class Map = std::unordered_map, class RandomIt>
 auto find_with_suffix_tree(RandomIt first, RandomIt last)
 {
     auto searcher = detail::suffix_tree_searcher<Map>{};
-    return invoke(searcher, std::make_pair(first, last));
+    return find(searcher, std::make_pair(first, last));
 }
 
 template <template <class...> class Map = std::unordered_map, class RandomRng>

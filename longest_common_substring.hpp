@@ -12,9 +12,8 @@ namespace detail {
 template <class Compare>
 struct suffix_array_searcher {
     template <class Size, class RandomIt1, class RandomIt2>
-    auto operator()(Size,
-                    std::pair<RandomIt1, RandomIt1> rng1,
-                    std::pair<RandomIt2, RandomIt2> rng2) const
+    auto find_with(std::pair<RandomIt1, RandomIt1> rng1,
+                   std::pair<RandomIt2, RandomIt2> rng2) const
     {
         using value_t = iter_value_t<RandomIt1>;
         auto result = std::make_pair(rng1.second, rng1.second);
@@ -42,13 +41,9 @@ struct suffix_array_searcher {
 
 template <template <class...> class Map>
 struct suffix_tree_searcher {
-    inline static const uint8_t left_flag = 1;
-    inline static const uint8_t right_flag = 2;
-
     template <class Size, class RandomIt1, class RandomIt2>
-    auto operator()(Size,
-                    std::pair<RandomIt1, RandomIt1> rng1,
-                    std::pair<RandomIt2, RandomIt2> rng2) const
+    auto find_with(std::pair<RandomIt1, RandomIt1> rng1,
+                   std::pair<RandomIt2, RandomIt2> rng2) const
     {
         auto result = std::make_pair(rng1.second, rng1.second);
         auto tree = suffix_tree<iter_value_t<RandomIt1>, Size, Map>{};
@@ -59,12 +54,12 @@ struct suffix_tree_searcher {
             if (!tree.leaf(edge.child))
                 flags[edge.parent] |= flags[edge.child];
             else if (tree.path(edge).first < size1)
-                flags[edge.parent] |= left_flag;
+                flags[edge.parent] |= 1;
             else
-                flags[edge.parent] |= right_flag;
+                flags[edge.parent] |= 2;
         });
         tree.visit([&](auto& edge) {
-            if (edge.visited && flags[edge.child] == (left_flag | right_flag) &&
+            if (edge.visited && flags[edge.child] == (1 | 2) &&
                 edge.path > (Size)size(result)) {
                 auto [first, last] = tree.path(edge);
                 result.first = rng1.first + first;
@@ -92,7 +87,7 @@ auto find_with_suffix_array(RandomIt1 first1,
                             RandomIt2 last2)
 {
     auto searcher = detail::suffix_array_searcher<Compare>{};
-    return invoke(
+    return find(
         searcher, std::make_pair(first1, last1), std::make_pair(first2, last2));
 }
 
@@ -120,7 +115,7 @@ auto find_with_suffix_tree(RandomIt1 first1,
                            RandomIt2 last2)
 {
     auto searcher = detail::suffix_tree_searcher<Map>{};
-    return invoke(
+    return find(
         searcher, std::make_pair(first1, last1), std::make_pair(first2, last2));
 }
 
