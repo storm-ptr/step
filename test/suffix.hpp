@@ -6,6 +6,7 @@
 //#include <boost/container/flat_map.hpp>
 #include <array>
 #include <fstream>
+#include <map>
 #include <random>
 #include <step/example/suffix_tree_viz/utility.hpp>
 #include <step/suffix_array.hpp>
@@ -235,7 +236,7 @@ TEST_CASE("suffix_tree_benchmark")
     for (auto& str : texts)
         BENCHMARK(std::to_string(str.size()) + " chars suffix tree")
         {
-            step::suffix_tree<char, uint32_t> tree{};
+            step::suffix_tree<char, uint32_t, std::map> tree{};
             tree.reserve((uint32_t)str.size());
             std::copy(str.begin(), str.end(), std::back_inserter(tree));
         };

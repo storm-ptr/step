@@ -17,6 +17,7 @@ namespace step {
 /// @param T - type of the characters;
 /// @param Size - to specify the maximum number / offset of characters;
 /// @param Map - to associate characters with edges, its key_type shall be T.
+///        std::map (std::flat_map C++20) is preferable for small alphabets.
 /// @see https://en.wikipedia.org/wiki/Suffix_tree
 template <class T = char,
           class Size = size_t,
