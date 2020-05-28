@@ -3,7 +3,7 @@
 #ifndef STEP_HIRSCHBERG_HPP
 #define STEP_HIRSCHBERG_HPP
 
-#include <step/detail/utility.hpp>
+#include "utility.hpp"
 
 namespace step::hirschberg {
 

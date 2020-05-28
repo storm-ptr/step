@@ -3,7 +3,7 @@
 #ifndef STEP_SUFFIX_ARRAY_HPP
 #define STEP_SUFFIX_ARRAY_HPP
 
-#include <step/detail/utility.hpp>
+#include "detail/utility.hpp"
 
 namespace step {
 
