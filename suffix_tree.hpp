@@ -5,7 +5,7 @@
 
 #include <optional>
 #include <stack>
-#include <step/detail/utility.hpp>
+#include "detail/utility.hpp"
 #include <unordered_map>
 
 namespace step {

@@ -3,7 +3,7 @@
 #ifndef STEP_LONGEST_COMMON_SUBSEQUENCE_HPP
 #define STEP_LONGEST_COMMON_SUBSEQUENCE_HPP
 
-#include <step/detail/hirschberg.hpp>
+#include "detail/hirschberg.hpp"
 
 namespace step::longest_common_subsequence {
 namespace detail {

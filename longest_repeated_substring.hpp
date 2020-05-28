@@ -3,8 +3,8 @@
 #ifndef STEP_LONGEST_REPEATED_SUBSTRING_HPP
 #define STEP_LONGEST_REPEATED_SUBSTRING_HPP
 
-#include <step/suffix_array.hpp>
-#include <step/suffix_tree.hpp>
+#include "suffix_array.hpp"
+#include "suffix_tree.hpp"
 
 namespace step::longest_repeated_substring {
 namespace detail {

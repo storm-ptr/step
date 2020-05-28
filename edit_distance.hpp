@@ -4,7 +4,7 @@
 #define STEP_EDIT_DISTANCE_HPP
 
 #include <optional>
-#include <step/detail/hirschberg.hpp>
+#include "detail/hirschberg.hpp"
 
 namespace step::edit_distance {
 namespace detail {
