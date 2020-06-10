@@ -42,7 +42,7 @@ public:
     explicit suffix_array(std::vector<T>&& str)
         : str_(std::move(str)), idx_(size())
     {
-        auto generator = [i = Size{}]() mutable { return suffix{i++}; };
+        auto generator = [i = Size{}]() mutable { return suffix{i++,{}}; };
         auto pos = [](auto& suf) { return suf.pos; };
         auto val = [&](auto& suf) { return str_[suf.pos]; };
         auto by_rank = [](auto& l, auto& r) { return l.rank < r.rank; };
