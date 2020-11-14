@@ -6,17 +6,18 @@ git:
   depth: 1
 matrix:
   include:
-  - env: COMPILER=g++10
+  - env: COMPILER=g++
     addons:
       apt:
         packages:
-        - g++10
+        - g++
         - doxygen
   - env: COMPILER=clang++-11
     addons:
       apt:
         sources:
-        - llvm-toolchain-focal-11
+        - sourceline: "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-11 main"
+          key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
         packages:
         - clang-11
         - doxygen
