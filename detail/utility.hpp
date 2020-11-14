@@ -21,7 +21,7 @@ struct overloaded : Ts... {
 };
 
 template <class... Ts>
-overloaded(Ts...)->overloaded<Ts...>;
+overloaded(Ts...) -> overloaded<Ts...>;
 
 /// @see https://en.cppreference.com/w/cpp/iterator/iter_t
 template <class It>

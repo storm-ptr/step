@@ -1,6 +1,6 @@
 image:
   - Visual Studio 2019
-  - Ubuntu1804
+  - Ubuntu2004
 
 platform: x64
 
@@ -9,7 +9,7 @@ configuration: Release
 clone_depth: 1
 
 install:
-  - ps: Invoke-WebRequest -Uri https://github.com/catchorg/Catch2/releases/download/v2.9.2/catch.hpp -OutFile $env:APPVEYOR_BUILD_FOLDER\..\catch.hpp
+  - ps: Invoke-WebRequest -Uri https://github.com/catchorg/Catch2/releases/download/v2.13.3/catch.hpp -OutFile $env:APPVEYOR_BUILD_FOLDER\..\catch.hpp
   - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
 build_script:

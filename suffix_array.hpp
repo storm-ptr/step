@@ -42,7 +42,7 @@ public:
     explicit suffix_array(std::vector<T>&& str)
         : str_(std::move(str)), idx_(size())
     {
-        auto generator = [i = Size{}]() mutable { return suffix{i++,{}}; };
+        auto generator = [i = Size{}]() mutable { return suffix{i++, {}}; };
         auto pos = [](auto& suf) { return suf.pos; };
         auto val = [&](auto& suf) { return str_[suf.pos]; };
         auto by_rank = [](auto& l, auto& r) { return l.rank < r.rank; };
@@ -171,10 +171,10 @@ private:
 };
 
 template <class InputIt>
-suffix_array(InputIt, InputIt)->suffix_array<iter_value_t<InputIt>>;
+suffix_array(InputIt, InputIt) -> suffix_array<iter_value_t<InputIt>>;
 
 template <class InputRng>
-suffix_array(InputRng)->suffix_array<range_value_t<InputRng>>;
+suffix_array(InputRng) -> suffix_array<range_value_t<InputRng>>;
 
 }  // namespace step
 

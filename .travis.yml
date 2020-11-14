@@ -1,27 +1,27 @@
 language: cpp
 sudo: true
 os: linux
-dist: bionic
+dist: focal
 git:
   depth: 1
 matrix:
   include:
-  - env: COMPILER=g++-8
+  - env: COMPILER=g++10
     addons:
       apt:
         packages:
-        - g++-8
+        - g++10
         - doxygen
-  - env: COMPILER=clang++-7
+  - env: COMPILER=clang++-11
     addons:
       apt:
         sources:
-        - llvm-toolchain-bionic-7
+        - llvm-toolchain-focal-11
         packages:
-        - clang-7
+        - clang-11
         - doxygen
 script:
-- wget -P $TRAVIS_BUILD_DIR/.. https://github.com/catchorg/Catch2/releases/download/v2.9.2/catch.hpp
+- wget -P $TRAVIS_BUILD_DIR/.. https://github.com/catchorg/Catch2/releases/download/v2.13.3/catch.hpp
 - cd $TRAVIS_BUILD_DIR/test
 - make -f ./makefile.ubuntu test CXX=$COMPILER
 - make -f ./makefile.ubuntu clean

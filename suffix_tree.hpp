@@ -3,9 +3,9 @@
 #ifndef STEP_SUFFIX_TREE_HPP
 #define STEP_SUFFIX_TREE_HPP
 
+#include "detail/utility.hpp"
 #include <optional>
 #include <stack>
-#include "detail/utility.hpp"
 #include <unordered_map>
 
 namespace step {

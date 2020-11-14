@@ -3,8 +3,8 @@
 #ifndef STEP_EDIT_DISTANCE_HPP
 #define STEP_EDIT_DISTANCE_HPP
 
-#include <optional>
 #include "detail/hirschberg.hpp"
+#include <optional>
 
 namespace step::edit_distance {
 namespace detail {
